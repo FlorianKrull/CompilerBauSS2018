@@ -22,14 +22,18 @@ float_literal -?[0-9]+\.[0-9]+
 
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
 
-"+"               { return TK_PLUS; }
+"+"				  { return TK_PLUS; }
 "-"               { return TK_MINUS; }
 "*"               { return TK_ASTER; }
 "/"               { return TK_SLASH; }
-">"				{ return TK_GREATER; }
-"<"				{ return TK_SMALLER; }
-">="			{ return TK_GREATER_EQUAL; }
-"<="			{ return TK_SMALLER_EQUAL; }
+">"				  { return TK_GREATER; }
+"<"				  { return TK_SMALLER; }
+">="			  { return TK_GREATER_EQUAL; }
+"<="			  { return TK_SMALLER_EQUAL; }
+"&&"			  { return TK_AND; }
+"||"			  { return TK_OR; }
+"=="			  { return TK_EQUAL; }
+"!="			  { return TK_UNEQUAL; }
 
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }

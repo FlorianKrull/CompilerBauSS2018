@@ -37,6 +37,10 @@ void mCc_parser_error();
 %token SMALLER "<"
 %token GREATER_EQUAL ">="
 %token SMALLER_EQUAL "<="
+%token AND "&&"
+%token OR "||"
+%token EQUAL "=="
+%token UNEQUAL "!="
 
 %type <enum mCc_ast_binary_op> binary_op
 
@@ -54,10 +58,14 @@ binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
           | MINUS { $$ = MCC_AST_BINARY_OP_SUB; }
           | ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
           | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
-		| GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
-		| SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
-		| GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
-		| SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
+          | GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
+          | SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
+          | GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
+          | SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
+          | AND { $$ = MCC_AST_BINARY_OP_AND; }
+		  | OR { $$ = MCC_AST_BINARY_OP_OR; }
+		  | EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
+		  | UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
           ;
 
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }

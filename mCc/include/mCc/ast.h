@@ -34,6 +34,10 @@ enum mCc_ast_binary_op {
 	MCC_AST_BINARY_OP_GRT,
 	MCC_AST_BINARY_OP_GRE,
 	MCC_AST_BINARY_OP_SME,
+	MCC_AST_BINARY_OP_AND,
+	MCC_AST_BINARY_OP_OR,
+	MCC_AST_BINARY_OP_EQ,
+	MCC_AST_BINARY_OP_UEQ,
 };
 
 /* ------------------------------------------------------------- Expressions */
