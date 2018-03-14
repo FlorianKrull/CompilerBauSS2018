@@ -33,6 +33,10 @@ void mCc_parser_error();
 %token MINUS "-"
 %token ASTER "*"
 %token SLASH "/"
+%token GREATER ">"
+%token SMALLER "<"
+%token GREATER_EQUAL ">="
+%token SMALLER_EQUAL "<="
 
 %type <enum mCc_ast_binary_op> binary_op
 
@@ -50,6 +54,10 @@ binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
           | MINUS { $$ = MCC_AST_BINARY_OP_SUB; }
           | ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
           | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
+		| GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
+		| SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
+		| GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
+		| SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
           ;
 
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }

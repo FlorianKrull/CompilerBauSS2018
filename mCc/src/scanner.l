@@ -26,6 +26,10 @@ float_literal -?[0-9]+\.[0-9]+
 "-"               { return TK_MINUS; }
 "*"               { return TK_ASTER; }
 "/"               { return TK_SLASH; }
+">"				{ return TK_GREATER; }
+"<"				{ return TK_SMALLER; }
+">="			{ return TK_GREATER_EQUAL; }
+"<="			{ return TK_SMALLER_EQUAL; }
 
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
