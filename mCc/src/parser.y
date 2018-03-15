@@ -21,31 +21,15 @@ void mCc_parser_error();
 %define api.value.type union
 %define api.token.prefix {TK_}
 
-/*
 
-Type of the yylval global variable, used by scanner to store attrbute information
-about the token scanned
-
-*/
-
-%union{
-
-	int integerConstant;
-	bool boolConstant;
-	char *stringConstant;
-	Type *type;
-	Stmt* stmt;
-	IfStmt* ifStmt;
-	WhileStmt* whileStmt;
-
-
-}
 
 
 %token END 0 "EOF"
 
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
+
+/* Rules section delimited by the markers %% */
 
 %token LPARENTH "("
 %token RPARENTH ")"
@@ -71,10 +55,6 @@ about the token scanned
 
 /* Precendence assignment. Priority is sorted from low to high*/
 
-%nonassoc '='
-%left OR
-%left AND
-%nonassoc 
 
 %start toplevel
 
