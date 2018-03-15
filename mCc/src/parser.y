@@ -21,6 +21,27 @@ void mCc_parser_error();
 %define api.value.type union
 %define api.token.prefix {TK_}
 
+/*
+
+Type of the yylval global variable, used by scanner to store attrbute information
+about the token scanned
+
+*/
+
+%union{
+
+	int integerConstant;
+	bool boolConstant;
+	char *stringConstant;
+	Type *type;
+	Stmt* stmt;
+	IfStmt* ifStmt;
+	WhileStmt* whileStmt;
+
+
+}
+
+
 %token END 0 "EOF"
 
 %token <long>   INT_LITERAL   "integer literal"
@@ -37,15 +58,29 @@ void mCc_parser_error();
 %token SMALLER "<"
 %token GREATER_EQUAL ">="
 %token SMALLER_EQUAL "<="
+%token AND "&&"
+%token OR "||"
+%token EQUAL "=="
+%token UNEQUAL "!="
+%token COMMENT "#"
 
 %type <enum mCc_ast_binary_op> binary_op
 
 %type <struct mCc_ast_expression *> expression single_expr
 %type <struct mCc_ast_literal *> literal
 
+/* Precendence assignment. Priority is sorted from low to high*/
+
+%nonassoc '='
+%left OR
+%left AND
+%nonassoc 
+
 %start toplevel
 
 %%
+
+/* Rules section delimited by the markers %% */
 
 toplevel : expression { *result = $1; }
          ;
@@ -58,6 +93,11 @@ binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
 		  | SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
 		  | GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
 		  | SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
+		  | AND { $$ = MCC_AST_BINARY_OP_AND; }
+		  | OR { $$ = MCC_AST_BINARY_OP_OR; }
+		  | EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
+		  | UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
+;
           ;
 
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
