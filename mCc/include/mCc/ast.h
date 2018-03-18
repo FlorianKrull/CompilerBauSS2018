@@ -34,6 +34,10 @@ enum mCc_ast_binary_op {
 	MCC_AST_BINARY_OP_GRT,
 	MCC_AST_BINARY_OP_GRE,
 	MCC_AST_BINARY_OP_SME,
+	MCC_AST_BINARY_OP_AND,
+	MCC_AST_BINARY_OP_OR,
+	MCC_AST_BINARY_OP_EQ,
+	MCC_AST_BINARY_OP_UEQ,
 };
 
 /* ------------------------------------------------------------- Expressions */
@@ -82,6 +86,7 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression);
 enum mCc_ast_literal_type {
 	MCC_AST_LITERAL_TYPE_INT,
 	MCC_AST_LITERAL_TYPE_FLOAT,
+	MCC_AST_LITERAL_TYPE_STRING
 };
 
 struct mCc_ast_literal {
