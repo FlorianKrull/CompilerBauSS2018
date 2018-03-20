@@ -326,3 +326,33 @@ TEST(Parser, Unequal_1)
 
 	mCc_ast_delete_expression(expr);
 }
+
+TEST(Parser, Bool_1)
+{
+	const char input[] = "1 == true";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto expr = result.expression;
+
+	//root
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->op);
+
+	// root -> lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
+
+	// root -> lhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->lhs->literal->type);
+	ASSERT_EQ(1, expr->lhs->literal->i_value);
+
+	// root -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
+
+	// root -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, expr->rhs->literal->type);
+	ASSERT_EQ(true, expr->rhs->literal->b_value);
+
+	mCc_ast_delete_expression(expr);
+}

@@ -25,6 +25,7 @@ void mCc_parser_error();
 
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
+%token <bool>		BOOL_LITERAL	"boolean literal"
 
 %token LPARENTH "("
 %token RPARENTH ")"
@@ -58,14 +59,14 @@ binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
           | MINUS { $$ = MCC_AST_BINARY_OP_SUB; }
           | ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
           | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
-          | GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
-          | SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
-          | GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
-          | SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
-          | AND { $$ = MCC_AST_BINARY_OP_AND; }
-		  | OR { $$ = MCC_AST_BINARY_OP_OR; }
-		  | EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
-		  | UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
+					| GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
+					| SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
+					| GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
+					| SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
+					| AND { $$ = MCC_AST_BINARY_OP_AND; }
+					| OR { $$ = MCC_AST_BINARY_OP_OR; }
+					| EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
+					| UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
           ;
 
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
@@ -78,6 +79,7 @@ expression : single_expr                      { $$ = $1;                        
 
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }
+				| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
         ;
 
 %%
