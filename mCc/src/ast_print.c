@@ -119,6 +119,18 @@ static void print_dot_literal_float(struct mCc_ast_literal *literal, void *data)
 	print_dot_node(out, literal, label);
 }
 
+static void print_dot_literal_bool(struct mCc_ast_literal *literal, void *data)
+{
+	assert(literal);
+	assert(data);
+
+	char label[LABEL_SIZE] = { 0 };
+	snprintf(label, sizeof(label), "%f", literal->b_value);
+
+	FILE *out = data;
+	print_dot_node(out, literal, label);
+}
+
 static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 {
 	assert(out);
