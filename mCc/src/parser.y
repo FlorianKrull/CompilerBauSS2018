@@ -28,6 +28,7 @@ void mCc_parser_error();
 
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
+%token <bool>		BOOL_LITERAL	"boolean literal"
 
 /* Rules section delimited by the markers %% */
 
@@ -46,7 +47,7 @@ void mCc_parser_error();
 %token OR "||"
 %token EQUAL "=="
 %token UNEQUAL "!="
-%token COMMENT "#"
+
 
 %type <enum mCc_ast_binary_op> binary_op
 
@@ -78,6 +79,7 @@ binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
 		  | EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
 		  | UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
 ;
+
           ;
 
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
@@ -90,6 +92,7 @@ expression : single_expr                      { $$ = $1;                        
 
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }
+				| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
         ;
 
 %%
