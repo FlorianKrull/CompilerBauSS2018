@@ -17,6 +17,7 @@ int_literal   -?[0-9]+
 float_literal -?[0-9]+\.[0-9]+
 bool_literal	"true"|"false"
 
+
 %%
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
