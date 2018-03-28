@@ -85,7 +85,7 @@ literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }
 				| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
 				| ALPHA { $$ = mCc_ast_new_literal_alpha($1);}
-				| ALPHA_NUM { $$ = mCc_ast_new_literal_alpha_num($1);
+				| ALPHA_NUM { $$ = mCc_ast_new_literal_alpha_num($1); }
 				| DIGIT	{ $$ = mCc_ast_new_literal_digit($1);}
 				| IDENTIFIER	{ $$ = mCc_ast_new_literal_identifier($1); }
         ;
