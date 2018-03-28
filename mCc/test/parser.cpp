@@ -2,7 +2,7 @@
 
 #include "mCc/ast.h"
 #include "mCc/parser.h"
-
+/*
 TEST(Parser, BinaryOp_1)
 {
 	const char input[] = "192 + 3.14";
@@ -132,6 +132,7 @@ TEST(Parser, MissingClosingParenthesis_1)
 
 	ASSERT_NE(MCC_PARSER_STATUS_OK, result.status);
 }
+
 
 TEST(Parser, GreaterThan_1)
 {
@@ -399,6 +400,36 @@ TEST(Parser, Bool_1)
 	// root -> rhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, expr->rhs->literal->type);
 	ASSERT_EQ(true, expr->rhs->literal->b_value);
+
+	mCc_ast_delete_expression(expr);
+}
+*/
+TEST(Parser, Identifier_1)
+{
+	const char input[] = "my_var + 1";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto expr = result.expression;
+
+	//root
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->op);
+
+	// root -> lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
+
+	// root -> lhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, expr->lhs->literal->type);
+//	ASSERT_EQ("x", expr->lhs->literal->id_value);
+
+	// root -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
+
+	// root -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->rhs->literal->type);
+	ASSERT_EQ(1, expr->rhs->literal->b_value);
 
 	mCc_ast_delete_expression(expr);
 }
