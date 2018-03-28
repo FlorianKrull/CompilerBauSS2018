@@ -23,13 +23,13 @@ bool_literal	"true"|"false"
 
 
 %%
-{alpha}			{yylval->TK_ALPHA = *yytext;	return TK_ALPHA;}
+{alpha}			{yylval->TK_ALPHA = strdup(yytext);	return TK_ALPHA;}
 
-{alpha_num}		{yylval->TK_ALPHA = *yytext;	return TK_ALPHA_NUM;}
+{alpha_num}		{yylval->TK_ALPHA_NUM = strdup(yytext);	return TK_ALPHA_NUM;}
 
 {digit}			{yylval->TK_DIGIT = atoi(yytext); return TK_DIGIT;}
 
-{identifier}	{yylval->TK_IDENTIFIER = *yytext;	return TK_IDENTIFIER;}
+{identifier}	{yylval->TK_IDENTIFIER = strdup(yytext);	return TK_IDENTIFIER;}
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 
