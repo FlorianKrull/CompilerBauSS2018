@@ -13,12 +13,23 @@
 #define YYSTYPE MCC_PARSER_STYPE
 %}
 
+alpha			[a-zA-Z_]
+alpha_num		[a-zA-Z0-9_]
+digit			[0-9]
+identifier		[a-zA-Z_][a-zA-Z0-9_]*
 int_literal   -?[0-9]+
 float_literal -?[0-9]+\.[0-9]+
 bool_literal	"true"|"false"
 
 
 %%
+{alpha}			{yylval->TK_ALPHA = *yytext;	return TK_ALPHA;}
+
+{alpha_num}		{yylval->TK_ALPHA = *yytext;	return TK_ALPHA_NUM;}
+
+{digit}			{yylval->TK_DIGIT = atoi(yytext); return TK_DIGIT;}
+
+{identifier}	{yylval->TK_IDENTIFIER = *yytext;	return TK_IDENTIFIER;}
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 

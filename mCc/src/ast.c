@@ -79,6 +79,54 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression)
 
 /* ---------------------------------------------------------------- Literals */
 
+struct mCc_ast_literal *mCc_ast_new_literal_alpha(char value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_ALPHA;
+	lit->a_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_alpha_num(char value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_ALPHA_NUM;
+	lit->an_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_digit(int value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_DIGIT;
+	lit->d_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_IDENTIFIER;
+	lit->id_value = value;
+	return lit;
+}
+
 struct mCc_ast_literal *mCc_ast_new_literal_int(long value)
 {
 	struct mCc_ast_literal *lit = malloc(sizeof(*lit));

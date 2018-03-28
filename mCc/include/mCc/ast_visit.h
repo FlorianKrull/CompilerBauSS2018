@@ -34,6 +34,10 @@ struct mCc_ast_visitor {
 	mCc_ast_visit_expression_cb expression_parenth;
 
 	mCc_ast_visit_literal_cb literal;
+	mCc_ast_visit_literal_cb literal_alpha;
+	mCc_ast_visit_literal_cb literal_alpha_num;
+	mCc_ast_visit_literal_cb literal_digit;
+	mCc_ast_visit_literal_cb literal_identifier;
 	mCc_ast_visit_literal_cb literal_int;
 	mCc_ast_visit_literal_cb literal_float;
 	mCc_ast_visit_literal_cb literal_bool;

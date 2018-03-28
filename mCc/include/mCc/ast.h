@@ -90,6 +90,10 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression);
 /* ---------------------------------------------------------------- Literals */
 
 enum mCc_ast_literal_type {
+	MCC_AST_LITERAL_TYPE_ALPHA,
+	MCC_AST_LITERAL_TYPE_ALPHA_NUM,
+	MCC_AST_LITERAL_TYPE_DIGIT,
+	MCC_AST_LITERAL_TYPE_IDENTIFIER,
 	MCC_AST_LITERAL_TYPE_INT,
 	MCC_AST_LITERAL_TYPE_FLOAT,
 	MCC_AST_LITERAL_TYPE_BOOL,
@@ -100,6 +104,17 @@ struct mCc_ast_literal {
 
 	enum mCc_ast_literal_type type;
 	union {
+		/* MCC_AST_LITERAL_TYPE_ALPHA */
+		char a_value;
+
+		/* MCC_AST_LITERAL_TYPE_ALPHA_NUM */
+		char an_value;
+
+		/* MCC_AST_LITERAL_TYPE_DIGIT */
+		int d_value;
+
+		/* MCC_AST_LITERAL_TYPE_IDENTIFIER */
+		char *id_value;
 		/* MCC_AST_LITERAL_TYPE_INT */
 		long i_value;
 
@@ -110,6 +125,14 @@ struct mCc_ast_literal {
 		bool b_value;
 	};
 };
+
+struct mCc_ast_literal *mCc_ast_new_literal_alpha(char value);
+
+struct mCc_ast_literal *mCc_ast_new_literal_alpha_num(char value);
+
+struct mCc_ast_literal *mCc_ast_new_literal_digit(int value);
+
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_int(long value);
 

@@ -76,6 +76,22 @@ void mCc_ast_visit_literal(struct mCc_ast_literal *literal,
 	case MCC_AST_LITERAL_TYPE_BOOL:
 		visit(literal, visitor->literal_bool, visitor);
 		break;
+
+	case MCC_AST_LITERAL_TYPE_ALPHA:
+		visit(literal, visitor->literal_alpha, visitor);
+		break;
+
+	case MCC_AST_LITERAL_TYPE_ALPHA_NUM:
+		visit(literal, visitor->literal_alpha_num, visitor);
+		break;
+
+	case MCC_AST_LITERAL_TYPE_DIGIT:
+		visit(literal, visitor->literal_digit, visitor);
+		break;
+
+	case MCC_AST_LITERAL_TYPE_IDENTIFIER:
+		visit(literal, visitor->literal_identifier, visitor);
+		break;
 	}
 
 	visit_if_post_order(literal, visitor->literal, visitor);
