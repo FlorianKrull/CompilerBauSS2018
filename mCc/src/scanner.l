@@ -55,6 +55,16 @@ bool_literal	"true"|"false"
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
 
+"/*"            {return TK_BEGINCOM; }
+"*/"            {return TK_ENDCOM; }
+
+"bool"          {return TK_BOOL; }
+"int"           {return TK_INT; }
+"float"         {return TK_FLOAT;}
+"string"        {return TK_STRING; }
+
+
+
 [ \t\r\n]+        { /* ignore */ }
 
 <<EOF>>           { return TK_END; }
