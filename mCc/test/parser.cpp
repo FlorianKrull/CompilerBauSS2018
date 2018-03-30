@@ -78,7 +78,7 @@ TEST(Parser, NestedExpression_1)
 
 	mCc_ast_delete_expression(expr);
 }
-
+*/
 TEST(Parser, NestedExpression_2)
 {
 	const char input[] = "-192 + 3.14 * 42";
@@ -102,7 +102,7 @@ TEST(Parser, NestedExpression_2)
 	// root -> rhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->rhs->type);
 
-	auto subexpr = expr->rhs->expression;
+	auto subexpr = expr->rhs;
 
 	// subexpr
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
@@ -120,11 +120,11 @@ TEST(Parser, NestedExpression_2)
 
 	// subexpr -> rhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, subexpr->rhs->literal->type);
-	ASSERT_EQ(42, subexpr->rhs->literal->f_value);
+	ASSERT_EQ(42, subexpr->rhs->literal->i_value);
 
 	mCc_ast_delete_expression(expr);
 }
-
+/*
 TEST(Parser, MissingClosingParenthesis_1)
 {
 	const char input[] = "(42";
@@ -403,7 +403,7 @@ TEST(Parser, Bool_1)
 
 	mCc_ast_delete_expression(expr);
 }
-*/
+
 TEST(Parser, Identifier_1)
 {
 	const char input[] = "my_var + 1";
@@ -433,3 +433,4 @@ TEST(Parser, Identifier_1)
 
 	mCc_ast_delete_expression(expr);
 }
+*/
