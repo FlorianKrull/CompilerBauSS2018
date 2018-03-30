@@ -8,15 +8,17 @@
 
 const char *mCc_ast_print_binary_op(enum mCc_ast_binary_op op)
 {
-	switch (op) {
+	/*switch (op) {
 	case MCC_AST_BINARY_OP_ADD: return "+";
 	case MCC_AST_BINARY_OP_SUB: return "-";
 	case MCC_AST_BINARY_OP_MUL: return "*";
 	case MCC_AST_BINARY_OP_DIV: return "/";
-	}
+	}*/
 
 	return "unknown op";
 }
+
+
 
 /* ------------------------------------------------------------- DOT Printer */
 

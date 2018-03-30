@@ -32,10 +32,6 @@ struct mCc_ast_node {
 /* --------------------------------------------------------------- Operators */
 
 enum mCc_ast_binary_op {
-	MCC_AST_BINARY_OP_ADD,
-	MCC_AST_BINARY_OP_SUB,
-	MCC_AST_BINARY_OP_MUL,
-	MCC_AST_BINARY_OP_DIV,
 	MCC_AST_BINARY_OP_SMT,
 	MCC_AST_BINARY_OP_GRT,
 	MCC_AST_BINARY_OP_GRE,
@@ -44,6 +40,18 @@ enum mCc_ast_binary_op {
 	MCC_AST_BINARY_OP_OR,
 	MCC_AST_BINARY_OP_EQ,
 	MCC_AST_BINARY_OP_UEQ,
+};
+
+/* For precedence cascade technique */
+enum mCc_ast_binary_add_op {
+	MCC_AST_BINARY_OP_ADD,
+	MCC_AST_BINARY_OP_SUB,
+};
+
+/* For precedence cascade technique */
+enum mCc_ast_binary_mul_op {
+	MCC_AST_BINARY_OP_MUL,
+	MCC_AST_BINARY_OP_DIV,
 };
 
 /* ------------------------------------------------------------- Expressions */
@@ -62,9 +70,19 @@ struct mCc_ast_expression {
 		/* MCC_AST_EXPRESSION_TYPE_LITERAL */
 		struct mCc_ast_literal *literal;
 
-		/* MCC_AST_EXPRESSION_TYPE_BINARY_OP */
+
 		struct {
-			enum mCc_ast_binary_op op;
+			/* For precedence cascade technique */
+			union {
+				/* MCC_AST_EXPRESSION_TYPE_BINARY_OP */
+				enum mCc_ast_binary_op op;
+
+				/* MCC_AST_EXPRESSION_TYPE_ADD_OP */
+				enum mCc_ast_binary_add_op add_op;
+
+				/* MCC_AST_EXPRESSION_TYPE_MUL_OP */
+				enum mCc_ast_binary_mul_op mul_op;
+			};
 			struct mCc_ast_expression *lhs;
 			struct mCc_ast_expression *rhs;
 		};
@@ -79,6 +97,16 @@ mCc_ast_new_expression_literal(struct mCc_ast_literal *literal);
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_binary_op(enum mCc_ast_binary_op op,
+                                 struct mCc_ast_expression *lhs,
+                                 struct mCc_ast_expression *rhs);
+
+struct mCc_ast_expression *
+mCc_ast_new_expression_add_op(enum mCc_ast_binary_add_op add_op,
+                                 struct mCc_ast_expression *lhs,
+                                 struct mCc_ast_expression *rhs);
+
+struct mCc_ast_expression *
+mCc_ast_new_expression_mul_op(enum mCc_ast_binary_mul_op mul_op,
                                  struct mCc_ast_expression *lhs,
                                  struct mCc_ast_expression *rhs);
 

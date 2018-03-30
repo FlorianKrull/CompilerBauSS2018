@@ -48,8 +48,10 @@ void mCc_parser_error();
 %token UNEQUAL "!="
 
 %type <enum mCc_ast_binary_op> binary_op
+%type <enum mCc_ast_binary_add_op> add_op
+%type <enum mCc_ast_binary_mul_op> mul_op
 
-%type <struct mCc_ast_expression *> expression single_expr
+%type <struct mCc_ast_expression *> expression term single_expr
 %type <struct mCc_ast_literal *> literal
 
 %start toplevel
@@ -59,11 +61,7 @@ void mCc_parser_error();
 toplevel : expression { *result = $1; }
          ;
 
-binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
-          | MINUS { $$ = MCC_AST_BINARY_OP_SUB; }
-          | ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
-          | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
-					| GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
+binary_op : 		  GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
 					| SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
 					| GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
 					| SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
@@ -73,12 +71,24 @@ binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
 					| UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
           ;
 
+add_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
+       | MINUS { $$ = MCC_AST_BINARY_OP_SUB; }
+       ;
+       
+mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
+       | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
+       ;
+       
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
             | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
             ;
+            
+term : single_expr				{ $$ = $1; }
+	 | term mul_op single_expr	{ $$ = mCc_ast_new_expression_mul_op($2, $1, $3); }
+	 ;
 
-expression : single_expr                      { $$ = $1;                                           }
-           | single_expr binary_op expression { $$ = mCc_ast_new_expression_binary_op($2, $1, $3); }
+expression : term                    { $$ = $1;                                           }
+           | expression add_op term  { $$ = mCc_ast_new_expression_add_op($2, $1, $3); }
            ;
 
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
