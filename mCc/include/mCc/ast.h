@@ -33,6 +33,7 @@ struct mCc_ast_node {
 
 enum mCc_ast_unary_op {
 	MCC_AST_UNARY_OP_MINUS,
+	MCC_AST_UNARY_OP_PLUS,
 	MCC_AST_UNARY_OP_EXCLAM,
 };
 
@@ -67,6 +68,12 @@ struct mCc_ast_expression {
 	union {
 		/* MCC_AST_EXPRESSION_TYPE_LITERAL */
 		struct mCc_ast_literal *literal;
+
+		/* MCC_AST_EXPRESSION_TYPE_UNARY_OP */
+		struct {
+			enum mCc_ast_unary_op op;
+			struct enum mCc_ast_expression *rhs;
+		};
 
 		/* MCC_AST_EXPRESSION_TYPE_BINARY_OP */
 		struct {
@@ -110,6 +117,19 @@ struct mCc_ast_literal {
 
 	enum mCc_ast_literal_type type;
 	union {
+
+		/* MCC_AST_LITERAL_TYPE_ALPHA */
+		char a_value;
+
+		/* MCC_AST_LITERAL_TYPE_ALPHA_NUM */
+		char an_value;
+
+		/* MCC_AST_LITERAL_TYPE_DIGIT */
+		int d_value;
+
+		/* MCC_AST_LITERAL_TYPE_IDENTIFIER */
+		char *id_value;
+
 		/* MCC_AST_LITERAL_TYPE_INT */
 		long i_value;
 
@@ -120,6 +140,14 @@ struct mCc_ast_literal {
 		bool b_value;
 	};
 };
+
+struct mCc_ast_literal *mCc_ast_new_literal_alpha(char value);
+
+struct mCc_ast_literal *mCc_ast_new_literal_alpha_num(char value);
+
+struct mCc_ast_literal *mCc_ast_new_literal_digit(int value);
+
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_int(long value);
 

@@ -78,8 +78,8 @@ toplevel : expression { *result = $1; }
 
 /* unary operators */
 
-unary_op  : MINUSU { $$ = MCC_AST_UNARY_OP_MINUS; }
-		  | PLUSU { $$ = MCC_AST_UN}
+unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
+		  | PLUS { $$ = MCC_AST_UNARY_OP_PLUS;}
 		  | EXCLAM { $$ = MCC_AST_UNARY_OP_EXCLAM; }
 		;
 binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }

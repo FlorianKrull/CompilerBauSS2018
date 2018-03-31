@@ -35,7 +35,7 @@ bool_literal	"true"|"false"
 
 
 
-"+"							  { return TK_PLUS; }
+"+"							    { return TK_PLUS; }
 "-"								{ return TK_MINUS; }
 "*"								{ return TK_ASTER; }
 "/"								{ return TK_SLASH; }
@@ -48,12 +48,12 @@ bool_literal	"true"|"false"
 "=="							{ return TK_EQUAL; }
 "!="							{ return TK_UNEQUAL; }
 
-"("               { return TK_LPARENTH; }
-")"               { return TK_RPARENTH; }
+"("                             { return TK_LPARENTH; }
+")"                             { return TK_RPARENTH; }
 
-"!"               { return TK_EXCLAM; }
-"-"               { return TK_MINUSU; }
-"+"               {return TK_PLUSU} 
+"!"                             { return TK_EXCLAM; }
+"-"                             { return TK_MINUS; }
+"+"                             {return TK_PLUS} 
 
 
 [ \t\r\n]+        { /* ignore */ }
