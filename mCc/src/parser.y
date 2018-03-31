@@ -26,6 +26,10 @@ void mCc_parser_error();
 
 %token END 0 "EOF"
 
+%token <char>	ALPHA		"alpha"
+%token <char>	ALPHA_NUM	"alpha or number"
+%token <int>	DIGIT		"digit number"
+%token <char*> IDENTIFIER "identifier"
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
 %token <bool>		BOOL_LITERAL	"boolean literal"
@@ -47,9 +51,15 @@ void mCc_parser_error();
 %token OR "||"
 %token EQUAL "=="
 %token UNEQUAL "!="
+%token MINUSU "-"
+%token PLUSU "+"
+%token EXCLAM "!"
 
-
+%type <enum mCc_ast_unary_op>  unary_op
 %type <enum mCc_ast_binary_op> binary_op
+%type <enum mCc_ast_binary_add_op> add_op
+%type <enum mCc_ast_binary_mul_op> mul_op
+
 
 %type <struct mCc_ast_expression *> expression single_expr
 %type <struct mCc_ast_literal *> literal
@@ -66,6 +76,12 @@ void mCc_parser_error();
 toplevel : expression { *result = $1; }
          ;
 
+/* unary operators */
+
+unary_op  : MINUSU { $$ = MCC_AST_UNARY_OP_MINUS; }
+		  | PLUSU { $$ = MCC_AST_UN}
+		  | EXCLAM { $$ = MCC_AST_UNARY_OP_EXCLAM; }
+		;
 binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
           | MINUS { $$ = MCC_AST_BINARY_OP_SUB; }
           | ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
@@ -78,9 +94,15 @@ binary_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
 		  | OR { $$ = MCC_AST_BINARY_OP_OR; }
 		  | EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
 		  | UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
-;
-
           ;
+
+add_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
+       | MINUS { $$ = MCC_AST_BINARY_OP_SUB; }
+       ;
+       
+mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
+       | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
+;
 
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
             | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
@@ -88,6 +110,7 @@ single_expr : literal                         { $$ = mCc_ast_new_expression_lite
 
 expression : single_expr                      { $$ = $1;                                           }
            | single_expr binary_op expression { $$ = mCc_ast_new_expression_binary_op($2, $1, $3); }
+		   | single_expr unary_op expression { $$ = mCc_ast_new_expression_unary_op($2,$1);}
            ;
 
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }

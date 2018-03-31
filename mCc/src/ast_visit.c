@@ -39,6 +39,11 @@ void mCc_ast_visit_expression(struct mCc_ast_expression *expression,
 		visit_if_post_order(expression, visitor->expression_literal, visitor);
 		break;
 
+	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
+		visit_if_pre_order(expression, visitor-> expression_unary_op, visitor);
+		mCc_ast_visit_expression(expression->rhs,visitor);
+		visit_if_post_order(expression,visitor->expression_unary_op,visitor);
+
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 		visit_if_pre_order(expression, visitor->expression_binary_op, visitor);
 		mCc_ast_visit_expression(expression->lhs, visitor);
@@ -72,6 +77,26 @@ void mCc_ast_visit_literal(struct mCc_ast_literal *literal,
 	case MCC_AST_LITERAL_TYPE_FLOAT:
 		visit(literal, visitor->literal_float, visitor);
 		break;
+
+	case MCC_AST_LITERAL_TYPE_BOOL:
+		visit(literal, visitor->literal_bool,visitor );
+
+	case MCC_AST_LITERAL_TYPE_ALPHA:
+		visit(literal, visitor->literal_alpha, visitor);
+		break;
+
+	case MCC_AST_LITERAL_TYPE_ALPHA_NUM:
+		visit(literal, visitor->literal_alpha_num, visitor);
+		break;
+
+	case MCC_AST_LITERAL_TYPE_DIGIT:
+		visit(literal, visitor->literal_digit, visitor);
+		break;
+
+	case MCC_AST_LITERAL_TYPE_IDENTIFIER:
+		visit(literal, visitor->literal_identifier, visitor);
+		break;
+
 	}
 
 	visit_if_post_order(literal, visitor->literal, visitor);

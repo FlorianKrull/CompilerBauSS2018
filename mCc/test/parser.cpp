@@ -356,3 +356,26 @@ TEST(Parser, Bool_1)
 
 	mCc_ast_delete_expression(expr);
 }
+TEST(Parser, Unary_1)
+{
+	const char input[] = " -5";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto expr = result.expression;
+
+	// root
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_UNARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_UNARY_OP_MINUS, expr -> op);
+
+	// root -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
+
+	//root -> rhs -> literal 
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->rhs->literal->type);
+	ASSERT_EQ(1,expr->rhs->literal->i_value);
+
+	mCc_ast_delete_expression(expr);
+}

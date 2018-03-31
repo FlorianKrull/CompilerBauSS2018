@@ -30,12 +30,14 @@ struct mCc_ast_visitor {
 
 	mCc_ast_visit_expression_cb expression;
 	mCc_ast_visit_expression_cb expression_literal;
+	mCc_ast_visit_expression_cb expression_unary_op;
 	mCc_ast_visit_expression_cb expression_binary_op;
 	mCc_ast_visit_expression_cb expression_parenth;
 
 	mCc_ast_visit_literal_cb literal;
 	mCc_ast_visit_literal_cb literal_int;
 	mCc_ast_visit_literal_cb literal_float;
+	mCc_ast_visit_literal_cb literal_bool;
 };
 
 void mCc_ast_visit_expression(struct mCc_ast_expression *expression,

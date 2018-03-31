@@ -25,6 +25,16 @@ bool_literal	"true"|"false"
 
 {bool_literal}	  { yylval->TK_BOOL_LITERAL = strcmp(yytext,"false"); return TK_BOOL_LITERAL; }
 
+{identifier}	{yylval->TK_IDENTIFIER = strdup(yytext);	return TK_IDENTIFIER;}
+
+{alpha}			{yylval->TK_ALPHA = strdup(yytext);	return TK_ALPHA;}
+
+{alpha_num}		{yylval->TK_ALPHA_NUM = strdup(yytext);	return TK_ALPHA_NUM;}
+
+{digit}			{yylval->TK_DIGIT = atoi(yytext); return TK_DIGIT;}
+
+
+
 "+"							  { return TK_PLUS; }
 "-"								{ return TK_MINUS; }
 "*"								{ return TK_ASTER; }
@@ -41,14 +51,9 @@ bool_literal	"true"|"false"
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
 
-"/*"            {return TK_BEGINCOM; }
-"*/"            {return TK_ENDCOM; }
-
-"bool"          {return TK_BOOL; }
-"int"           {return TK_INT; }
-"float"         {return TK_FLOAT;}
-"string"        {return TK_STRING; }
-
+"!"               { return TK_EXCLAM; }
+"-"               { return TK_MINUSU; }
+"+"               {return TK_PLUSU} 
 
 
 [ \t\r\n]+        { /* ignore */ }

@@ -31,6 +31,11 @@ struct mCc_ast_node {
 
 /* --------------------------------------------------------------- Operators */
 
+enum mCc_ast_unary_op {
+	MCC_AST_UNARY_OP_MINUS,
+	MCC_AST_UNARY_OP_EXCLAM,
+};
+
 enum mCc_ast_binary_op {
 	MCC_AST_BINARY_OP_ADD,
 	MCC_AST_BINARY_OP_SUB,
@@ -50,6 +55,7 @@ enum mCc_ast_binary_op {
 
 enum mCc_ast_expression_type {
 	MCC_AST_EXPRESSION_TYPE_LITERAL,
+	MCC_AST_EXPRESSION_TYPE_UNARY_OP,
 	MCC_AST_EXPRESSION_TYPE_BINARY_OP,
 	MCC_AST_EXPRESSION_TYPE_PARENTH,
 };
@@ -76,6 +82,10 @@ struct mCc_ast_expression {
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_literal(struct mCc_ast_literal *literal);
+
+struct mCc_ast_expression *
+mCc_ast_new_expression_unary_op(enum mCc_ast_unary_op op,
+								struct mCc_ast_expression *rhs);
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_binary_op(enum mCc_ast_binary_op op,
