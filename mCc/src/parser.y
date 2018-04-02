@@ -50,6 +50,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_op> binary_op
 %type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_mul_op> mul_op
+%type <enum mCc_ast_binary_compare_op> compare_op
 
 %type <struct mCc_ast_expression *> expression term single_expr
 %type <struct mCc_ast_literal *> literal
@@ -61,14 +62,17 @@ void mCc_parser_error();
 toplevel : expression { *result = $1; }
          ;
 
-binary_op : 		  GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
-					| SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
-					| GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
-					| SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
-					| AND { $$ = MCC_AST_BINARY_OP_AND; }
+binary_op :
+					  AND { $$ = MCC_AST_BINARY_OP_AND; }
 					| OR { $$ = MCC_AST_BINARY_OP_OR; }
-					| EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
-					| UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
+          ;
+
+compare_op : GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
+          | SMALLER { $$ = MCC_AST_BINARY_OP_SMT; }
+          | GREATER_EQUAL { $$ = MCC_AST_BINARY_OP_GRE; }
+          | SMALLER_EQUAL { $$ = MCC_AST_BINARY_OP_SME; }
+          | EQUAL { $$ = MCC_AST_BINARY_OP_EQ; }
+          | UNEQUAL { $$ = MCC_AST_BINARY_OP_UEQ; }
           ;
 
 add_op : PLUS  { $$ = MCC_AST_BINARY_OP_ADD; }
@@ -89,6 +93,7 @@ term : single_expr				{ $$ = $1; }
 
 expression : term                    { $$ = $1;                                           }
            | expression add_op term  { $$ = mCc_ast_new_expression_add_op($2, $1, $3); }
+           | expression compare_op expression { $$ = mCc_ast_new_expression_compare_op($2, $1, $3); }
            ;
 
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }

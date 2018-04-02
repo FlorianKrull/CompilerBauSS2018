@@ -2,7 +2,7 @@
 
 #include "mCc/ast.h"
 #include "mCc/parser.h"
-/*
+
 TEST(Parser, BinaryOp_1)
 {
 	const char input[] = "192 + 3.14";
@@ -78,7 +78,7 @@ TEST(Parser, NestedExpression_1)
 
 	mCc_ast_delete_expression(expr);
 }
-*/
+
 TEST(Parser, NestedExpression_2)
 {
 	const char input[] = "-192 + 3.14 * 42";
@@ -124,7 +124,7 @@ TEST(Parser, NestedExpression_2)
 
 	mCc_ast_delete_expression(expr);
 }
-/*
+
 TEST(Parser, MissingClosingParenthesis_1)
 {
 	const char input[] = "(42";
@@ -327,7 +327,7 @@ TEST(Parser, Equal_1)
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
 	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->op);
 
-		// root -> lhs
+	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
 
 	// root -> lhs -> literal
@@ -340,6 +340,52 @@ TEST(Parser, Equal_1)
 	// root -> rhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->rhs->literal->type);
 	ASSERT_EQ(2, expr->rhs->literal->i_value);
+
+	mCc_ast_delete_expression(expr);
+}
+
+TEST(Parser, Equal_2)
+{
+	const char input[] = "1 - 2 == 1";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto expr = result.expression;
+
+	//root
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->op);
+
+	// root -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
+
+	// root -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->rhs->literal->type);
+	ASSERT_EQ(1, expr->lhs->literal->i_value);
+
+	// root -> lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->lhs->type);
+
+	auto subexpr = expr->lhs;
+
+	// subexpr
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_SUB, subexpr->op);
+
+	// subexpr -> lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->lhs->type);
+
+	// subexpr -> lhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, subexpr->lhs->literal->type);
+	ASSERT_EQ(1, subexpr->lhs->literal->i_value);
+
+	// subexpr -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->rhs->type);
+
+	// subexpr -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, subexpr->rhs->literal->type);
+	ASSERT_EQ(2, subexpr->rhs->literal->i_value);
 
 	mCc_ast_delete_expression(expr);
 }
@@ -357,7 +403,7 @@ TEST(Parser, Unequal_1)
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
 	ASSERT_EQ(MCC_AST_BINARY_OP_UEQ, expr->op);
 
-		// root -> lhs
+	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
 
 	// root -> lhs -> literal
@@ -433,4 +479,4 @@ TEST(Parser, Identifier_1)
 
 	mCc_ast_delete_expression(expr);
 }
-*/
+

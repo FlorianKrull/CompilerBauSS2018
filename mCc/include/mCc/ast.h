@@ -32,13 +32,16 @@ struct mCc_ast_node {
 /* --------------------------------------------------------------- Operators */
 
 enum mCc_ast_binary_op {
-	MCC_AST_BINARY_OP_SMT,
+	MCC_AST_BINARY_OP_AND,
+	MCC_AST_BINARY_OP_OR,
+};
+
+enum mCc_ast_binary_compare_op {
+  MCC_AST_BINARY_OP_SMT,
 	MCC_AST_BINARY_OP_GRT,
 	MCC_AST_BINARY_OP_GRE,
 	MCC_AST_BINARY_OP_SME,
-	MCC_AST_BINARY_OP_AND,
-	MCC_AST_BINARY_OP_OR,
-	MCC_AST_BINARY_OP_EQ,
+  MCC_AST_BINARY_OP_EQ,
 	MCC_AST_BINARY_OP_UEQ,
 };
 
@@ -82,6 +85,9 @@ struct mCc_ast_expression {
 
 				/* MCC_AST_EXPRESSION_TYPE_MUL_OP */
 				enum mCc_ast_binary_mul_op mul_op;
+
+        /* MCC_AST_EXPRESSION_TYPE_COMPARE_OP */
+				enum mCc_ast_binary_compare_op compare_op;
 			};
 			struct mCc_ast_expression *lhs;
 			struct mCc_ast_expression *rhs;
@@ -109,6 +115,12 @@ struct mCc_ast_expression *
 mCc_ast_new_expression_mul_op(enum mCc_ast_binary_mul_op mul_op,
                                  struct mCc_ast_expression *lhs,
                                  struct mCc_ast_expression *rhs);
+
+struct mCc_ast_expression *
+mCc_ast_new_expression_compare_op(enum mCc_ast_binary_compare_op compare_op,
+                                 struct mCc_ast_expression *lhs,
+                                 struct mCc_ast_expression *rhs);
+
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_parenth(struct mCc_ast_expression *expression);
