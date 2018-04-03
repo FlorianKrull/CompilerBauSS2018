@@ -11,6 +11,7 @@ const char *mCc_ast_print_unary_op(enum mCc_ast_unary_op op)
 	switch (op) {
 		case MCC_AST_UNARY_OP_EXCLAM: return "!";
 		case MCC_AST_UNARY_OP_MINUS: return "-";
+		case MCC_AST_UNARY_OP_PLUS: return "+";
 	}
 
 	return "unknown unary operator";
@@ -86,6 +87,21 @@ static void print_dot_expression_literal(struct mCc_ast_expression *expression,
 	FILE *out = data;
 	print_dot_node(out, expression, "expr: lit");
 	print_dot_edge(out, expression, expression->literal, "literal");
+}
+
+static void
+print_dot_expression_unary_op(struct mCc_ast_expression *expression,
+							  void *data)
+{
+	assert(expression);
+	assert(data);
+
+	char label[LABEL_SIZE] = { 0 };
+	snprintf(label, sizeof(label),"expr : %s". mCc_ast_print_unary_op(expression->op));
+
+	FILE *out = data;
+	print_dot_node(out,expression,label);
+	print_dot_edge(out,expression-> rhs."rhs");
 }
 
 static void

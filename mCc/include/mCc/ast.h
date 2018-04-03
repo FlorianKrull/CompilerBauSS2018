@@ -38,9 +38,6 @@ enum mCc_ast_unary_op {
 };
 
 enum mCc_ast_binary_op {
-	MCC_AST_BINARY_OP_ADD,
-	MCC_AST_BINARY_OP_SUB,
-	MCC_AST_BINARY_OP_MUL,
 	MCC_AST_BINARY_OP_DIV,
 	MCC_AST_BINARY_OP_SMT,
 	MCC_AST_BINARY_OP_GRT,
@@ -51,6 +48,17 @@ enum mCc_ast_binary_op {
 	MCC_AST_BINARY_OP_EQ,
 	MCC_AST_BINARY_OP_UEQ,
 };
+
+enum mCc_ast_binary_add_op {
+ 	MCC_AST_BINARY_OP_ADD,
+ 	MCC_AST_BINARY_OP_SUB,
+};
+ 
+/* For precedence cascade technique */
+enum mCc_ast_binary_mul_op {
+ 	MCC_AST_BINARY_OP_MUL,
+ 	MCC_AST_BINARY_OP_DIV,
+ };
 
 /* ------------------------------------------------------------- Expressions */
 
@@ -77,9 +85,20 @@ struct mCc_ast_expression {
 
 		/* MCC_AST_EXPRESSION_TYPE_BINARY_OP */
 		struct {
-			enum mCc_ast_binary_op op;
+			union {
+				/* MCC_AST_EXPRESSION_TYPE_BINARY_OP */
+				enum mCc_ast_binary_op op;
+
+ 				/* MCC_AST_EXPRESSION_TYPE_ADD_OP */
+				enum mCc_ast_binary_add_op add_op;
+
+				/* MCC_AST_EXPRESSION_TYPE_MUL_OP */
+				enum mCc_ast_binary_mul_op mul_op;
+				};
 			struct mCc_ast_expression *lhs;
 			struct mCc_ast_expression *rhs;
+			};
+
 		};
 
 		/* MCC_AST_EXPRESSION_TYPE_PARENTH */
@@ -155,7 +174,21 @@ struct mCc_ast_literal *mCc_ast_new_literal_float(double value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value);
 
+struct mCc_ast_literal *mCc_ast_new_literal_string(char *value);
+
 void mCc_ast_delete_literal(struct mCc_ast_literal *literal);
+
+/* ---------------------------------------------------------------- Data Types */
+
+enum mCc_ast_data_type {
+
+	MCC_AST_DATA_TYPE_INT,
+	MCC_AST_DATA_TYPE_FLOAT,
+	MCC_AST_DATA_TYPE_BOOL,
+	MCC_AST_DATA_TYPE_STRING
+
+};
+
 
 #ifdef __cplusplus
 }

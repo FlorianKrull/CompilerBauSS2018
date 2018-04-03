@@ -33,6 +33,20 @@ void mCc_parser_error();
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
 %token <bool>		BOOL_LITERAL	"boolean literal"
+%token <const char*> STRING_LITERAL "string literal"
+
+%token INT_TYPE "integer type"
+%token FLOAT_TYPE "float type"
+%token STRING_TYPE "string type"
+%token BOOL_TYPE "bool type"
+%token VOID_TYPE "void type"
+
+%token IF_IDENTIFIER    "if"
+%token ELSE_IDENTIFIER  "else"
+%token RETURN_IDENTIFIER "return"
+%token WHILE_IDENTIFIER "while"
+
+
 
 /* Rules section delimited by the markers %% */
 
@@ -51,8 +65,6 @@ void mCc_parser_error();
 %token OR "||"
 %token EQUAL "=="
 %token UNEQUAL "!="
-%token MINUSU "-"
-%token PLUSU "+"
 %token EXCLAM "!"
 
 %type <enum mCc_ast_unary_op>  unary_op
@@ -61,7 +73,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_mul_op> mul_op
 
 
-%type <struct mCc_ast_expression *> expression single_expr
+%type <struct mCc_ast_expression *> expression term single_expr
 %type <struct mCc_ast_literal *> literal
 
 /* Precendence assignment. Priority is sorted from low to high*/
@@ -104,18 +116,28 @@ mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
        | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
 ;
 
-single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
-            | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
+single_expr : literal                         	{ $$ = mCc_ast_new_expression_literal($1); }
+			| unary_op INT_LITERAL 				{ $$ = mCc_ast_new_expression_unary_op($1, mCc_ast_new_expression_literal())}
+            | LPARENTH expression RPARENTH    	{ $$ = mCc_ast_new_expression_parenth($2); }
             ;
+
+term : single_expr				{ $$ = $1; }
+	 | term mul_op single_expr	{ $$ = mCc_ast_new_expression_mul_op($2, $1, $3); }
+	 ;
 
 expression : single_expr                      { $$ = $1;                                           }
            | single_expr binary_op expression { $$ = mCc_ast_new_expression_binary_op($2, $1, $3); }
 		   | single_expr unary_op expression { $$ = mCc_ast_new_expression_unary_op($2,$1);}
            ;
 
+expression : term                    { $$ = $1;                                           }
+	       | expression add_op term  { $$ = mCc_ast_new_expression_add_op($2, $1, $3); }
+		   ;
+
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }
-				| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
+		| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
+		| STRING_LITERAL {$$ = mCc_ast_new_literal_string($1);}
         ;
 
 %%

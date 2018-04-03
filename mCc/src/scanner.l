@@ -13,25 +13,57 @@
 #define YYSTYPE MCC_PARSER_STYPE
 %}
 
+alpha [a-zA-Z]
+alpha_num {alpha} ([0-9]*{alpha}*)
 int_literal   -?[0-9]+
 float_literal -?[0-9]+\.[0-9]+
 bool_literal	"true"|"false"
+string_literal \"(\\.|[^\\])*\"
+identfier [a-zA-Z]+[0-9a-zA-Z]*
+whitespace [\r\t\v\f]
+newline \n
+
+int_type int
+float_type float
+bool_type bool
+string_type string
+void_type void
+
+if_identifier if
+else_identifier else
+return_identifier return
+while_identifier while
+
 
 %%
 
-{int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
+{int_type}          {return TK_INT_TYPE;}
 
-{float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
+{float_type}        {return TK_FLOAT_TYPE;}
 
-{bool_literal}	  { yylval->TK_BOOL_LITERAL = strcmp(yytext,"false"); return TK_BOOL_LITERAL; }
+{bool_type}         {return TK_BOOL_TYPE;}
 
-{identifier}	{yylval->TK_IDENTIFIER = strdup(yytext);	return TK_IDENTIFIER;}
+{string_type}       {return TK_STRING_TYPE;}
 
-{alpha}			{yylval->TK_ALPHA = strdup(yytext);	return TK_ALPHA;}
+{void_type}         {return TK_VOID_TYPE;}
 
-{alpha_num}		{yylval->TK_ALPHA_NUM = strdup(yytext);	return TK_ALPHA_NUM;}
+{if_identifier}     {return TK_IF_IDENTIFIER;}
 
-{digit}			{yylval->TK_DIGIT = atoi(yytext); return TK_DIGIT;}
+{else_identifier}   {return TK_ELSE_IDENTIFIER;}
+
+{return_identifier} {return TK_RETURN_IDENTIFIER;}
+
+{while_identifier}  {return TK_WHILE_IDENTIFIER;}  
+
+{int_literal}       { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
+
+{float_literal}     { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
+
+{bool_literal}	    { yylval->TK_BOOL_LITERAL = strcmp(yytext,"false"); return TK_BOOL_LITERAL; }
+
+{string_literal}    {yylval->TK_STRING = strncpy(yytext[1],strlen(yytext)-2);return TK_STRING_LITERAL;)}
+
+
 
 
 
@@ -52,8 +84,6 @@ bool_literal	"true"|"false"
 ")"                             { return TK_RPARENTH; }
 
 "!"                             { return TK_EXCLAM; }
-"-"                             { return TK_MINUS; }
-"+"                             {return TK_PLUS} 
 
 
 [ \t\r\n]+        { /* ignore */ }
