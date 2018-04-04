@@ -55,6 +55,13 @@ bool_literal	"true"|"false"
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
 
+";"				{return TK_SEMICOLON; }
+"{"				{return TK_LBRACKET; }
+"}"				{return TK_RBRACKET; }
+"if"			{return TK_IF; }
+"else"			{return TK_ELSE; }
+"while"			{return TK_WHILE; }
+"return"		{return TK_RETURN; }
 
 [ \t\r\n]+        { /* ignore */ }
 

@@ -2,7 +2,8 @@
 
 %define api.pure full
 %lex-param   {void *scanner}
-%parse-param {void *scanner} {struct mCc_ast_expression** result}
+%parse-param {void *scanner} {struct mCc_ast_expression** expr_result} 
+							 {struct mCc_ast_statement** stmt_result}
 
 %define parse.trace
 %define parse.error verbose
@@ -33,6 +34,13 @@ void mCc_parser_error();
 
 %token LPARENTH "("
 %token RPARENTH ")"
+%token SEMICOLON ";"
+%token LBRACKET "{"
+%token RBRACKET "}"
+%token IF		"if"
+%token ELSE		"else"
+%token WHILE	"while"
+%token RETURN	"return"
 
 %token PLUS  "+"
 %token MINUS "-"
@@ -59,6 +67,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_compare_op> compare_op
 
+%type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt  
 %type <struct mCc_ast_expression *> expression term term_2 single_expr
 %type <struct mCc_ast_literal *> literal
 
@@ -66,7 +75,8 @@ void mCc_parser_error();
 
 %%
 
-toplevel : expression { *result = $1; }
+toplevel : expression { *expr_result = $1; }
+		 | statement  { *stmt_result = $1; }
          ;
 
 binary_op :
@@ -116,6 +126,30 @@ literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
 				| IDENTIFIER	{ $$ = mCc_ast_new_literal_identifier($1); }
         ;
 
+/* Statements */
+
+statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
+		  | if_stmt					{ $$ = $1; }
+		  | while_stmt				{ $$ = $1; }
+		  | compound_stmt			{ $$ = $1; }
+		  | ret_stmt				{ $$ = $1; }
+		  ;
+		  
+compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound_1(); }
+			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound_2($2); }
+			  ;
+			  
+if_stmt : IF LPARENTH expression RPARENTH statement 						{$$ = mCc_ast_new_statement_if($3, $5); }
+		| IF LPARENTH expression RPARENTH compound_stmt ELSE compound_stmt 	{$$ = mCc_ast_new_statement_if_else($3, $5, $7); }
+		;
+		
+while_stmt : WHILE LPARENTH expression RPARENTH statement {$$ = mCc_ast_new_statement_while($3, $5); }
+		   ;
+		   
+ret_stmt : RETURN SEMICOLON				{ $$ = mCc_ast_new_statement_return(); }
+		 | RETURN expression SEMICOLON  { $$ = mCc_ast_new_statement_return_2($2); }
+		 ;
+
 %%
 
 #include <assert.h>
@@ -155,7 +189,7 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		.status = MCC_PARSER_STATUS_OK,
 	};
 
-	if (yyparse(scanner, &result.expression) != 0) {
+	if ((yyparse(scanner, &result.expression, &result.statement) != 0)) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 

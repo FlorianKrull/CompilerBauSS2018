@@ -228,3 +228,136 @@ void mCc_ast_delete_literal(struct mCc_ast_literal *literal)
 	assert(literal);
 	free(literal);
 }
+
+/* ---------------------------------------------------------------- Statements */
+struct mCc_ast_statement *
+mCc_ast_new_statement_expression(struct mCc_ast_expression *expression)
+{
+	assert(expression);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_EXPRESSION;
+	stmt->expression = expression;
+	return stmt;
+}
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_compound_1()
+{
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND;
+
+	return stmt;
+}
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_compound_2(struct mCc_ast_statement *statement)
+{
+	assert(statement);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND;
+	stmt->statement = statement;
+	return stmt;
+}
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_if(struct mCc_ast_expression *expression,
+		struct mCc_ast_statement *statement)
+{
+	assert(expression);
+	assert(statement);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_IF;
+	stmt->expr = expression;
+	stmt->stmt = statement;
+	return stmt;
+}
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_if_else(struct mCc_ast_expression *expression,
+		struct mCc_ast_statement *compound_1, struct mCc_ast_statement *compound_2)
+{
+	assert(expression);
+	assert(compound_1);
+	assert(compound_2);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_IF_ELSE;
+	stmt->expr_1 = expression;
+	stmt->compount_stmt_1 = compound_1;
+	stmt->compount_stmt_2 = compound_2;
+	return stmt;
+}
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_while(struct mCc_ast_expression *expression,
+		struct mCc_ast_statement *statement)
+{
+	assert(expression);
+	assert(statement);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_WHILE;
+	stmt->expr = expression;
+	stmt->stmt = statement;
+	return stmt;
+}
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_return()
+{
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_RETURN;
+	return stmt;
+}
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression)
+{
+	assert(expression);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_RETURN;
+	stmt->expression = expression;
+	return stmt;
+}
+
+void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
+{
+	assert(statement);
+	free(statement);
+}

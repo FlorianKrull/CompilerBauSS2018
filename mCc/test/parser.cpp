@@ -480,3 +480,100 @@ TEST(Parser, Identifier_1)
 	mCc_ast_delete_expression(expr);
 }
 
+/* ------------------------Statements */
+
+TEST(Parser, Stmt_Expression_1)
+{
+	const char input[] = "my_var + 1;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_EXPRESSION, stmt->type);
+
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, Stmt_Compound_1)
+{
+	const char input[] = "{my_var + 1;}";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
+
+	//root->statement
+	auto sub_stmt = stmt->statement;
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_EXPRESSION, sub_stmt->type);
+
+	mCc_ast_delete_statement(sub_stmt);
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, If_1)
+{
+	const char input[] = "if (my_var > 0) my_var + 1;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_IF, stmt->type);
+
+	//root->expr
+	auto expr = stmt->expr_1;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_GRT, expr->compare_op);
+
+	mCc_ast_delete_expression(expr);
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, While_1)
+{
+	const char input[] = "while (my_var > 0) my_var + 1;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_WHILE, stmt->type);
+
+	//root->expr
+	auto expr = stmt->expr;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_GRT, expr->compare_op);
+
+	mCc_ast_delete_expression(expr);
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, Return_1)
+{
+	const char input[] = "return 0;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_RETURN, stmt->type);
+
+	mCc_ast_delete_statement(stmt);
+}
+
+
