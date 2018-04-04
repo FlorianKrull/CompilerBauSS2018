@@ -14,7 +14,7 @@ TEST(Parser, BinaryOp_1)
 
 	// root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->add_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -44,7 +44,7 @@ TEST(Parser, NestedExpression_1)
 
 	// root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_MUL, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_MUL, expr->mul_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -60,7 +60,7 @@ TEST(Parser, NestedExpression_1)
 
 	// subexpr
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, subexpr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, subexpr->add_op);
 
 	// subexpr -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->lhs->type);
@@ -90,7 +90,7 @@ TEST(Parser, NestedExpression_2)
 
 	// root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->add_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -106,7 +106,7 @@ TEST(Parser, NestedExpression_2)
 
 	// subexpr
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_MUL, subexpr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_MUL, subexpr->mul_op);
 
 	// subexpr -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->lhs->type);
@@ -145,7 +145,7 @@ TEST(Parser, GreaterThan_1)
 
 	// root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_GRT, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_GRT, expr->compare_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -175,7 +175,7 @@ TEST(Parser, SmallerThan_1)
 
 	// root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_SMT, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_SMT, expr->compare_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -205,7 +205,7 @@ TEST(Parser, GreaterEqual_1)
 
 	//root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_GRE, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_GRE, expr->compare_op);
 
 		// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -235,7 +235,7 @@ TEST(Parser, SmallerEqual_1)
 
 	//root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_SME, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_SME, expr->compare_op);
 
 		// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -325,7 +325,7 @@ TEST(Parser, Equal_1)
 
 	//root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->compare_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -355,7 +355,7 @@ TEST(Parser, Equal_2)
 
 	//root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->compare_op);
 
 	// root -> rhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
@@ -401,7 +401,7 @@ TEST(Parser, Unequal_1)
 
 	//root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_UEQ, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_UEQ, expr->compare_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -461,7 +461,7 @@ TEST(Parser, Identifier_1)
 
 	//root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->add_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
@@ -475,7 +475,7 @@ TEST(Parser, Identifier_1)
 
 	// root -> rhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->rhs->literal->type);
-	ASSERT_EQ(1, expr->rhs->literal->b_value);
+	ASSERT_EQ(1, expr->rhs->literal->i_value);
 
 	mCc_ast_delete_expression(expr);
 }

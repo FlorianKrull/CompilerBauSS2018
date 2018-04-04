@@ -47,9 +47,16 @@ void mCc_parser_error();
 %token EQUAL "=="
 %token UNEQUAL "!="
 
+/* To handle the precedence of operations, we grouped binary operators
+   into groups of equal precedence. This technique is called "prececence cascade".
+   We also rewrite the grammar rules so operators in the same group 
+   will be left assosiative.
+   Reference: Kenneth C. Louden, "Compiler Construction: Principles and Practice",
+   Chapter 3, 3.4.2. Precedence and Associativity
+*/
 %type <enum mCc_ast_binary_op> binary_op
-%type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_mul_op> mul_op
+%type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_compare_op> compare_op
 
 %type <struct mCc_ast_expression *> expression term single_expr

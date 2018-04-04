@@ -127,7 +127,7 @@ static void print_dot_literal_bool(struct mCc_ast_literal *literal, void *data)
 	assert(data);
 
 	char label[LABEL_SIZE] = { 0 };
-	snprintf(label, sizeof(label), "%f", literal->b_value);
+	snprintf(label, sizeof(label), "%i", literal->b_value);
 
 	FILE *out = data;
 	print_dot_node(out, literal, label);
