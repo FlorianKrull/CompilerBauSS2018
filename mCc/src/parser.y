@@ -59,7 +59,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_compare_op> compare_op
 
-%type <struct mCc_ast_expression *> expression term single_expr
+%type <struct mCc_ast_expression *> expression term term_2 single_expr
 %type <struct mCc_ast_literal *> literal
 
 %start toplevel
@@ -98,10 +98,14 @@ term : single_expr				{ $$ = $1; }
 	 | term mul_op single_expr	{ $$ = mCc_ast_new_expression_mul_op($2, $1, $3); }
 	 ;
 
-expression : term                    { $$ = $1;                                           }
-           | expression add_op term  { $$ = mCc_ast_new_expression_add_op($2, $1, $3); }
-           | expression compare_op expression { $$ = mCc_ast_new_expression_compare_op($2, $1, $3); }
+term_2 : term                    { $$ = $1;                                           }
+           | term_2 add_op term  { $$ = mCc_ast_new_expression_add_op($2, $1, $3); }
+           | term_2 compare_op term_2 { $$ = mCc_ast_new_expression_compare_op($2, $1, $3); }
            ;
+           
+expression : term_2				{ $$ = $1; }
+		   | expression binary_op term_2  { $$ = mCc_ast_new_expression_binary_op($2, $1, $3); }
+		   ;
 
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }

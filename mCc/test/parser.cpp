@@ -362,7 +362,7 @@ TEST(Parser, Equal_2)
 
 	// root -> rhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->rhs->literal->type);
-	ASSERT_EQ(1, expr->lhs->literal->i_value);
+	ASSERT_EQ(1, expr->rhs->literal->i_value);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->lhs->type);
@@ -371,7 +371,7 @@ TEST(Parser, Equal_2)
 
 	// subexpr
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_SUB, subexpr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_SUB, subexpr->add_op);
 
 	// subexpr -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->lhs->type);
@@ -431,7 +431,7 @@ TEST(Parser, Bool_1)
 
 	//root
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->op);
+	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, expr->compare_op);
 
 	// root -> lhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
