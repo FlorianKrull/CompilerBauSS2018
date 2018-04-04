@@ -272,6 +272,7 @@ mCc_ast_new_statement_compound_2(struct mCc_ast_statement *statement)
 	stmt->statement = statement;
 	return stmt;
 }
+/*
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_if(struct mCc_ast_expression *expression,
@@ -355,6 +356,7 @@ mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression)
 	stmt->expression = expression;
 	return stmt;
 }
+*/
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 {

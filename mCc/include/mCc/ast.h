@@ -229,6 +229,7 @@ mCc_ast_new_statement_compound_1();
 struct mCc_ast_statement *
 mCc_ast_new_statement_compound_2(struct mCc_ast_statement *statement);
 
+/*
 struct mCc_ast_statement *
 mCc_ast_new_statement_if(struct mCc_ast_expression *expression, struct mCc_ast_statement *statement);
 
@@ -244,6 +245,7 @@ mCc_ast_new_statement_return();
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
+*/
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
 

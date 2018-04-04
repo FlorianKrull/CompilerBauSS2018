@@ -129,16 +129,17 @@ literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
 /* Statements */
 
 statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
-		  | if_stmt					{ $$ = $1; }
-		  | while_stmt				{ $$ = $1; }
 		  | compound_stmt			{ $$ = $1; }
+/*		  | if_stmt					{ $$ = $1; }
+		  | while_stmt				{ $$ = $1; }
 		  | ret_stmt				{ $$ = $1; }
+*/		  
 		  ;
 		  
 compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound_1(); }
 			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound_2($2); }
 			  ;
-			  
+/*
 if_stmt : IF LPARENTH expression RPARENTH statement 						{$$ = mCc_ast_new_statement_if($3, $5); }
 		| IF LPARENTH expression RPARENTH compound_stmt ELSE compound_stmt 	{$$ = mCc_ast_new_statement_if_else($3, $5, $7); }
 		;
@@ -149,6 +150,7 @@ while_stmt : WHILE LPARENTH expression RPARENTH statement {$$ = mCc_ast_new_stat
 ret_stmt : RETURN SEMICOLON				{ $$ = mCc_ast_new_statement_return(); }
 		 | RETURN expression SEMICOLON  { $$ = mCc_ast_new_statement_return_2($2); }
 		 ;
+*/
 
 %%
 
