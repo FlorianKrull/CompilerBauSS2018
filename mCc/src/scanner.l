@@ -17,10 +17,12 @@ alpha			[a-zA-Z_]
 alpha_num		[a-zA-Z0-9_]
 digit			[0-9]
 identifier		[a-zA-Z_][a-zA-Z0-9_]*
-int_literal   -?[0-9]+
+int_literal     [0-9]+
 float_literal -?[0-9]+\.[0-9]+
 bool_literal	"true"|"false"
-
+string_literal \"(\\.|[^\\])*\"
+whitespace [\r\t\v\f]
+newline \n
 
 %%
 
@@ -29,6 +31,8 @@ bool_literal	"true"|"false"
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
 
 {bool_literal}	  { yylval->TK_BOOL_LITERAL = strcmp(yytext,"false"); return TK_BOOL_LITERAL; }
+
+{string_literal}    {yylval->TK_STRING_LITERAL = strdup(yytext) ;return TK_STRING_LITERAL;}
 
 {identifier}	{yylval->TK_IDENTIFIER = strdup(yytext);	return TK_IDENTIFIER;}
 
@@ -39,25 +43,29 @@ bool_literal	"true"|"false"
 {digit}			{yylval->TK_DIGIT = atoi(yytext); return TK_DIGIT;}
 
 
-"+"							  { return TK_PLUS; }
-"-"								{ return TK_MINUS; }
-"*"								{ return TK_ASTER; }
-"/"								{ return TK_SLASH; }
-">"								{ return TK_GREATER; }
-"<"								{ return TK_SMALLER; }
-">="							{ return TK_GREATER_EQUAL; }
-"<="							{ return TK_SMALLER_EQUAL; }
-"&&"							{ return TK_AND; }
-"||"							{ return TK_OR; }
-"=="							{ return TK_EQUAL; }
-"!="							{ return TK_UNEQUAL; }
+
+
+
+"+"		{ return TK_PLUS; }
+"-"		{ return TK_MINUS; }
+"*"		{ return TK_ASTER; }
+"/"		{ return TK_SLASH; }
+">"		{ return TK_GREATER; }
+"<"		{ return TK_SMALLER; }
+">="		{ return TK_GREATER_EQUAL; }
+"<="		{ return TK_SMALLER_EQUAL; }
+"&&"		{ return TK_AND; }
+"||"		{ return TK_OR; }
+"=="		{ return TK_EQUAL; }
+"!="		{ return TK_UNEQUAL; }
+"!"             { return TK_EXCLAM; }
 
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
 
-";"				{return TK_SEMICOLON; }
-"{"				{return TK_LBRACKET; }
-"}"				{return TK_RBRACKET; }
+";"		{return TK_SEMICOLON; }
+"{"		{return TK_LBRACKET; }
+"}"		{return TK_RBRACKET; }
 "if"			{return TK_IF; }
 "else"			{return TK_ELSE; }
 "while"			{return TK_WHILE; }

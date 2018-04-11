@@ -31,6 +31,12 @@ struct mCc_ast_node {
 
 /* --------------------------------------------------------------- Operators */
 
+enum mCc_ast_unary_op {
+	MCC_AST_UNARY_OP_MINUS,
+	MCC_AST_UNARY_OP_PLUS,
+	MCC_AST_UNARY_OP_EXCLAM,
+};
+
 enum mCc_ast_binary_op {
 	MCC_AST_BINARY_OP_AND,
 	MCC_AST_BINARY_OP_OR,
@@ -61,6 +67,7 @@ enum mCc_ast_binary_mul_op {
 
 enum mCc_ast_expression_type {
 	MCC_AST_EXPRESSION_TYPE_LITERAL,
+	MCC_AST_EXPRESSION_TYPE_UNARY_OP,
 	MCC_AST_EXPRESSION_TYPE_BINARY_OP,
 	MCC_AST_EXPRESSION_TYPE_PARENTH,
 };
@@ -73,6 +80,11 @@ struct mCc_ast_expression {
 		/* MCC_AST_EXPRESSION_TYPE_LITERAL */
 		struct mCc_ast_literal *literal;
 
+		/* MCC_AST_EXPRESSION_TYPE_UNARY_OP */
+		struct {
+			enum mCc_ast_unary_op unary_op;
+			struct mCc_ast_expression *u_rhs;
+		};
 
 		struct {
 			/* For precedence cascade technique */
@@ -100,6 +112,10 @@ struct mCc_ast_expression {
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_literal(struct mCc_ast_literal *literal);
+
+struct mCc_ast_expression *
+mCc_ast_new_expression_unary_op(enum mCc_ast_unary_op op,
+								struct mCc_ast_expression *rhs);
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_binary_op(enum mCc_ast_binary_op op,
@@ -137,6 +153,7 @@ enum mCc_ast_literal_type {
 	MCC_AST_LITERAL_TYPE_INT,
 	MCC_AST_LITERAL_TYPE_FLOAT,
 	MCC_AST_LITERAL_TYPE_BOOL,
+	MCC_AST_LITERAL_TYPE_STRING,
 };
 
 struct mCc_ast_literal {
@@ -163,6 +180,9 @@ struct mCc_ast_literal {
 
 		/* MCC_AST_LITERAL_TYPE_BOOL */
 		bool b_value;
+
+		/* MCC_AST_LITERAL_TYPE_STRING */
+		char *s_value;
 	};
 };
 
@@ -179,6 +199,8 @@ struct mCc_ast_literal *mCc_ast_new_literal_int(long value);
 struct mCc_ast_literal *mCc_ast_new_literal_float(double value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value);
+
+struct mCc_ast_literal *mCc_ast_new_literal_string(char *value);
 
 void mCc_ast_delete_literal(struct mCc_ast_literal *literal);
 

@@ -30,7 +30,8 @@ void mCc_parser_error();
 %token <char*>	IDENTIFIER	"identifier"
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
-%token <bool>		BOOL_LITERAL	"boolean literal"
+%token <bool>	BOOL_LITERAL	"boolean literal"
+%token <char*> STRING_LITERAL "string literal"
 
 %token LPARENTH "("
 %token RPARENTH ")"
@@ -54,6 +55,7 @@ void mCc_parser_error();
 %token OR "||"
 %token EQUAL "=="
 %token UNEQUAL "!="
+%token EXCLAM "!"
 
 /* To handle the precedence of operations, we grouped binary operators
    into groups of equal precedence. This technique is called "prececence cascade".
@@ -62,6 +64,7 @@ void mCc_parser_error();
    Reference: Kenneth C. Louden, "Compiler Construction: Principles and Practice",
    Chapter 3, 3.4.2. Precedence and Associativity
 */
+%type <enum mCc_ast_unary_op>  unary_op
 %type <enum mCc_ast_binary_op> binary_op
 %type <enum mCc_ast_binary_mul_op> mul_op
 %type <enum mCc_ast_binary_add_op> add_op
@@ -76,12 +79,16 @@ void mCc_parser_error();
 %%
 
 toplevel : expression { *expr_result = $1; }
-		 | statement  { *stmt_result = $1; }
+	 | statement  { *stmt_result = $1; }
          ;
+/* unary operators */
 
-binary_op :
-					  AND { $$ = MCC_AST_BINARY_OP_AND; }
-					| OR { $$ = MCC_AST_BINARY_OP_OR; }
+unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
+		  | PLUS { $$ = MCC_AST_UNARY_OP_PLUS;}
+		  | EXCLAM { $$ = MCC_AST_UNARY_OP_EXCLAM; }
+
+binary_op : AND { $$ = MCC_AST_BINARY_OP_AND; }
+	  | OR { $$ = MCC_AST_BINARY_OP_OR; }
           ;
 
 compare_op : GREATER { $$ = MCC_AST_BINARY_OP_GRT; }
@@ -101,6 +108,7 @@ mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
        ;
        
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
+			| unary_op INT_LITERAL 			  { $$ = mCc_ast_new_expression_unary_op($1, mCc_ast_new_expression_literal(mCc_ast_new_literal_int($2)));}
             | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
             ;
             
@@ -119,18 +127,19 @@ expression : term_2				{ $$ = $1; }
 
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }
-				| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
-				| ALPHA { $$ = mCc_ast_new_literal_alpha($1);}
-				| ALPHA_NUM { $$ = mCc_ast_new_literal_alpha_num($1); }
-				| DIGIT	{ $$ = mCc_ast_new_literal_digit($1);}
-				| IDENTIFIER	{ $$ = mCc_ast_new_literal_identifier($1); }
+	| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
+	| STRING_LITERAL {$$ = mCc_ast_new_literal_string($1);}
+	| ALPHA { $$ = mCc_ast_new_literal_alpha($1);}
+	| ALPHA_NUM { $$ = mCc_ast_new_literal_alpha_num($1); }
+	| DIGIT	{ $$ = mCc_ast_new_literal_digit($1);}
+	| IDENTIFIER	{ $$ = mCc_ast_new_literal_identifier($1); }
         ;
 
 /* Statements */
 
 statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | compound_stmt			{ $$ = $1; }
-/*		  | if_stmt					{ $$ = $1; }
+/*		  | if_stmt				{ $$ = $1; }
 		  | while_stmt				{ $$ = $1; }
 		  | ret_stmt				{ $$ = $1; }
 */		  

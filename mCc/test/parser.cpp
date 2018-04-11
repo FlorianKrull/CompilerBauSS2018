@@ -468,7 +468,7 @@ TEST(Parser, Identifier_1)
 
 	// root -> lhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, expr->lhs->literal->type);
-//	ASSERT_EQ("x", expr->lhs->literal->id_value);
+//	ASSERT_EQ("my_var", expr->lhs->literal->id_value);
 
 	// root -> rhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
@@ -476,6 +476,52 @@ TEST(Parser, Identifier_1)
 	// root -> rhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->rhs->literal->type);
 	ASSERT_EQ(1, expr->rhs->literal->i_value);
+
+	mCc_ast_delete_expression(expr);
+}
+
+TEST(Parser, String_1)
+{
+	const char input[] = "x == \"This is a string\"";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto expr = result.expression;
+
+	//root
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
+
+	// root -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
+
+	// root -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_STRING, expr->rhs->literal->type);
+//	ASSERT_EQ("This is a string", expr->rhs->literal->s_value);
+
+	mCc_ast_delete_expression(expr);
+}
+
+TEST(Parser, Unary_1)
+{
+	const char input[] = " -5";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto expr = result.expression;
+
+	// root
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_UNARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_UNARY_OP_MINUS, expr->unary_op);
+
+	// root -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->u_rhs->type);
+
+	//root -> rhs -> literal 
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->u_rhs->literal->type);
+	ASSERT_EQ(5,expr->u_rhs->literal->i_value);
 
 	mCc_ast_delete_expression(expr);
 }
