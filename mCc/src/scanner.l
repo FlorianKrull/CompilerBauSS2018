@@ -18,7 +18,7 @@ alpha_num		[a-zA-Z0-9_]
 digit			[0-9]
 identifier		[a-zA-Z_][a-zA-Z0-9_]*
 int_literal     [0-9]+
-float_literal -?[0-9]+\.[0-9]+
+float_literal   [0-9]+\.[0-9]+
 bool_literal	"true"|"false"
 string_literal \"(\\.|[^\\])*\"
 whitespace [\r\t\v\f]
@@ -60,16 +60,24 @@ newline \n
 "!="		{ return TK_UNEQUAL; }
 "!"             { return TK_EXCLAM; }
 
-"("               { return TK_LPARENTH; }
-")"               { return TK_RPARENTH; }
-
+"("     { return TK_LPARENTH; }
+")"     { return TK_RPARENTH; }
 ";"		{return TK_SEMICOLON; }
 "{"		{return TK_LBRACKET; }
 "}"		{return TK_RBRACKET; }
+"["		{ return TK_LSQUARE_BRACKET; }
+"]"		{ return TK_RSQUARE_BRACKET; }
+
 "if"			{return TK_IF; }
 "else"			{return TK_ELSE; }
 "while"			{return TK_WHILE; }
 "return"		{return TK_RETURN; }
+
+"int"			{ return TK_INT_TYPE; }
+"float"			{ return TK_FLOAT_TYPE; }
+"bool"			{ return TK_BOOL_TYPE; }
+"string" 		{ return TK_STRING_TYPE; }
+"void" 			{ return TK_VOID_TYPE; }
 
 [ \t\r\n]+        { /* ignore */ }
 

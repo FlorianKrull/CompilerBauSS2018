@@ -4,6 +4,7 @@
 %lex-param   {void *scanner}
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result} 
 							 {struct mCc_ast_statement** stmt_result}
+							 {struct mCc_ast_var_action** var_result}
 
 %define parse.trace
 %define parse.error verbose
@@ -35,9 +36,12 @@ void mCc_parser_error();
 
 %token LPARENTH "("
 %token RPARENTH ")"
+%token LSQUARE_BRACKET "["
+%token RSQUARE_BRACKET "]"
 %token SEMICOLON ";"
 %token LBRACKET "{"
 %token RBRACKET "}"
+
 %token IF		"if"
 %token ELSE		"else"
 %token WHILE	"while"
@@ -57,6 +61,13 @@ void mCc_parser_error();
 %token UNEQUAL "!="
 %token EXCLAM "!"
 
+%token INT_TYPE "int"
+%token FLOAT_TYPE "float"
+%token BOOL_TYPE "bool"
+%token STRING_TYPE "string"
+%token VOID_TYPE "void"
+
+
 /* To handle the precedence of operations, we grouped binary operators
    into groups of equal precedence. This technique is called "prececence cascade".
    We also rewrite the grammar rules so operators in the same group 
@@ -70,6 +81,9 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_compare_op> compare_op
 
+%type <enum mCc_ast_var_type>var_type
+
+%type <struct mCc_ast_var_action *>declaration
 %type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt  
 %type <struct mCc_ast_expression *> expression term term_2 single_expr
 %type <struct mCc_ast_literal *> literal
@@ -79,14 +93,17 @@ void mCc_parser_error();
 %%
 
 toplevel : expression { *expr_result = $1; }
-	 | statement  { *stmt_result = $1; }
+	 
+	 | declaration {*var_result = $1; }
          ;
+         
 /* unary operators */
 
 unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
 		  | PLUS { $$ = MCC_AST_UNARY_OP_PLUS;}
 		  | EXCLAM { $$ = MCC_AST_UNARY_OP_EXCLAM; }
 
+/* binary operators */
 binary_op : AND { $$ = MCC_AST_BINARY_OP_AND; }
 	  | OR { $$ = MCC_AST_BINARY_OP_OR; }
           ;
@@ -107,6 +124,9 @@ mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
        | SLASH { $$ = MCC_AST_BINARY_OP_DIV; }
        ;
        
+/* Type */
+	 
+/* Expressions */
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
 			| unary_op INT_LITERAL 			  { $$ = mCc_ast_new_expression_unary_op($1, mCc_ast_new_expression_literal(mCc_ast_new_literal_int($2)));}
             | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
@@ -123,18 +143,39 @@ term_2 : term                    { $$ = $1;                                     
            
 expression : term_2				{ $$ = $1; }
 		   | expression binary_op term_2  { $$ = mCc_ast_new_expression_binary_op($2, $1, $3); }
+
 		   ;
 
+/* Literal */
 literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }
-	| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
-	| STRING_LITERAL {$$ = mCc_ast_new_literal_string($1);}
-	| ALPHA { $$ = mCc_ast_new_literal_alpha($1);}
-	| ALPHA_NUM { $$ = mCc_ast_new_literal_alpha_num($1); }
-	| DIGIT	{ $$ = mCc_ast_new_literal_digit($1);}
-	| IDENTIFIER	{ $$ = mCc_ast_new_literal_identifier($1); }
+		| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
+		| STRING_LITERAL {$$ = mCc_ast_new_literal_string($1);}
+		| ALPHA { $$ = mCc_ast_new_literal_alpha($1);}
+		| ALPHA_NUM { $$ = mCc_ast_new_literal_alpha_num($1); }
+		| DIGIT	{ $$ = mCc_ast_new_literal_digit($1);}
+		| IDENTIFIER	{ $$ = mCc_ast_new_literal_identifier($1); }
         ;
+        
+/* Declaration/Assignment */
 
+var_type : INT_TYPE 		{ $$ = MCC_AST_VARIABLES_TYPE_INT; }
+		 | FLOAT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_FLOAT; }
+		 | BOOL_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_BOOL; }
+		 | STRING_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_STRING; }
+		 ;
+
+declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration_1($1, $2);}
+			| var_type  LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = $3;}
+			;
+/*		
+assignment : IDENTIFIER EQUAL expression 	{$$ = $3;}
+		   | array_assign EQUAL expression	{$$ = $1;}
+		   ;
+		 
+array_assign : IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET {$$ = $1;}
+			 ;
+*/
 /* Statements */
 
 statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
@@ -200,7 +241,7 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		.status = MCC_PARSER_STATUS_OK,
 	};
 
-	if ((yyparse(scanner, &result.expression, &result.statement) != 0)) {
+	if ((yyparse(scanner, &result.expression, &result.varaction) != 0)) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 

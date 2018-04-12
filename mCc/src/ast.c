@@ -259,6 +259,21 @@ void mCc_ast_delete_literal(struct mCc_ast_literal *literal)
 	free(literal);
 }
 
+/* ------------------------------------------------------------- Declaration/Assignment */
+struct mCc_ast_var_action *mCc_ast_new_declaration_1(enum mCc_ast_var_type var_type, char *value)
+{
+	struct mCc_ast_var_action *dec = malloc(sizeof(*dec));
+		if (!dec) {
+			return NULL;
+		}
+
+		dec->type = MCC_AST_VARIABLES_DECLARATION;
+		dec->var_type = var_type;
+		dec->id_literal = mCc_ast_new_literal_identifier(value);
+		return dec;
+}
+
+
 /* ---------------------------------------------------------------- Statements */
 struct mCc_ast_statement *
 mCc_ast_new_statement_expression(struct mCc_ast_expression *expression)

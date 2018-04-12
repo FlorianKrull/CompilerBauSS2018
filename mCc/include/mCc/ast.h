@@ -14,6 +14,8 @@ typedef int bool;
 /* Forward Declarations */
 struct mCc_ast_expression;
 struct mCc_ast_literal;
+struct mCc_ast_var_action;
+struct mCc_ast_statement;
 
 /* ---------------------------------------------------------------- AST Node */
 
@@ -203,6 +205,35 @@ struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value);
 struct mCc_ast_literal *mCc_ast_new_literal_string(char *value);
 
 void mCc_ast_delete_literal(struct mCc_ast_literal *literal);
+
+/* ------------------------------------------------------------- Declaration/Assignment */
+enum mCc_ast_var_type {
+	MCC_AST_VARIABLES_TYPE_INT,
+	MCC_AST_VARIABLES_TYPE_FLOAT,
+	MCC_AST_VARIABLES_TYPE_BOOL,
+	MCC_AST_VARIABLES_TYPE_STRING
+};
+enum mCc_ast_var_action_type {
+	MCC_AST_VARIABLES_DECLARATION,
+	MCC_AST_VARIABLES_ASSIGNMENT,
+};
+struct mCc_ast_var_action {
+	struct mCc_ast_node node;
+	enum mCc_ast_var_action_type type;
+
+	enum mCc_ast_var_type var_type;
+	struct mCc_ast_literal *id_literal;
+	union {
+		/* MCC_AST_VARIABLES_DECLARATION */
+		struct mCc_ast_literal *int_literal;
+
+		/* MCC_AST_VARIABLES_ASSIGNMENT */
+		struct mCc_ast_expression *expression_1;
+		struct mCc_ast_expression *expression_2;
+	};
+};
+
+struct mCc_ast_var_action *mCc_ast_new_declaration_1(enum mCc_ast_var_type var_type, char *value);
 
 /* ------------------------------------------------------------- Statements */
 enum mCc_ast_statement_type {
