@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* ------------------------------------------------------------- Expressions */
 
@@ -193,7 +194,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_digit(int value)
 	return lit;
 }
 
-struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value)
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(const char* value)
 {
 	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
 	if (!lit) {
@@ -201,7 +202,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value)
 	}
 
 	lit->type = MCC_AST_LITERAL_TYPE_IDENTIFIER;
-	lit->id_value = value;
+	lit->id_value = strdup(value);
 	return lit;
 }
 
@@ -241,7 +242,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value)
 	return lit;
 }
 
-struct mCc_ast_literal *mCc_ast_new_literal_string(char* value)
+struct mCc_ast_literal *mCc_ast_new_literal_string(const char* value)
 {
 	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
 	if (!lit) {
@@ -249,7 +250,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_string(char* value)
 	}
 
 	lit->type = MCC_AST_LITERAL_TYPE_STRING;
-	lit->s_value = value;
+	lit->s_value = strdup(value);
 	return lit;
 }
 

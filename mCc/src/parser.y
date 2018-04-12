@@ -27,11 +27,11 @@ void mCc_parser_error();
 %token <char>	ALPHA		"alpha"
 %token <char>	ALPHA_NUM	"alpha or number"
 %token <int>	DIGIT		"digit number"
-%token <char*>	IDENTIFIER	"identifier"
+%token <const char*>	IDENTIFIER	"identifier"
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
 %token <bool>	BOOL_LITERAL	"boolean literal"
-%token <char*> STRING_LITERAL "string literal"
+%token <const char*> STRING_LITERAL "string literal"
 
 %token LPARENTH "("
 %token RPARENTH ")"

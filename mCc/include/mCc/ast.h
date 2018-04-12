@@ -192,7 +192,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_alpha_num(char value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_digit(int value);
 
-struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value);
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(const char* value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_int(long value);
 
@@ -200,7 +200,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_float(double value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value);
 
-struct mCc_ast_literal *mCc_ast_new_literal_string(char *value);
+struct mCc_ast_literal *mCc_ast_new_literal_string(const char *value);
 
 void mCc_ast_delete_literal(struct mCc_ast_literal *literal);
 
