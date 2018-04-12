@@ -559,6 +559,7 @@ TEST(Parser, Stmt_Expression_1)
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->rhs->literal->type);
 	ASSERT_EQ(1, sub_expr->rhs->literal->i_value);
 
+	mCc_ast_delete_expression(sub_expr);
 	mCc_ast_delete_statement(stmt);
 }
 
@@ -602,4 +603,17 @@ TEST(Parser, Stmt_Compound_1)
 	mCc_ast_delete_statement(stmt);
 }
 
+TEST(Parser, Stmt_Compound_2)
+{
+	const char input[] = "{}";
+	auto result = mCc_parser_parse_string(input);
 
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
+
+	// nothing more
+}
