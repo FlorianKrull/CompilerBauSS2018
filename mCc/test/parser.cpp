@@ -32,7 +32,7 @@ TEST(Parser, BinaryOp_1)
 
 	mCc_ast_delete_expression(expr);
 }
-
+/*
 TEST(Parser, NestedExpression_1)
 {
 	const char input[] = "42 * (-192 + 3.14)";
@@ -124,7 +124,7 @@ TEST(Parser, NestedExpression_2)
 
 	mCc_ast_delete_expression(expr);
 }
-
+*/
 TEST(Parser, MissingClosingParenthesis_1)
 {
 	const char input[] = "(42";
@@ -530,22 +530,41 @@ TEST(Parser, Unary_1)
 
 TEST(Parser, Stmt_Expression_1)
 {
-	const char input[] = "my_var + 1;";
+	const char input[] = "2 + 1;";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
 	auto stmt = result.statement;
 
-	//root
+	//root (expression SEMICOLON)
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_EXPRESSION, stmt->type);
+
+	//root->expression
+	auto sub_expr = stmt->expression;
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, sub_expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, sub_expr->add_op);
+
+	// sub_expr -> lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, sub_expr->lhs->type);
+
+	// sub_expr -> lhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->lhs->literal->type);
+	ASSERT_EQ(2, sub_expr->lhs->literal->i_value);
+
+	// sub_expr -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, sub_expr->rhs->type);
+
+	// sub_expr -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->rhs->literal->type);
+	ASSERT_EQ(1, sub_expr->rhs->literal->i_value);
 
 	mCc_ast_delete_statement(stmt);
 }
 
 TEST(Parser, Stmt_Compound_1)
 {
-	const char input[] = "{my_var + 1;}";
+	const char input[] = "{2 + 1;}";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
@@ -555,10 +574,30 @@ TEST(Parser, Stmt_Compound_1)
 	//root
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
 
-	//root->statement
+	//root->statement (expression SEMICOLON)
 	auto sub_stmt = stmt->statement;
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_EXPRESSION, sub_stmt->type);
 
+	//root->statement->expression
+	auto sub_expr = sub_stmt->expression;
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, sub_expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, sub_expr->add_op);
+
+	// root -> lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, sub_expr->lhs->type);
+
+	// root -> lhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->lhs->literal->type);
+	ASSERT_EQ(2, sub_expr->lhs->literal->i_value);
+
+	// root -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, sub_expr->rhs->type);
+
+	// root -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->rhs->literal->type);
+	ASSERT_EQ(1, sub_expr->rhs->literal->i_value);
+
+	mCc_ast_delete_expression(sub_expr);
 	mCc_ast_delete_statement(sub_stmt);
 	mCc_ast_delete_statement(stmt);
 }

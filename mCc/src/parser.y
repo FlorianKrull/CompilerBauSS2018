@@ -139,7 +139,7 @@ literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
 
 statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | compound_stmt			{ $$ = $1; }
-/*		  | if_stmt				{ $$ = $1; }
+/*		  | if_stmt					{ $$ = $1; }
 		  | while_stmt				{ $$ = $1; }
 		  | ret_stmt				{ $$ = $1; }
 */		  
