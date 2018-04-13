@@ -12,6 +12,7 @@ typedef int bool;
 #endif
 
 /* Forward Declarations */
+struct mCc_ast_program;
 struct mCc_ast_expression;
 struct mCc_ast_literal;
 struct mCc_ast_var_action;
@@ -30,6 +31,18 @@ struct mCc_ast_source_location {
 struct mCc_ast_node {
 	struct mCc_ast_source_location sloc;
 };
+
+/* ---------------------------------------------------------------- Program */
+struct mCc_ast_program {
+	union {
+		struct mCc_ast_expression *expression;
+		struct mCc_ast_var_action *var_action;
+	};
+};
+
+struct mCc_ast_program *mCc_ast_new_program_1 (struct mCc_ast_expression *expression);
+struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action);
+
 
 /* --------------------------------------------------------------- Operators */
 
@@ -194,7 +207,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_alpha_num(char value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_digit(int value);
 
-struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value);
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(const char* value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_int(long value);
 
@@ -202,17 +215,19 @@ struct mCc_ast_literal *mCc_ast_new_literal_float(double value);
 
 struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value);
 
-struct mCc_ast_literal *mCc_ast_new_literal_string(char *value);
+struct mCc_ast_literal *mCc_ast_new_literal_string(const char *value);
 
 void mCc_ast_delete_literal(struct mCc_ast_literal *literal);
 
-/* ------------------------------------------------------------- Declaration/Assignment */
+/* --------------------------------------------------------------- Variable type */
 enum mCc_ast_var_type {
 	MCC_AST_VARIABLES_TYPE_INT,
 	MCC_AST_VARIABLES_TYPE_FLOAT,
 	MCC_AST_VARIABLES_TYPE_BOOL,
 	MCC_AST_VARIABLES_TYPE_STRING
 };
+
+/* ------------------------------------------------------------- Declaration/Assignment */
 enum mCc_ast_var_action_type {
 	MCC_AST_VARIABLES_DECLARATION,
 	MCC_AST_VARIABLES_ASSIGNMENT,
@@ -243,6 +258,7 @@ enum mCc_ast_statement_type {
 	MCC_AST_STATEMENT_TYPE_IF_ELSE,
 	MCC_AST_STATEMENT_TYPE_WHILE,
 	MCC_AST_STATEMENT_TYPE_RETURN,
+	MCC_AST_STATEMENT_TYPE_DECLARATION,
 };
 
 struct mCc_ast_statement {
@@ -269,7 +285,9 @@ struct mCc_ast_statement {
 			struct mCc_ast_statement *compount_stmt_2;
 		};
 
-		//TODO: if_stmt
+		/* MCC_AST_STATEMENT_TYPE_DECLARATION */
+		enum mCc_ast_var_type var_type;
+		struct mCc_ast_literal *id_literal;
 	};
 };
 
@@ -300,7 +318,21 @@ struct mCc_ast_statement *
 mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
 */
 
+struct mCc_ast_statement *mCc_ast_new_statement_dec_1(enum mCc_ast_var_type var_type,
+		struct mCc_ast_literal *id_literal);
+
+struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_type);
+
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
+
+/* ------------------------------------------------------------- Function type */
+enum mCc_ast_function_type {
+	MCC_AST_FUNCTION_TYPE_INT,
+	MCC_AST_FUNCTION_TYPE_FLOAT,
+	MCC_AST_FUNCTION_TYPE_BOOL,
+	MCC_AST_FUNCTION_TYPE_STRING,
+	MCC_AST_FUNCTION_TYPE_VOID
+};
 
 #ifdef __cplusplus
 }

@@ -13,9 +13,6 @@
 #define YYSTYPE MCC_PARSER_STYPE
 %}
 
-alpha			[a-zA-Z_]
-alpha_num		[a-zA-Z0-9_]
-digit			[0-9]
 identifier		[a-zA-Z_][a-zA-Z0-9_]*
 int_literal     [0-9]+
 float_literal   [0-9]+\.[0-9]+
@@ -36,11 +33,6 @@ newline \n
 
 {identifier}	{yylval->TK_IDENTIFIER = strdup(yytext);	return TK_IDENTIFIER;}
 
-{alpha}			{yylval->TK_ALPHA = strdup(yytext);	return TK_ALPHA;}
-
-{alpha_num}		{yylval->TK_ALPHA_NUM = strdup(yytext);	return TK_ALPHA_NUM;}
-
-{digit}			{yylval->TK_DIGIT = atoi(yytext); return TK_DIGIT;}
 
 
 
@@ -62,6 +54,7 @@ newline \n
 
 "("     { return TK_LPARENTH; }
 ")"     { return TK_RPARENTH; }
+","		{ return TK_COMMA; }
 ";"		{return TK_SEMICOLON; }
 "{"		{return TK_LBRACKET; }
 "}"		{return TK_RBRACKET; }
@@ -73,11 +66,15 @@ newline \n
 "while"			{return TK_WHILE; }
 "return"		{return TK_RETURN; }
 
-"int"			{ return TK_INT_TYPE; }
-"float"			{ return TK_FLOAT_TYPE; }
-"bool"			{ return TK_BOOL_TYPE; }
-"string" 		{ return TK_STRING_TYPE; }
-"void" 			{ return TK_VOID_TYPE; }
+int          {return TK_INT_TYPE;}
+
+float        {return TK_FLOAT_TYPE;}
+
+bool         {return TK_BOOL_TYPE;}
+
+string       {return TK_STRING_TYPE;}
+
+void		{return TK_VOID_TYPE;}
 
 [ \t\r\n]+        { /* ignore */ }
 

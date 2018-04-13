@@ -3,6 +3,32 @@
 #include <assert.h>
 #include <stdlib.h>
 
+struct mCc_ast_program *mCc_ast_new_program_1 (struct mCc_ast_expression *expression)
+{
+	assert(expression);
+
+		struct mCc_ast_program *pro = malloc(sizeof(*pro));
+		if (!pro) {
+			return NULL;
+		}
+
+		pro->expression = expression;
+		return pro;
+}
+
+struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action)
+{
+	assert(var_action);
+
+		struct mCc_ast_program *pro = malloc(sizeof(*pro));
+		if (!pro) {
+			return NULL;
+		}
+
+		pro->var_action = var_action;
+		return pro;
+}
+
 /* ------------------------------------------------------------- Expressions */
 
 struct mCc_ast_expression *
@@ -193,7 +219,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_digit(int value)
 	return lit;
 }
 
-struct mCc_ast_literal *mCc_ast_new_literal_identifier(char* value)
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(const char* value)
 {
 	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
 	if (!lit) {
@@ -241,7 +267,7 @@ struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value)
 	return lit;
 }
 
-struct mCc_ast_literal *mCc_ast_new_literal_string(char* value)
+struct mCc_ast_literal *mCc_ast_new_literal_string(const char* value)
 {
 	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
 	if (!lit) {
@@ -402,6 +428,39 @@ mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression)
 	return stmt;
 }
 */
+
+struct mCc_ast_statement *mCc_ast_new_statement_dec_1(enum mCc_ast_var_type var_type,
+		struct mCc_ast_literal *id_literal)
+{
+	assert(var_type);
+	assert(id_literal);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_DECLARATION;
+	stmt->var_type = var_type;
+	stmt->id_literal = id_literal;
+	return stmt;
+}
+
+struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_type)
+{
+	assert(var_type);
+//	assert(id_literal);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_DECLARATION;
+	stmt->var_type = var_type;
+//	stmt->id_literal = id_literal;
+	return stmt;
+}
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 {

@@ -4,7 +4,6 @@
 %lex-param   {void *scanner}
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result} 
 							 {struct mCc_ast_statement** stmt_result}
-							 {struct mCc_ast_var_action** var_result}
 
 %define parse.trace
 %define parse.error verbose
@@ -25,19 +24,18 @@ void mCc_parser_error();
 
 %token END 0 "EOF"
 
-%token <char>	ALPHA		"alpha"
-%token <char>	ALPHA_NUM	"alpha or number"
-%token <int>	DIGIT		"digit number"
-%token <char*>	IDENTIFIER	"identifier"
+
+%token <const char*>	IDENTIFIER	"identifier"
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
 %token <bool>	BOOL_LITERAL	"boolean literal"
-%token <char*> STRING_LITERAL "string literal"
+%token <const char*> STRING_LITERAL "string literal"
 
 %token LPARENTH "("
 %token RPARENTH ")"
 %token LSQUARE_BRACKET "["
 %token RSQUARE_BRACKET "]"
+%token COMMA ","
 %token SEMICOLON ";"
 %token LBRACKET "{"
 %token RBRACKET "}"
@@ -82,21 +80,27 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_compare_op> compare_op
 
 %type <enum mCc_ast_var_type>var_type
+%type <enum mCc_ast_function_type>function_type
 
-%type <struct mCc_ast_var_action *>declaration
-%type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt  
+%type <struct mCc_ast_function *> function
+%type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt declaration assignment
 %type <struct mCc_ast_expression *> expression term term_2 single_expr
 %type <struct mCc_ast_literal *> literal
 
 %start toplevel
 
 %%
-
+/*
 toplevel : expression { *expr_result = $1; }
-	 
+	 | statement  { *stmt_result = $1; }
 	 | declaration {*var_result = $1; }
          ;
+         */
          
+toplevel : expression { *expr_result = $1; }
+	 | statement  { *stmt_result = $1; }
+         ;
+		 ;
 /* unary operators */
 
 unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
@@ -125,6 +129,18 @@ mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
        ;
        
 /* Type */
+var_type : INT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_INT; }
+		 | FLOAT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_FLOAT; }
+		 | BOOL_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_BOOL; }
+		 | STRING_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_STRING; }
+		 ;
+		 
+function_type : BOOL_TYPE { $$ = MCC_AST_FUNCTION_TYPE_BOOL; }
+	     | INT_TYPE  { $$ = MCC_AST_FUNCTION_TYPE_INT; }
+	     | FLOAT_TYPE{ $$ = MCC_AST_FUNCTION_TYPE_FLOAT; }
+	     | STRING_TYPE  { $$ = MCC_AST_FUNCTION_TYPE_STRING; }
+	     | VOID_TYPE { $$ = MCC_AST_FUNCTION_TYPE_VOID; }
+	     ;
 	 
 /* Expressions */
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
@@ -151,31 +167,12 @@ literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
         | FLOAT_LITERAL { $$ = mCc_ast_new_literal_float($1); }
 		| BOOL_LITERAL	{ $$ = mCc_ast_new_literal_bool($1); }
 		| STRING_LITERAL {$$ = mCc_ast_new_literal_string($1);}
-		| ALPHA { $$ = mCc_ast_new_literal_alpha($1);}
+/*		| ALPHA { $$ = mCc_ast_new_literal_alpha($1);}
 		| ALPHA_NUM { $$ = mCc_ast_new_literal_alpha_num($1); }
-		| DIGIT	{ $$ = mCc_ast_new_literal_digit($1);}
+		| DIGIT	{ $$ = mCc_ast_new_literal_digit($1);}*/
 		| IDENTIFIER	{ $$ = mCc_ast_new_literal_identifier($1); }
         ;
         
-/* Declaration/Assignment */
-
-var_type : INT_TYPE 		{ $$ = MCC_AST_VARIABLES_TYPE_INT; }
-		 | FLOAT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_FLOAT; }
-		 | BOOL_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_BOOL; }
-		 | STRING_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_STRING; }
-		 ;
-
-declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration_1($1, $2);}
-			| var_type  LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = $3;}
-			;
-/*		
-assignment : IDENTIFIER EQUAL expression 	{$$ = $3;}
-		   | array_assign EQUAL expression	{$$ = $1;}
-		   ;
-		 
-array_assign : IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET {$$ = $1;}
-			 ;
-*/
 /* Statements */
 
 statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
@@ -201,7 +198,20 @@ ret_stmt : RETURN SEMICOLON				{ $$ = mCc_ast_new_statement_return(); }
 		 | RETURN expression SEMICOLON  { $$ = mCc_ast_new_statement_return_2($2); }
 		 ;
 */
+/* Declaration/Assignment */
 
+declaration : var_type IDENTIFIER {$$ = mCc_ast_new_statement_dec_1($1, mCc_ast_new_literal_identifier($2));}
+			| var_type LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = 
+			mCc_ast_new_statement_dec_2($1);}
+			;
+/*		
+assignment : IDENTIFIER EQUAL expression 	{$$ = $3;}
+		   | array_assign EQUAL expression	{$$ = $1;}
+		   ;
+		 
+array_assign : IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET {$$ = $1;}
+			 ;
+*/
 %%
 
 #include <assert.h>
@@ -241,7 +251,7 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		.status = MCC_PARSER_STATUS_OK,
 	};
 
-	if ((yyparse(scanner, &result.expression, &result.varaction) != 0)) {
+	if ((yyparse(scanner, &result.expression, &result.statement) != 0)) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 

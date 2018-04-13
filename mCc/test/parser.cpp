@@ -32,7 +32,7 @@ TEST(Parser, BinaryOp_1)
 
 	mCc_ast_delete_expression(expr);
 }
-/*
+
 TEST(Parser, NestedExpression_1)
 {
 	const char input[] = "42 * (-192 + 3.14)";
@@ -527,7 +527,32 @@ TEST(Parser, Unary_1)
 }
 */
 /* ------------------------Declaration/Assignment */
+
 TEST(Parser, Declaration_1)
+{
+	const char input[] = "";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+//	auto expr = result.varaction;
+
+	// root
+
+//	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, expr->var_type);
+//	ASSERT_EQ(MCC_AST_UNARY_OP_MINUS, expr->unary_op);
+
+	// root -> rhs
+//	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->u_rhs->type);
+
+	//root -> rhs -> literal
+//	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->u_rhs->literal->type);
+//	ASSERT_EQ(5,expr->u_rhs->literal->i_value);
+
+//	mCc_ast_delete_expression(expr);
+}
+
+TEST(Parser, Declaration_2)
 {
 	const char input[] = "int x";
 	auto result = mCc_parser_parse_string(input);
