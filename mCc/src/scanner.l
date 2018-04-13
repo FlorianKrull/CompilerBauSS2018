@@ -21,6 +21,8 @@ string_literal \"(\\.|[^\\])*\"
 whitespace [\r\t\v\f]
 newline \n
 
+int_type "int"
+
 %%
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
@@ -66,7 +68,7 @@ newline \n
 "while"			{return TK_WHILE; }
 "return"		{return TK_RETURN; }
 
-int          {return TK_INT_TYPE;}
+int_type          {yylval->TK_INT_TYPE = strdup(yytext); return TK_INT_TYPE;}
 
 float        {return TK_FLOAT_TYPE;}
 

@@ -446,10 +446,12 @@ struct mCc_ast_statement *mCc_ast_new_statement_dec_1(enum mCc_ast_var_type var_
 	return stmt;
 }
 
-struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_type)
+struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_type,
+		struct mCc_ast_literal *int_literal, struct mCc_ast_literal *id_literal)
 {
 	assert(var_type);
-//	assert(id_literal);
+	assert(id_literal);
+	assert(int_literal);
 
 	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
 	if (!stmt) {
@@ -458,7 +460,44 @@ struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_
 
 	stmt->type = MCC_AST_STATEMENT_TYPE_DECLARATION;
 	stmt->var_type = var_type;
-//	stmt->id_literal = id_literal;
+	stmt->int_literal = int_literal;
+	stmt->id_literal = id_literal;
+	return stmt;
+}
+
+struct mCc_ast_statement *mCc_ast_new_statement_ass_1(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression)
+{
+	assert(id_literal);
+	assert(expression);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_ASSIGNMENT;
+	stmt->expression_1 = expression;
+	stmt->id_literal_ass = id_literal;
+	return stmt;
+}
+
+struct mCc_ast_statement *mCc_ast_new_statement_ass_2(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression_1, struct mCc_ast_expression *expression_2)
+{
+	assert(id_literal);
+	assert(expression_1);
+	assert(expression_2);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_ASSIGNMENT;
+	stmt->expression_1 = expression_1;
+	stmt->expression_2 = expression_2;
+	stmt->id_literal_ass = id_literal;
 	return stmt;
 }
 

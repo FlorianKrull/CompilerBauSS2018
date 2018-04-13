@@ -530,17 +530,16 @@ TEST(Parser, Unary_1)
 
 TEST(Parser, Declaration_1)
 {
-	const char input[] = "";
+	const char input[] = "int x";
 	auto result = mCc_parser_parse_string(input);
 
-	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+//	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
-//	auto expr = result.varaction;
+	auto stmt = result.statement;
 
 	// root
-
-//	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, expr->var_type);
-//	ASSERT_EQ(MCC_AST_UNARY_OP_MINUS, expr->unary_op);
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_DECLARATION, stmt->type);
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, stmt->var_type);
 
 	// root -> rhs
 //	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->u_rhs->type);
@@ -549,20 +548,19 @@ TEST(Parser, Declaration_1)
 //	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->u_rhs->literal->type);
 //	ASSERT_EQ(5,expr->u_rhs->literal->i_value);
 
-//	mCc_ast_delete_expression(expr);
+	mCc_ast_delete_statement(stmt);
 }
 
 TEST(Parser, Declaration_2)
 {
-	const char input[] = "int x";
+	const char input[] = "x";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
-//	auto expr = result.varaction;
+	auto stmt = result.statement;
 
 	// root
-
 //	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, expr->var_type);
 //	ASSERT_EQ(MCC_AST_UNARY_OP_MINUS, expr->unary_op);
 
@@ -573,7 +571,7 @@ TEST(Parser, Declaration_2)
 //	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->u_rhs->literal->type);
 //	ASSERT_EQ(5,expr->u_rhs->literal->i_value);
 
-//	mCc_ast_delete_expression(expr);
+	mCc_ast_delete_statement(stmt);
 }
 
 /* ------------------------Statements */

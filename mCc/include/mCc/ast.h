@@ -252,13 +252,15 @@ struct mCc_ast_var_action *mCc_ast_new_declaration_1(enum mCc_ast_var_type var_t
 
 /* ------------------------------------------------------------- Statements */
 enum mCc_ast_statement_type {
+	MCC_AST_STATEMENT_TYPE_DECLARATION,
+	MCC_AST_STATEMENT_TYPE_ASSIGNMENT,
 	MCC_AST_STATEMENT_TYPE_EXPRESSION,
 	MCC_AST_STATEMENT_TYPE_COMPOUND,
 	MCC_AST_STATEMENT_TYPE_IF,
 	MCC_AST_STATEMENT_TYPE_IF_ELSE,
 	MCC_AST_STATEMENT_TYPE_WHILE,
 	MCC_AST_STATEMENT_TYPE_RETURN,
-	MCC_AST_STATEMENT_TYPE_DECLARATION,
+
 };
 
 struct mCc_ast_statement {
@@ -286,8 +288,18 @@ struct mCc_ast_statement {
 		};
 
 		/* MCC_AST_STATEMENT_TYPE_DECLARATION */
-		enum mCc_ast_var_type var_type;
-		struct mCc_ast_literal *id_literal;
+		struct {
+			enum mCc_ast_var_type var_type;
+			struct mCc_ast_literal *id_literal;
+			struct mCc_ast_literal *int_literal;
+		};
+
+		/* MCC_AST_STATEMENT_TYPE_ASSIGNMENT */
+		struct {
+			struct mCc_ast_literal *id_literal_ass;
+			struct mCc_ast_expression *expression_1;
+			struct mCc_ast_expression *expression_2;
+		};
 	};
 };
 
@@ -321,7 +333,14 @@ mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
 struct mCc_ast_statement *mCc_ast_new_statement_dec_1(enum mCc_ast_var_type var_type,
 		struct mCc_ast_literal *id_literal);
 
-struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_type);
+struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_type,
+		struct mCc_ast_literal *int_literal, struct mCc_ast_literal *id_literal);
+
+struct mCc_ast_statement *mCc_ast_new_statement_ass_1(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression);
+
+struct mCc_ast_statement *mCc_ast_new_statement_ass_2(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression_1, struct mCc_ast_expression *expression_2);
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
 

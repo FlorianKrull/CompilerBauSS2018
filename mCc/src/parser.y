@@ -58,8 +58,9 @@ void mCc_parser_error();
 %token EQUAL "=="
 %token UNEQUAL "!="
 %token EXCLAM "!"
+%token ASSIGN "="
 
-%token INT_TYPE "int"
+%token <const char*> INT_TYPE "int"
 %token FLOAT_TYPE "float"
 %token BOOL_TYPE "bool"
 %token STRING_TYPE "string"
@@ -202,16 +203,14 @@ ret_stmt : RETURN SEMICOLON				{ $$ = mCc_ast_new_statement_return(); }
 
 declaration : var_type IDENTIFIER {$$ = mCc_ast_new_statement_dec_1($1, mCc_ast_new_literal_identifier($2));}
 			| var_type LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = 
-			mCc_ast_new_statement_dec_2($1);}
+			mCc_ast_new_statement_dec_2($1, mCc_ast_new_literal_int($3), mCc_ast_new_literal_identifier($5));}
 			;
-/*		
-assignment : IDENTIFIER EQUAL expression 	{$$ = $3;}
-		   | array_assign EQUAL expression	{$$ = $1;}
+			
+assignment : IDENTIFIER EQUAL expression 	{$$ = mCc_ast_new_statement_ass_1(mCc_ast_new_literal_identifier($1),
+											$3);}
+		   | IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET ASSIGN expression	{$$ = $1;}
 		   ;
-		 
-array_assign : IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET {$$ = $1;}
-			 ;
-*/
+
 %%
 
 #include <assert.h>
