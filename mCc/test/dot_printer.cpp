@@ -32,6 +32,15 @@ TEST(dot_printer, PrintBoolLiteral_1)
   mCc_ast_delete_literal(lit);
 }
 
+TEST(dot_printer, PrintStringLiteral_1)
+{
+  struct mCc_ast_literal *lit = mCc_ast_new_literal_string("\"my string\"");
+  FILE *output = fopen("string_literal.dot", "w");
+  mCc_ast_print_dot_literal(output, lit);
+  fclose(output);
+  mCc_ast_delete_literal(lit);
+}
+
 TEST(dot_printer, PrintBinaryOp_1)
 {
   struct mCc_ast_literal *lhs = mCc_ast_new_literal_int(5);
@@ -76,3 +85,16 @@ TEST(dot_print, PrintNested_1)
   fclose(output);
   mCc_ast_delete_expression(expr);
 }
+
+TEST(dot_print, PrintNested_2)
+{
+  const char input[] = "my_string == \"my_string\"";
+  auto result = mCc_parser_parse_string(input);
+
+  auto expr = result.expression;
+  FILE *output = fopen("nested2.dot", "w");
+  mCc_ast_print_dot_expression(output, expr);
+  fclose(output);
+  mCc_ast_delete_expression(expr);
+}
+

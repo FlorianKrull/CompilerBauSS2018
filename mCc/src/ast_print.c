@@ -180,6 +180,36 @@ static void print_dot_literal_bool(struct mCc_ast_literal *literal, void *data)
 	print_dot_node(out, literal, label);
 }
 
+static void print_dot_literal_string(struct mCc_ast_literal *literal, void *data)
+{
+        assert(literal);
+        assert(data);
+
+        char* print_string = literal->s_value;
+        int i;
+        for(i = 0; print_string[i] != '\0'; ++i) {
+        }
+        print_string[--i] = '\\';
+
+        char label[LABEL_SIZE] = { 0 };
+        snprintf(label, sizeof(label), "%c%s%c", '\\', print_string, '"');
+
+        FILE *out = data;
+        print_dot_node(out, literal, label);
+}
+
+static void print_dot_literal_identifier(struct mCc_ast_literal *literal, void *data)
+{
+        assert(literal);
+        assert(data);
+
+        char label[LABEL_SIZE] = { 0 };
+        snprintf(label, sizeof(label), "%s", literal->id_value);
+
+        FILE *out = data;
+        print_dot_node(out, literal, label);
+}
+
 static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 {
 	assert(out);
@@ -197,7 +227,9 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 
 		.literal_int = print_dot_literal_int,
 		.literal_float = print_dot_literal_float,
-        .literal_bool = print_dot_literal_bool,
+                .literal_bool = print_dot_literal_bool,
+                .literal_string = print_dot_literal_string,
+                .literal_identifier = print_dot_literal_identifier,
 	};
 }
 
