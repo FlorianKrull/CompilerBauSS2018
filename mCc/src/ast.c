@@ -292,7 +292,7 @@ void mCc_ast_delete_literal(struct mCc_ast_literal *literal)
 	free(literal);
 }
 
-/* ------------------------------------------------------------- Declaration/Assignment */
+/* ------------------------------------------------------------- Statements/Declaration/Assignment */
 
 struct mCc_ast_declaration *
 mCc_ast_new_declaration(enum mCc_ast_var_type var_type,
@@ -393,7 +393,6 @@ void mCc_ast_delete_assignment(struct mCc_ast_assignment *assignment)
 	free(assignment);
 }
 
-/* ---------------------------------------------------------------- Statements */
 struct mCc_ast_statement *
 mCc_ast_new_statement_declaration(struct mCc_ast_declaration *declaration)
 {
@@ -447,7 +446,7 @@ mCc_ast_new_statement_compound_1()
 		return NULL;
 	}
 
-	stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND;
+	stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY;
 
 	return stmt;
 }
@@ -505,7 +504,7 @@ mCc_ast_new_statement_if_else(struct mCc_ast_expression *expression,
 	stmt->compount_stmt_2 = compound_2;
 	return stmt;
 }
-
+*/
 struct mCc_ast_statement *
 mCc_ast_new_statement_while(struct mCc_ast_expression *expression,
 		struct mCc_ast_statement *statement)
@@ -532,7 +531,7 @@ mCc_ast_new_statement_return()
 		return NULL;
 	}
 
-	stmt->type = MCC_AST_STATEMENT_TYPE_RETURN;
+	stmt->type = MCC_AST_STATEMENT_TYPE_RETURN_EMPTY;
 	return stmt;
 }
 
@@ -550,7 +549,6 @@ mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression)
 	stmt->expression = expression;
 	return stmt;
 }
-*/
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 {
@@ -568,14 +566,15 @@ void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 			mCc_ast_delete_expression(statement->expression);
 			break;
 		case MCC_AST_STATEMENT_TYPE_COMPOUND:
-
+			mCc_ast_delete_statement(statement->statement);
 			break;
 		case MCC_AST_STATEMENT_TYPE_IF:
 		case MCC_AST_STATEMENT_TYPE_IF_ELSE:
 
 			break;
 		case MCC_AST_STATEMENT_TYPE_WHILE:
-
+			mCc_ast_delete_expression(statement->expr);
+			mCc_ast_delete_statement(statement->stmt);
 			break;
 		default: break;
 		}

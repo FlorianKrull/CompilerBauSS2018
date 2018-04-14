@@ -86,7 +86,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_var_type>var_type
 %type <enum mCc_ast_function_type>function_type
 
-%type <struct mCc_ast_statement *>statement compound_stmt
+%type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt
 %type <struct mCc_ast_expression *> expression term term_2 single_expr
 %type <struct mCc_ast_literal *> literal
 
@@ -176,10 +176,9 @@ statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | declaration SEMICOLON   { $$ = mCc_ast_new_statement_declaration($1); }
 		  | assignment SEMICOLON 	{ $$ = mCc_ast_new_statement_assignment($1); }
 		  | compound_stmt			{ $$ = $1; }
-/*		  | if_stmt					{ $$ = $1; }
+/*		  | if_stmt					{ $$ = $1; }*/
 		  | while_stmt				{ $$ = $1; }
-		  | ret_stmt				{ $$ = $1; }
-*/		  
+		  | ret_stmt SEMICOLON		{ $$ = $1; }	  
 		  ;
 		  
 compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound_1(); }
@@ -189,14 +188,14 @@ compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound_1(); }
 if_stmt : IF LPARENTH expression RPARENTH statement 						{$$ = mCc_ast_new_statement_if($3, $5); }
 		| IF LPARENTH expression RPARENTH compound_stmt ELSE compound_stmt 	{$$ = mCc_ast_new_statement_if_else($3, $5, $7); }
 		;
-		
+*/	
 while_stmt : WHILE LPARENTH expression RPARENTH statement {$$ = mCc_ast_new_statement_while($3, $5); }
 		   ;
-		   
-ret_stmt : RETURN SEMICOLON				{ $$ = mCc_ast_new_statement_return(); }
-		 | RETURN expression SEMICOLON  { $$ = mCc_ast_new_statement_return_2($2); }
+  
+ret_stmt : RETURN 				{ $$ = mCc_ast_new_statement_return(); }
+		 | RETURN expression   { $$ = mCc_ast_new_statement_return_2($2); }
 		 ;
-*/
+
 /* Declaration/Assignment */
 /* Solution for array declaration and assignment credits to team 21 */
 declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration($1, mCc_ast_new_literal_identifier($2));}

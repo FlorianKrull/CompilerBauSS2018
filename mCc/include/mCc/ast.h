@@ -226,7 +226,7 @@ enum mCc_ast_var_type {
 	MCC_AST_VARIABLES_TYPE_STRING
 };
 
-/* ------------------------------------------------------------- Declaration/Assignment */
+/* ------------------------------------------------------------- Statements/Declaration/Assignment */
 enum mCc_ast_declaration_type {
 	MCC_AST_DECLARATION_TYPE_NORMAL,
 	MCC_AST_DECLARATION_TYPE_ARRAY,
@@ -290,17 +290,17 @@ mCc_ast_new_array_assignment(struct mCc_ast_literal *identifier,
 
 void mCc_ast_delete_assignment(struct mCc_ast_assignment *assignment);
 
-/* ------------------------------------------------------------- Statements */
 enum mCc_ast_statement_type {
 	MCC_AST_STATEMENT_TYPE_DECLARATION,
 	MCC_AST_STATEMENT_TYPE_ASSIGNMENT,
 	MCC_AST_STATEMENT_TYPE_EXPRESSION,
+	MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY,
 	MCC_AST_STATEMENT_TYPE_COMPOUND,
 	MCC_AST_STATEMENT_TYPE_IF,
 	MCC_AST_STATEMENT_TYPE_IF_ELSE,
 	MCC_AST_STATEMENT_TYPE_WHILE,
+	MCC_AST_STATEMENT_TYPE_RETURN_EMPTY,
 	MCC_AST_STATEMENT_TYPE_RETURN,
-
 };
 
 struct mCc_ast_statement {
@@ -357,18 +357,28 @@ mCc_ast_new_statement_if(struct mCc_ast_expression *expression, struct mCc_ast_s
 struct mCc_ast_statement *
 mCc_ast_new_statement_if_else(struct mCc_ast_expression *expression,
 		struct mCc_ast_statement *compound_1, struct mCc_ast_statement *compound_2);
-
+*/
 struct mCc_ast_statement *
-mCc_ast_new_statement_while(struct mCc_ast_expression *expression, struct mCc_ast_statement *statement);
+mCc_ast_new_statement_while(struct mCc_ast_expression *expr, struct mCc_ast_statement *stmt);
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_return();
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
-*/
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
+
+
+struct mCc_ast_while {
+	struct mCc_ast_node node;
+	struct mCc_ast_expression *expression;
+	struct mCc_ast_statement *statement;
+};
+
+struct mCc_ast_while * mCc_ast_new_while(struct mCc_ast_expression *expr, struct mCc_ast_statement *stmt);
+
+void mCc_ast_delete_while(struct mCc_ast_while *while_stmt);
 
 /* ------------------------------------------------------------- Function type */
 enum mCc_ast_function_type {

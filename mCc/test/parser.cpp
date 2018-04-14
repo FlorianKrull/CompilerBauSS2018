@@ -660,7 +660,7 @@ TEST(Parser, Assignment_2)
 	mCc_ast_delete_statement(stmt);
 }
 /* ------------------------Statements */
-/*
+
 TEST(Parser, Stmt_Expression_1)
 {
 	const char input[] = "2 + 1;";
@@ -730,8 +730,6 @@ TEST(Parser, Stmt_Compound_1)
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->rhs->literal->type);
 	ASSERT_EQ(1, sub_expr->rhs->literal->i_value);
 
-	mCc_ast_delete_expression(sub_expr);
-	mCc_ast_delete_statement(sub_stmt);
 	mCc_ast_delete_statement(stmt);
 }
 
@@ -745,8 +743,75 @@ TEST(Parser, Stmt_Compound_2)
 	auto stmt = result.statement;
 
 	//root
-	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY, stmt->type);
 
 	// nothing more
+	mCc_ast_delete_statement(stmt);
 }
-*/
+
+TEST(Parser, Return_1)
+{
+	const char input[] = "return;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_RETURN_EMPTY, stmt->type);
+
+	// nothing more
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, Return_2)
+{
+	const char input[] = "return 0;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_RETURN, stmt->type);
+
+	//root->expression
+	auto expr = stmt->expression;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->type);
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->literal->type);
+	ASSERT_EQ(0, expr->literal->i_value);
+
+	// nothing more
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, While_1)
+{
+	const char input[] = "while (flag) {}";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_WHILE, stmt->type);
+
+//	//root->expression
+	auto expr = stmt->expr;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->type);
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, expr->literal->type);
+	ASSERT_STREQ("flag", expr->literal->id_value);
+
+	//root->statement
+	auto substmt = stmt->stmt;
+
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY, substmt->type);
+
+	// nothing more
+	mCc_ast_delete_statement(stmt);
+}
