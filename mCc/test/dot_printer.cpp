@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include "mCc/ast_print.h"
+#include "mCc/ast.h"
+#include "mCc/parser.h"
 
 
 TEST(dot_printer, PrintIntLiteral_1)
@@ -61,4 +63,16 @@ TEST(dot_print, PrintParenthesis_1)
   mCc_ast_print_dot_expression(output, parenth);
   fclose(output);
   mCc_ast_delete_expression(parenth);
+}
+
+TEST(dot_print, PrintNested_1)
+{
+  const char input[] = "(-192 + 3.14 * 42 == 1) == false";
+  auto result = mCc_parser_parse_string(input);
+
+  auto expr = result.expression;
+  FILE *output = fopen("nested.dot", "w");
+  mCc_ast_print_dot_expression(output, expr);
+  fclose(output);
+  mCc_ast_delete_expression(expr);
 }
