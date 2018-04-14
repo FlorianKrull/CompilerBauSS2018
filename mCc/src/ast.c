@@ -4,6 +4,39 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct mCc_ast_program *mCc_ast_new_program_1 (struct mCc_ast_expression *expression)
+{
+	assert(expression);
+
+		struct mCc_ast_program *pro = malloc(sizeof(*pro));
+		if (!pro) {
+			return NULL;
+		}
+
+		pro->expression = expression;
+		return pro;
+}
+/*
+struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action)
+{
+	assert(var_action);
+
+		struct mCc_ast_program *pro = malloc(sizeof(*pro));
+		if (!pro) {
+			return NULL;
+		}
+
+		pro->var_action = var_action;
+		return pro;
+}*/
+
+void mCc_ast_delete_program(struct mCc_ast_program *program)
+{
+	assert(program);
+//	mCc_ast_delete_function_def_list(program->function_def_list);
+	free(program);
+}
+
 /* ------------------------------------------------------------- Expressions */
 
 struct mCc_ast_expression *
@@ -264,7 +297,67 @@ void mCc_ast_delete_literal(struct mCc_ast_literal *literal)
 	free(literal);
 }
 
+/* ------------------------------------------------------------- Declaration/Assignment */
+
+struct mCc_ast_declaration *
+mCc_ast_new_declaration(enum mCc_ast_var_type var_type,
+                        struct mCc_ast_literal *identifier)
+{
+	assert(identifier);
+	struct mCc_ast_declaration *decl = malloc(sizeof(*decl));
+	//TODO: return this line to code base
+	assert(decl);
+
+	decl->type = MCC_AST_DECLARATION_TYPE_DECLARATION;
+	decl->var_type = var_type;
+	decl->normal_decl.identifier = identifier;
+	return decl;
+}
+
+struct mCc_ast_declaration *
+mCc_ast_new_array_declaration(enum mCc_ast_var_type var_type,
+                              long size, struct mCc_ast_literal *identifier)
+{
+	assert(identifier);
+
+	struct mCc_ast_declaration *decl = malloc(sizeof(*decl));
+	assert(decl);
+
+	decl->type = MCC_AST_DECLARATION_TYPE_ARRAY_DECLARATION;
+	decl->var_type = var_type;
+	decl->array_decl.identifier = identifier;
+	decl->array_decl.size = mCc_ast_new_literal_int(size);
+	return decl;
+}
+
+void mCc_ast_delete_declaration(struct mCc_ast_declaration *decl)
+{
+	assert(decl);
+	if (decl->type ==
+	    MCC_AST_DECLARATION_TYPE_ARRAY_DECLARATION) {
+		mCc_ast_delete_literal(decl->array_decl.size);
+		mCc_ast_delete_literal(decl->array_decl.identifier);
+	} else {
+		mCc_ast_delete_literal(decl->normal_decl.identifier);
+	}
+	free(decl);
+}
+
+
 /* ---------------------------------------------------------------- Statements */
+struct mCc_ast_statement *
+mCc_ast_new_statement_declaration(struct mCc_ast_declaration *declaration)
+{
+	assert(declaration);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	assert(stmt);
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_DECLARATION;
+	stmt->declaration = declaration;
+	return stmt;
+}
+
 struct mCc_ast_statement *
 mCc_ast_new_statement_expression(struct mCc_ast_expression *expression)
 {
@@ -393,8 +486,69 @@ mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression)
 }
 */
 
+struct mCc_ast_statement *mCc_ast_new_statement_ass_1(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression)
+{
+	assert(id_literal);
+	assert(expression);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_ASSIGNMENT;
+	stmt->expression_1 = expression;
+	stmt->id_literal_ass = id_literal;
+	return stmt;
+}
+
+struct mCc_ast_statement *mCc_ast_new_statement_ass_2(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression_1, struct mCc_ast_expression *expression_2)
+{
+	assert(id_literal);
+	assert(expression_1);
+	assert(expression_2);
+
+	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
+	if (!stmt) {
+		return NULL;
+	}
+
+	stmt->type = MCC_AST_STATEMENT_TYPE_ASSIGNMENT;
+	stmt->expression_1 = expression_1;
+	stmt->expression_2 = expression_2;
+	stmt->id_literal_ass = id_literal;
+	return stmt;
+}
+
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 {
 	assert(statement);
+
+	switch (statement->type) {
+		case MCC_AST_STATEMENT_TYPE_DECLARATION:
+			mCc_ast_delete_declaration(statement->declaration);
+			break;
+		case MCC_AST_STATEMENT_TYPE_ASSIGNMENT:
+			//TODO: delete if-stmt
+			break;
+		case MCC_AST_STATEMENT_TYPE_EXPRESSION:
+		case MCC_AST_STATEMENT_TYPE_RETURN:
+			mCc_ast_delete_expression(statement->expression);
+			break;
+		case MCC_AST_STATEMENT_TYPE_COMPOUND:
+
+			break;
+		case MCC_AST_STATEMENT_TYPE_IF:
+		case MCC_AST_STATEMENT_TYPE_IF_ELSE:
+
+			break;
+		case MCC_AST_STATEMENT_TYPE_WHILE:
+
+			break;
+		default: break;
+		}
+
 	free(statement);
 }

@@ -8,9 +8,11 @@ extern "C" {
 #include <stdbool.h>
 
 /* Forward Declarations */
+struct mCc_ast_program;
 struct mCc_ast_expression;
 struct mCc_ast_literal;
-
+struct mCc_ast_statement;
+struct mCc_ast_declaration;
 /* ---------------------------------------------------------------- AST Node */
 
 struct mCc_ast_source_location {
@@ -24,6 +26,18 @@ struct mCc_ast_source_location {
 struct mCc_ast_node {
 	struct mCc_ast_source_location sloc;
 };
+
+/* ---------------------------------------------------------------- Program */
+struct mCc_ast_program {
+	union {
+		struct mCc_ast_expression *expression;
+		struct mCc_ast_var_action *var_action;
+	};
+};
+
+struct mCc_ast_program *mCc_ast_new_program_1 (struct mCc_ast_expression *expression);
+//struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action);
+void mCc_ast_delete_program(struct mCc_ast_program *program);
 
 /* --------------------------------------------------------------- Operators */
 
@@ -211,14 +225,57 @@ struct mCc_ast_literal *mCc_ast_new_literal_string(const char *value);
 
 void mCc_ast_delete_literal(struct mCc_ast_literal *literal);
 
+/* --------------------------------------------------------------- Variable type */
+enum mCc_ast_var_type {
+	MCC_AST_VARIABLES_TYPE_INT,
+	MCC_AST_VARIABLES_TYPE_FLOAT,
+	MCC_AST_VARIABLES_TYPE_BOOL,
+	MCC_AST_VARIABLES_TYPE_STRING
+};
+
+/* ------------------------------------------------------------- Declaration/Assignment */
+enum mCc_ast_declaration_type {
+	MCC_AST_DECLARATION_TYPE_DECLARATION,
+	MCC_AST_DECLARATION_TYPE_ARRAY_DECLARATION
+};
+
+struct mCc_ast_declaration {
+	struct mCc_ast_node node;
+	enum mCc_ast_declaration_type type;
+	enum mCc_ast_var_type var_type;
+	union {
+		struct {
+			struct mCc_ast_literal *identifier;
+		} normal_decl;
+
+		struct {
+			struct mCc_ast_literal *identifier;
+			struct mCc_ast_literal *size;
+		} array_decl;
+	};
+};
+
+struct mCc_ast_declaration *
+mCc_ast_new_declaration(enum mCc_ast_var_type var_type,
+                        struct mCc_ast_literal *identifier);
+
+struct mCc_ast_declaration *
+mCc_ast_new_array_declaration(enum mCc_ast_var_type var_type,
+                              long size, struct mCc_ast_literal *identifier);
+
+void mCc_ast_delete_declaration(struct mCc_ast_declaration *declaration);
+
 /* ------------------------------------------------------------- Statements */
 enum mCc_ast_statement_type {
+	MCC_AST_STATEMENT_TYPE_DECLARATION,
+	MCC_AST_STATEMENT_TYPE_ASSIGNMENT,
 	MCC_AST_STATEMENT_TYPE_EXPRESSION,
 	MCC_AST_STATEMENT_TYPE_COMPOUND,
 	MCC_AST_STATEMENT_TYPE_IF,
 	MCC_AST_STATEMENT_TYPE_IF_ELSE,
 	MCC_AST_STATEMENT_TYPE_WHILE,
 	MCC_AST_STATEMENT_TYPE_RETURN,
+
 };
 
 struct mCc_ast_statement {
@@ -245,9 +302,20 @@ struct mCc_ast_statement {
 			struct mCc_ast_statement *compount_stmt_2;
 		};
 
-		//TODO: if_stmt
+		/* MCC_AST_STATEMENT_TYPE_DECLARATION */
+		struct mCc_ast_declaration *declaration;
+
+		/* MCC_AST_STATEMENT_TYPE_ASSIGNMENT */
+		struct {
+			struct mCc_ast_literal *id_literal_ass;
+			struct mCc_ast_expression *expression_1;
+			struct mCc_ast_expression *expression_2;
+		};
 	};
 };
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_declaration(struct mCc_ast_declaration *declaration);
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_expression(struct mCc_ast_expression *expression);
@@ -276,7 +344,22 @@ struct mCc_ast_statement *
 mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
 */
 
+struct mCc_ast_statement *mCc_ast_new_statement_ass_1(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression);
+
+struct mCc_ast_statement *mCc_ast_new_statement_ass_2(struct mCc_ast_literal *id_literal,
+		struct mCc_ast_expression *expression_1, struct mCc_ast_expression *expression_2);
+
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
+
+/* ------------------------------------------------------------- Function type */
+enum mCc_ast_function_type {
+	MCC_AST_FUNCTION_TYPE_INT,
+	MCC_AST_FUNCTION_TYPE_FLOAT,
+	MCC_AST_FUNCTION_TYPE_BOOL,
+	MCC_AST_FUNCTION_TYPE_STRING,
+	MCC_AST_FUNCTION_TYPE_VOID
+};
 
 #ifdef __cplusplus
 }

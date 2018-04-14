@@ -2,7 +2,7 @@
 
 #include "mCc/ast.h"
 #include "mCc/parser.h"
-
+/*
 TEST(Parser, BinaryOp_1)
 {
 	const char input[] = "192 + 3.14";
@@ -525,9 +525,65 @@ TEST(Parser, Unary_1)
 
 	mCc_ast_delete_expression(expr);
 }
+*/
+/* ------------------------Declaration/Assignment */
+
+TEST(Parser, Declaration_1)
+{
+	const char input[] = "int x;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	// root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_DECLARATION, stmt->type);
+
+	// root->declaration
+	auto decl = stmt->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_DECLARATION, decl->type);
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, decl->var_type);
+
+	// decl->normal_decl->identifier;
+	auto normal_decl = decl->normal_decl;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, normal_decl.identifier->type);
+	ASSERT_STREQ("x", normal_decl.identifier->id_value);
+
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, Declaration_2)
+{
+	const char input[] = "float[10] x;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	// root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_DECLARATION, stmt->type);
+
+	// root->declaration
+	auto decl = stmt->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_ARRAY_DECLARATION, decl->type);
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, decl->var_type);
+
+	// decl->array_decl->identifier;
+	auto array_decl = decl->array_decl;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, array_decl.identifier->type);
+	ASSERT_STREQ("x", array_decl.identifier->id_value);
+
+	// decl->array_decl->size
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, array_decl.size->type);
+	ASSERT_EQ(10, array_decl.size->i_value);
+
+	mCc_ast_delete_statement(stmt);
+}
 
 /* ------------------------Statements */
-
+/*
 TEST(Parser, Stmt_Expression_1)
 {
 	const char input[] = "2 + 1;";
@@ -559,7 +615,6 @@ TEST(Parser, Stmt_Expression_1)
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->rhs->literal->type);
 	ASSERT_EQ(1, sub_expr->rhs->literal->i_value);
 
-	mCc_ast_delete_expression(sub_expr);
 	mCc_ast_delete_statement(stmt);
 }
 
@@ -617,3 +672,4 @@ TEST(Parser, Stmt_Compound_2)
 
 	// nothing more
 }
+*/

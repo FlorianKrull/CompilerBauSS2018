@@ -13,18 +13,26 @@
 #define YYSTYPE MCC_PARSER_STYPE
 %}
 
-alpha			[a-zA-Z_]
-alpha_num		[a-zA-Z0-9_]
-digit			[0-9]
 identifier		[a-zA-Z_][a-zA-Z0-9_]*
 int_literal     [0-9]+
-float_literal -?[0-9]+\.[0-9]+
+float_literal   [0-9]+\.[0-9]+
 bool_literal	"true"|"false"
 string_literal \"(\\.|[^\\])*\"
 whitespace [\r\t\v\f]
 newline \n
 
 %%
+
+"bool"            { return TK_BOOL_TYPE; }
+"int"             { return TK_INT_TYPE; }
+"float"           { return TK_FLOAT_TYPE; }
+"string"          { return TK_STRING_TYPE; }
+"void"          { return TK_VOID_TYPE; }
+
+"if"              { return TK_IF; }
+"else"            { return TK_ELSE; }
+"while"            { return TK_WHILE; }
+"return"            { return TK_RETURN; }
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 
@@ -35,16 +43,6 @@ newline \n
 {string_literal}    {yylval->TK_STRING_LITERAL = strdup(yytext) ;return TK_STRING_LITERAL;}
 
 {identifier}	{yylval->TK_IDENTIFIER = strdup(yytext);	return TK_IDENTIFIER;}
-
-{alpha}			{yylval->TK_ALPHA = strdup(yytext);	return TK_ALPHA;}
-
-{alpha_num}		{yylval->TK_ALPHA_NUM = strdup(yytext);	return TK_ALPHA_NUM;}
-
-{digit}			{yylval->TK_DIGIT = atoi(yytext); return TK_DIGIT;}
-
-
-
-
 
 "+"		{ return TK_PLUS; }
 "-"		{ return TK_MINUS; }
@@ -59,17 +57,16 @@ newline \n
 "=="		{ return TK_EQUAL; }
 "!="		{ return TK_UNEQUAL; }
 "!"             { return TK_EXCLAM; }
+"="               { return TK_ASSIGN; }
 
-"("               { return TK_LPARENTH; }
-")"               { return TK_RPARENTH; }
-
+"("     { return TK_LPARENTH; }
+")"     { return TK_RPARENTH; }
+","		{ return TK_COMMA; }
 ";"		{return TK_SEMICOLON; }
 "{"		{return TK_LBRACKET; }
 "}"		{return TK_RBRACKET; }
-"if"			{return TK_IF; }
-"else"			{return TK_ELSE; }
-"while"			{return TK_WHILE; }
-"return"		{return TK_RETURN; }
+"["		{ return TK_LSQUARE_BRACKET; }
+"]"		{ return TK_RSQUARE_BRACKET; }
 
 [ \t\r\n]+        { /* ignore */ }
 
