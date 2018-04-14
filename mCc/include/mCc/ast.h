@@ -228,8 +228,8 @@ enum mCc_ast_var_type {
 
 /* ------------------------------------------------------------- Declaration/Assignment */
 enum mCc_ast_declaration_type {
-	MCC_AST_DECLARATION_TYPE_DECLARATION,
-	MCC_AST_DECLARATION_TYPE_ARRAY_DECLARATION
+	MCC_AST_DECLARATION_TYPE_NORMAL,
+	MCC_AST_DECLARATION_TYPE_ARRAY,
 };
 
 struct mCc_ast_declaration {
@@ -257,6 +257,38 @@ mCc_ast_new_array_declaration(enum mCc_ast_var_type var_type,
                               long size, struct mCc_ast_literal *identifier);
 
 void mCc_ast_delete_declaration(struct mCc_ast_declaration *declaration);
+
+enum mCc_ast_assignment_type {
+	MCC_AST_ASSIGNMENT_TYPE_NORMAL,
+	MCC_AST_ASSIGNMENT_TYPE_ARRAY,
+};
+
+struct mCc_ast_assignment {
+	struct mCc_ast_node node;
+	enum mCc_ast_assignment_type type;
+	struct mCc_ast_literal *identifier;
+	union {
+		struct {
+			struct mCc_ast_expression *rhs;
+		} normal_asmt;
+
+		struct {
+			struct mCc_ast_expression *index;
+			struct mCc_ast_expression *rhs;
+		} array_asmt;
+	};
+};
+
+struct mCc_ast_assignment *
+mCc_ast_new_assignment(struct mCc_ast_literal *identifier,
+                       struct mCc_ast_expression *rhs);
+
+struct mCc_ast_assignment *
+mCc_ast_new_array_assignment(struct mCc_ast_literal *identifier,
+                             struct mCc_ast_expression *index,
+                             struct mCc_ast_expression *rhs);
+
+void mCc_ast_delete_assignment(struct mCc_ast_assignment *assignment);
 
 /* ------------------------------------------------------------- Statements */
 enum mCc_ast_statement_type {
@@ -299,16 +331,15 @@ struct mCc_ast_statement {
 		struct mCc_ast_declaration *declaration;
 
 		/* MCC_AST_STATEMENT_TYPE_ASSIGNMENT */
-		struct {
-			struct mCc_ast_literal *id_literal_ass;
-			struct mCc_ast_expression *expression_1;
-			struct mCc_ast_expression *expression_2;
-		};
+		struct mCc_ast_assignment *assignment;
 	};
 };
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_declaration(struct mCc_ast_declaration *declaration);
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_assignment(struct mCc_ast_assignment *assignment);
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_expression(struct mCc_ast_expression *expression);
@@ -336,12 +367,6 @@ mCc_ast_new_statement_return();
 struct mCc_ast_statement *
 mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
 */
-
-struct mCc_ast_statement *mCc_ast_new_statement_ass_1(struct mCc_ast_literal *id_literal,
-		struct mCc_ast_expression *expression);
-
-struct mCc_ast_statement *mCc_ast_new_statement_ass_2(struct mCc_ast_literal *id_literal,
-		struct mCc_ast_expression *expression_1, struct mCc_ast_expression *expression_2);
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
 

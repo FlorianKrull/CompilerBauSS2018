@@ -174,6 +174,7 @@ literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
 
 statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | declaration SEMICOLON   { $$ = mCc_ast_new_statement_declaration($1); }
+		  | assignment SEMICOLON 	{ $$ = mCc_ast_new_statement_assignment($1); }
 		  | compound_stmt			{ $$ = $1; }
 /*		  | if_stmt					{ $$ = $1; }
 		  | while_stmt				{ $$ = $1; }
@@ -197,15 +198,17 @@ ret_stmt : RETURN SEMICOLON				{ $$ = mCc_ast_new_statement_return(); }
 		 ;
 */
 /* Declaration/Assignment */
-/* Idea for array declaration and assignment credits to team 21 */
+/* Solution for array declaration and assignment credits to team 21 */
 declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration($1, mCc_ast_new_literal_identifier($2));}
 			| var_type LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = 
 			mCc_ast_new_array_declaration($1, $3, mCc_ast_new_literal_identifier($5));}
 			;
 			
-assignment : IDENTIFIER EQUAL expression 	{$$ = mCc_ast_new_statement_ass_1(mCc_ast_new_literal_identifier($1),
+assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment(mCc_ast_new_literal_identifier($1),
 											$3);}
-		   | IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET ASSIGN expression	{$$ = $1;}
+		   | IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET ASSIGN expression	{$$ = 
+		   									mCc_ast_new_array_assignment(mCc_ast_new_literal_identifier($1), $3,
+											$6);}
 		   ;
 
 %%
