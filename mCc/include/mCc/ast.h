@@ -17,6 +17,7 @@ struct mCc_ast_expression;
 struct mCc_ast_literal;
 struct mCc_ast_statement;
 struct mCc_ast_declaration;
+struct mCc_ast_assignment;
 /* ---------------------------------------------------------------- AST Node */
 
 struct mCc_ast_source_location {
@@ -368,17 +369,6 @@ struct mCc_ast_statement *
 mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
-
-
-struct mCc_ast_while {
-	struct mCc_ast_node node;
-	struct mCc_ast_expression *expression;
-	struct mCc_ast_statement *statement;
-};
-
-struct mCc_ast_while * mCc_ast_new_while(struct mCc_ast_expression *expr, struct mCc_ast_statement *stmt);
-
-void mCc_ast_delete_while(struct mCc_ast_while *while_stmt);
 
 /* ------------------------------------------------------------- Function type */
 enum mCc_ast_function_type {

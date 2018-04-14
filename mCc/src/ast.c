@@ -175,6 +175,10 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression)
 		mCc_ast_delete_literal(expression->literal);
 		break;
 
+	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
+		mCc_ast_delete_expression(expression->u_rhs);
+		break;
+
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 		mCc_ast_delete_expression(expression->lhs);
 		mCc_ast_delete_expression(expression->rhs);
