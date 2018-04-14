@@ -40,3 +40,25 @@ TEST(dot_printer, PrintBinaryOp_1)
   fclose(output);
   mCc_ast_delete_expression(expr);
 }
+
+TEST(dot_print, PrintUnaryOp_1)
+{
+  struct mCc_ast_literal *rhs = mCc_ast_new_literal_int(5);
+  struct mCc_ast_expression *expr = mCc_ast_new_expression_unary_op(MCC_AST_UNARY_OP_MINUS, mCc_ast_new_expression_literal(rhs));
+  FILE *output = fopen("unary_op.dot", "w");
+  mCc_ast_print_dot_expression(output, expr);
+  fclose(output);
+  mCc_ast_delete_expression(expr);
+}
+
+TEST(dot_print, PrintParenthesis_1)
+{
+  struct mCc_ast_literal *lhs = mCc_ast_new_literal_int(5);
+  struct mCc_ast_literal *rhs = mCc_ast_new_literal_int(4);
+  struct mCc_ast_expression *expr = mCc_ast_new_expression_compare_op(MCC_AST_BINARY_OP_UEQ, mCc_ast_new_expression_literal(lhs), mCc_ast_new_expression_literal(rhs));
+  struct mCc_ast_expression *parenth = mCc_ast_new_expression_parenth(expr);
+  FILE *output = fopen("parenthesis.dot", "w");
+  mCc_ast_print_dot_expression(output, parenth);
+  fclose(output);
+  mCc_ast_delete_expression(parenth);
+}

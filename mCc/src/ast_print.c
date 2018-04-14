@@ -6,6 +6,16 @@
 
 #define LABEL_SIZE 64
 
+const char *mCc_ast_print_unary_op(enum mCc_ast_unary_op op)
+{
+	switch(op){
+		case MCC_AST_UNARY_OP_MINUS: return "-";
+		case MCC_AST_UNARY_OP_EXCLAM: return "!";
+	}
+
+	return "unknown op";
+}
+
 const char *mCc_ast_print_binary_op(struct mCc_ast_expression *expression)
 {
     if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_ADD){
@@ -39,7 +49,6 @@ const char *mCc_ast_print_binary_op(struct mCc_ast_expression *expression)
 
 	return "unknown op";
 }
-
 
 
 /* ------------------------------------------------------------- DOT Printer */
@@ -108,6 +117,22 @@ print_dot_expression_binary_op(struct mCc_ast_expression *expression,
 	print_dot_edge(out, expression, expression->rhs, "rhs");
 }
 
+static void
+print_dot_expression_unary_op(struct mCc_ast_expression *expression,
+				void *data)
+{
+	assert(expression);
+	assert(data);
+
+        char label[LABEL_SIZE] = { 0 };
+	snprintf(label, sizeof(label), "expr: %s",
+		 mCc_ast_print_unary_op(expression->unary_op));
+	FILE *out = data;
+	print_dot_node(out, expression, label);
+	print_dot_edge(out, expression, expression->u_rhs, "rhs");
+
+}
+
 static void print_dot_expression_parenth(struct mCc_ast_expression *expression,
                                          void *data)
 {
@@ -167,6 +192,7 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 
 		.expression_literal = print_dot_expression_literal,
 		.expression_binary_op = print_dot_expression_binary_op,
+		.expression_unary_op = print_dot_expression_unary_op,
 		.expression_parenth = print_dot_expression_parenth,
 
 		.literal_int = print_dot_literal_int,
