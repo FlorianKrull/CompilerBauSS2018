@@ -15,9 +15,8 @@ typedef int bool;
 struct mCc_ast_program;
 struct mCc_ast_expression;
 struct mCc_ast_literal;
-struct mCc_ast_var_action;
 struct mCc_ast_statement;
-
+struct mCc_ast_declaration;
 /* ---------------------------------------------------------------- AST Node */
 
 struct mCc_ast_source_location {
@@ -41,8 +40,8 @@ struct mCc_ast_program {
 };
 
 struct mCc_ast_program *mCc_ast_new_program_1 (struct mCc_ast_expression *expression);
-struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action);
-
+//struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action);
+void mCc_ast_delete_program(struct mCc_ast_program *program);
 
 /* --------------------------------------------------------------- Operators */
 
@@ -228,27 +227,36 @@ enum mCc_ast_var_type {
 };
 
 /* ------------------------------------------------------------- Declaration/Assignment */
-enum mCc_ast_var_action_type {
-	MCC_AST_VARIABLES_DECLARATION,
-	MCC_AST_VARIABLES_ASSIGNMENT,
+enum mCc_ast_declaration_type {
+	MCC_AST_DECLARATION_TYPE_DECLARATION,
+	MCC_AST_DECLARATION_TYPE_ARRAY_DECLARATION
 };
-struct mCc_ast_var_action {
+
+struct mCc_ast_declaration {
 	struct mCc_ast_node node;
-	enum mCc_ast_var_action_type type;
-
+	enum mCc_ast_declaration_type type;
 	enum mCc_ast_var_type var_type;
-	struct mCc_ast_literal *id_literal;
 	union {
-		/* MCC_AST_VARIABLES_DECLARATION */
-		struct mCc_ast_literal *int_literal;
+		struct {
+			struct mCc_ast_literal *identifier;
+		} normal_decl;
 
-		/* MCC_AST_VARIABLES_ASSIGNMENT */
-		struct mCc_ast_expression *expression_1;
-		struct mCc_ast_expression *expression_2;
+		struct {
+			struct mCc_ast_literal *identifier;
+			struct mCc_ast_literal *size;
+		} array_decl;
 	};
 };
 
-struct mCc_ast_var_action *mCc_ast_new_declaration_1(enum mCc_ast_var_type var_type, char *value);
+struct mCc_ast_declaration *
+mCc_ast_new_declaration(enum mCc_ast_var_type var_type,
+                        struct mCc_ast_literal *identifier);
+
+struct mCc_ast_declaration *
+mCc_ast_new_array_declaration(enum mCc_ast_var_type var_type,
+                              long size, struct mCc_ast_literal *identifier);
+
+void mCc_ast_delete_declaration(struct mCc_ast_declaration *declaration);
 
 /* ------------------------------------------------------------- Statements */
 enum mCc_ast_statement_type {
@@ -288,11 +296,7 @@ struct mCc_ast_statement {
 		};
 
 		/* MCC_AST_STATEMENT_TYPE_DECLARATION */
-		struct {
-			enum mCc_ast_var_type var_type;
-			struct mCc_ast_literal *id_literal;
-			struct mCc_ast_literal *int_literal;
-		};
+		struct mCc_ast_declaration *declaration;
 
 		/* MCC_AST_STATEMENT_TYPE_ASSIGNMENT */
 		struct {
@@ -302,6 +306,9 @@ struct mCc_ast_statement {
 		};
 	};
 };
+
+struct mCc_ast_statement *
+mCc_ast_new_statement_declaration(struct mCc_ast_declaration *declaration);
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_expression(struct mCc_ast_expression *expression);
@@ -329,12 +336,6 @@ mCc_ast_new_statement_return();
 struct mCc_ast_statement *
 mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression);
 */
-
-struct mCc_ast_statement *mCc_ast_new_statement_dec_1(enum mCc_ast_var_type var_type,
-		struct mCc_ast_literal *id_literal);
-
-struct mCc_ast_statement *mCc_ast_new_statement_dec_2(enum mCc_ast_var_type var_type,
-		struct mCc_ast_literal *int_literal, struct mCc_ast_literal *id_literal);
 
 struct mCc_ast_statement *mCc_ast_new_statement_ass_1(struct mCc_ast_literal *id_literal,
 		struct mCc_ast_expression *expression);

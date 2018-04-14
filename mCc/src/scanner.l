@@ -21,9 +21,18 @@ string_literal \"(\\.|[^\\])*\"
 whitespace [\r\t\v\f]
 newline \n
 
-int_type "int"
-
 %%
+
+"bool"            { return TK_BOOL_TYPE; }
+"int"             { return TK_INT_TYPE; }
+"float"           { return TK_FLOAT_TYPE; }
+"string"          { return TK_STRING_TYPE; }
+"void"          { return TK_VOID_TYPE; }
+
+"if"              { return TK_IF; }
+"else"            { return TK_ELSE; }
+"while"            { return TK_WHILE; }
+"return"            { return TK_RETURN; }
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 
@@ -34,11 +43,6 @@ int_type "int"
 {string_literal}    {yylval->TK_STRING_LITERAL = strdup(yytext) ;return TK_STRING_LITERAL;}
 
 {identifier}	{yylval->TK_IDENTIFIER = strdup(yytext);	return TK_IDENTIFIER;}
-
-
-
-
-
 
 "+"		{ return TK_PLUS; }
 "-"		{ return TK_MINUS; }
@@ -53,6 +57,7 @@ int_type "int"
 "=="		{ return TK_EQUAL; }
 "!="		{ return TK_UNEQUAL; }
 "!"             { return TK_EXCLAM; }
+"="               { return TK_ASSIGN; }
 
 "("     { return TK_LPARENTH; }
 ")"     { return TK_RPARENTH; }
@@ -62,21 +67,6 @@ int_type "int"
 "}"		{return TK_RBRACKET; }
 "["		{ return TK_LSQUARE_BRACKET; }
 "]"		{ return TK_RSQUARE_BRACKET; }
-
-"if"			{return TK_IF; }
-"else"			{return TK_ELSE; }
-"while"			{return TK_WHILE; }
-"return"		{return TK_RETURN; }
-
-int_type          {yylval->TK_INT_TYPE = strdup(yytext); return TK_INT_TYPE;}
-
-float        {return TK_FLOAT_TYPE;}
-
-bool         {return TK_BOOL_TYPE;}
-
-string       {return TK_STRING_TYPE;}
-
-void		{return TK_VOID_TYPE;}
 
 [ \t\r\n]+        { /* ignore */ }
 
