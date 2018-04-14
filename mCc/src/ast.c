@@ -55,6 +55,7 @@ mCc_ast_new_expression_binary_op(enum mCc_ast_binary_op op,
 	expr->op = op;
 	expr->lhs = lhs;
 	expr->rhs = rhs;
+    expr->binary_op_type = MCC_AST_BINARY_OP_TYPE_BINARY;
 	return expr;
 }
 
@@ -75,6 +76,7 @@ mCc_ast_new_expression_add_op(enum mCc_ast_binary_add_op add_op,
 	expr->add_op = add_op;
 	expr->lhs = lhs;
 	expr->rhs = rhs;
+    expr->binary_op_type = MCC_AST_BINARY_OP_TYPE_ADD;
 	return expr;
 }
 
@@ -95,6 +97,7 @@ mCc_ast_new_expression_mul_op(enum mCc_ast_binary_mul_op mul_op,
 	expr->mul_op = mul_op;
 	expr->lhs = lhs;
 	expr->rhs = rhs;
+    expr->binary_op_type = MCC_AST_BINARY_OP_TYPE_MUL;
 	return expr;
 }
 
@@ -115,6 +118,7 @@ mCc_ast_new_expression_compare_op(enum mCc_ast_binary_compare_op compare_op,
 	expr->compare_op = compare_op;
 	expr->lhs = lhs;
 	expr->rhs = rhs;
+    expr->binary_op_type = MCC_AST_BINARY_OP_TYPE_COMPARE;
 	return expr;
 }
 

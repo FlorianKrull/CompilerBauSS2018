@@ -6,14 +6,36 @@
 
 #define LABEL_SIZE 64
 
-const char *mCc_ast_print_binary_op(enum mCc_ast_binary_op op)
+const char *mCc_ast_print_binary_op(struct mCc_ast_expression *expression)
 {
-	/*switch (op) {
-	case MCC_AST_BINARY_OP_ADD: return "+";
-	case MCC_AST_BINARY_OP_SUB: return "-";
-	case MCC_AST_BINARY_OP_MUL: return "*";
-	case MCC_AST_BINARY_OP_DIV: return "/";
-	}*/
+    if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_ADD){
+      switch(expression->add_op){
+        case MCC_AST_BINARY_OP_ADD: return "+";
+        case MCC_AST_BINARY_OP_SUB: return "-";
+      }
+    }
+    else if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_MUL){
+      switch(expression->mul_op){
+        case MCC_AST_BINARY_OP_MUL: return "*";
+        case MCC_AST_BINARY_OP_DIV: return "/";
+      }
+    }
+    else if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_BINARY){
+      switch(expression->op){
+        case MCC_AST_BINARY_OP_AND: return "&&";
+        case MCC_AST_BINARY_OP_OR: return "||";
+      }
+    }
+    else if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_COMPARE){
+      switch (expression->compare_op){
+        case MCC_AST_BINARY_OP_SMT: return "<";
+        case MCC_AST_BINARY_OP_GRT: return ">";
+        case MCC_AST_BINARY_OP_GRE: return ">=";
+        case MCC_AST_BINARY_OP_SME: return "<=";
+        case MCC_AST_BINARY_OP_EQ: return "==";
+        case MCC_AST_BINARY_OP_UEQ: return "!=";
+      }
+    }
 
 	return "unknown op";
 }
@@ -78,7 +100,7 @@ print_dot_expression_binary_op(struct mCc_ast_expression *expression,
 
 	char label[LABEL_SIZE] = { 0 };
 	snprintf(label, sizeof(label), "expr: %s",
-	         mCc_ast_print_binary_op(expression->op));
+	         mCc_ast_print_binary_op(expression));
 
 	FILE *out = data;
 	print_dot_node(out, expression, label);
@@ -149,6 +171,7 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 
 		.literal_int = print_dot_literal_int,
 		.literal_float = print_dot_literal_float,
+        .literal_bool = print_dot_literal_bool,
 	};
 }
 
