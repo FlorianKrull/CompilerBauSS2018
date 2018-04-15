@@ -443,30 +443,21 @@ mCc_ast_new_statement_expression(struct mCc_ast_expression *expression)
 }
 
 struct mCc_ast_statement *
-mCc_ast_new_statement_compound_1()
+mCc_ast_new_statement_compound(struct mCc_ast_statement *statement)
 {
-	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
-	if (!stmt) {
-		return NULL;
-	}
-
-	stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY;
-
-	return stmt;
-}
-
-struct mCc_ast_statement *
-mCc_ast_new_statement_compound_2(struct mCc_ast_statement *statement)
-{
-	assert(statement);
+//	assert(statement);
 
 	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
 	if (!stmt) {
 		return NULL;
 	}
 
-	stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND;
-	stmt->statement = statement;
+	if (statement != NULL) {
+		stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND;
+		stmt->statement = statement;
+	} else {
+		stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY;
+	}
 	return stmt;
 }
 /*
@@ -528,29 +519,22 @@ mCc_ast_new_statement_while(struct mCc_ast_expression *expression,
 }
 
 struct mCc_ast_statement *
-mCc_ast_new_statement_return()
+mCc_ast_new_statement_return(struct mCc_ast_expression *expression)
 {
-	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
-	if (!stmt) {
-		return NULL;
-	}
-
-	stmt->type = MCC_AST_STATEMENT_TYPE_RETURN_EMPTY;
-	return stmt;
-}
-
-struct mCc_ast_statement *
-mCc_ast_new_statement_return_2(struct mCc_ast_expression *expression)
-{
-	assert(expression);
+//	assert(expression);
 
 	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
 	if (!stmt) {
 		return NULL;
 	}
 
-	stmt->type = MCC_AST_STATEMENT_TYPE_RETURN;
-	stmt->expression = expression;
+
+	if (expression != NULL) {
+		stmt->type = MCC_AST_STATEMENT_TYPE_RETURN;
+		stmt->expression = expression;
+	} else {
+		stmt->type = MCC_AST_STATEMENT_TYPE_RETURN_EMPTY;
+	}
 	return stmt;
 }
 

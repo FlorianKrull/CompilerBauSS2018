@@ -697,7 +697,7 @@ TEST(Parser, Stmt_Expression_1)
 
 TEST(Parser, Stmt_Compound_1)
 {
-	const char input[] = "{2 + 1;}";
+	const char input[] = "{var = 1;}";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
@@ -707,28 +707,24 @@ TEST(Parser, Stmt_Compound_1)
 	//root
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
 
-	//root->statement (expression SEMICOLON)
+	//root->statement (assignment SEMICOLON)
 	auto sub_stmt = stmt->statement;
-	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_EXPRESSION, sub_stmt->type);
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_ASSIGNMENT, sub_stmt->type);
 
-	//root->statement->expression
-	auto sub_expr = sub_stmt->expression;
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, sub_expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, sub_expr->add_op);
+	//root->statement->assignment
+	auto asmt = sub_stmt->assignment;
+	ASSERT_EQ(MCC_AST_ASSIGNMENT_TYPE_NORMAL, asmt->type);
 
-	// root -> lhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, sub_expr->lhs->type);
+	// asmt -> lhs
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, asmt->identifier->type);
+	ASSERT_STREQ("var", asmt->identifier->id_value);
 
-	// root -> lhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->lhs->literal->type);
-	ASSERT_EQ(2, sub_expr->lhs->literal->i_value);
+	// asmt -> rhs
+	auto expr = asmt->normal_asmt.rhs;
 
-	// root -> rhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, sub_expr->rhs->type);
-
-	// root -> rhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, sub_expr->rhs->literal->type);
-	ASSERT_EQ(1, sub_expr->rhs->literal->i_value);
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->type);
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->literal->type);
+	ASSERT_EQ(1, expr->literal->i_value);
 
 	mCc_ast_delete_statement(stmt);
 }

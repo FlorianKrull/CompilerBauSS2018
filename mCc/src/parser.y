@@ -181,8 +181,8 @@ statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | ret_stmt SEMICOLON		{ $$ = $1; }	  
 		  ;
 		  
-compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound_1(); }
-			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound_2($2); }
+compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound(NULL); }
+			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound($2); }
 			  ;
 /*
 if_stmt : IF LPARENTH expression RPARENTH statement 						{$$ = mCc_ast_new_statement_if($3, $5); }
@@ -192,8 +192,8 @@ if_stmt : IF LPARENTH expression RPARENTH statement 						{$$ = mCc_ast_new_stat
 while_stmt : WHILE LPARENTH expression RPARENTH statement {$$ = mCc_ast_new_statement_while($3, $5); }
 		   ;
   
-ret_stmt : RETURN 				{ $$ = mCc_ast_new_statement_return(); }
-		 | RETURN expression   { $$ = mCc_ast_new_statement_return_2($2); }
+ret_stmt : RETURN 				{ $$ = mCc_ast_new_statement_return(NULL); }
+		 | RETURN expression   { $$ = mCc_ast_new_statement_return($2); }
 		 ;
 
 /* Declaration/Assignment */
@@ -209,6 +209,9 @@ assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment(mCc_ast_
 		   									mCc_ast_new_array_assignment(mCc_ast_new_literal_identifier($1), $3,
 											$6);}
 		   ;
+		   
+/* Function definition/call */
+
 
 %%
 
