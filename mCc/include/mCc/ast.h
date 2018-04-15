@@ -18,6 +18,8 @@ struct mCc_ast_literal;
 struct mCc_ast_statement;
 struct mCc_ast_declaration;
 struct mCc_ast_assignment;
+struct mCc_ast_parameter;
+struct mCc_ast_function_def;
 /* ---------------------------------------------------------------- AST Node */
 
 struct mCc_ast_source_location {
@@ -82,6 +84,7 @@ enum mCc_ast_binary_mul_op {
 
 enum mCc_ast_expression_type {
 	MCC_AST_EXPRESSION_TYPE_LITERAL,
+	MCC_AST_EXPRESSION_TYPE_CALL_EXPR,
 	MCC_AST_EXPRESSION_TYPE_UNARY_OP,
 	MCC_AST_EXPRESSION_TYPE_BINARY_OP,
 	MCC_AST_EXPRESSION_TYPE_PARENTH,
@@ -94,6 +97,12 @@ struct mCc_ast_expression {
 	union {
 		/* MCC_AST_EXPRESSION_TYPE_LITERAL */
 		struct mCc_ast_literal *literal;
+
+		/* MCC_AST_EXPRESSION_TYPE_CALL_EXPR */
+		struct {
+			struct mCc_ast_literal *identifier;
+			struct mCc_ast_argument_list *arguments;
+		} call_expr;
 
 		/* MCC_AST_EXPRESSION_TYPE_UNARY_OP */
 		struct {
@@ -127,6 +136,10 @@ struct mCc_ast_expression {
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_literal(struct mCc_ast_literal *literal);
+
+struct mCc_ast_expression *
+mCc_ast_new_expression_call(const char *value,
+                            struct mCc_ast_argument_list *arguments);
 
 struct mCc_ast_expression *
 mCc_ast_new_expression_unary_op(enum mCc_ast_unary_op op,
@@ -364,7 +377,7 @@ mCc_ast_new_statement_return(struct mCc_ast_expression *expression);
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
 
-/* ------------------------------------------------------------- Function type */
+/* ------------------------------------------------------------- Function Definition/Call */
 enum mCc_ast_function_type {
 	MCC_AST_FUNCTION_TYPE_INT,
 	MCC_AST_FUNCTION_TYPE_FLOAT,
@@ -372,6 +385,47 @@ enum mCc_ast_function_type {
 	MCC_AST_FUNCTION_TYPE_STRING,
 	MCC_AST_FUNCTION_TYPE_VOID
 };
+
+struct mCc_ast_parameter {
+	struct mCc_ast_node node;
+	struct mCc_ast_declaration *declaration;
+	struct mCc_ast_parameter *next;
+};
+
+struct mCc_ast_parameter *
+mCc_ast_new_parameter(struct mCc_ast_declaration *declaration, struct mCc_ast_parameter *next);
+
+void mCc_ast_delete_parameter(struct mCc_ast_parameter *param);
+
+struct mCc_ast_function_def {
+	struct mCc_ast_node node;
+
+	enum mCc_ast_function_type type;
+
+	struct mCc_ast_literal *identifier;
+	struct mCc_ast_parameter *parameters;
+	struct mCc_ast_statement *compound_stmt;
+};
+
+struct mCc_ast_function_def *
+mCc_ast_new_function_def(enum mCc_ast_function_type type,
+                         const char *id_value,
+                         struct mCc_ast_parameter *params,
+                         struct mCc_ast_statement *compound_stmt);
+
+void mCc_ast_delete_function_def(struct mCc_ast_function_def *function_def);
+
+struct mCc_ast_argument_list {
+	struct mCc_ast_node node;
+	struct mCc_ast_expression *expression;
+	struct mCc_ast_argument_list *next;
+};
+
+struct mCc_ast_argument_list *
+mCc_ast_new_argument_list(struct mCc_ast_expression *expression);
+
+void mCc_ast_delete_argument_list(struct mCc_ast_argument_list *argument_list);
+
 
 #ifdef __cplusplus
 }

@@ -811,3 +811,59 @@ TEST(Parser, While_1)
 	// nothing more
 	mCc_ast_delete_statement(stmt);
 }
+
+/* ------------------------Function Definition/Call */
+/*
+TEST(Parser, Parameter_2)
+{
+	const char input[] = "int x, int y";
+	auto result = mCc_parser_parse_string(input);
+
+//	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.parameter;
+
+	//root
+
+	// nothing more
+	mCc_ast_delete_parameter(stmt);
+}
+
+TEST(Parser, Function_1)
+{
+	const char input[] = "void foo() {bool flag;}";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.function_def;
+
+	//root
+
+	mCc_ast_delete_function_def(stmt);
+}
+
+TEST(Parser, Function_2)
+{
+	const char input[] = "string foo2(int x, float y) {}";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.function_def;
+
+	//root
+
+	mCc_ast_delete_function_def(stmt);
+}
+*/
+
+TEST(Parser, Call_Expr_2)
+{
+	const char input[] = "foo()";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+
+}

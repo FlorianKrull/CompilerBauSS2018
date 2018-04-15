@@ -3,9 +3,10 @@
 %define api.pure full
 %lex-param   {void *scanner}
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result}
-			     {struct mCc_ast_literal** lit_result}
 			     {struct mCc_ast_statement** stmt_result}
-			     {struct mCc_ast_declaration** dec_result}
+			     {struct mCc_ast_parameter** par_result}
+			     {struct mCc_ast_function_def** func_result}
+			     
 			     {struct mCc_ast_program** result}
 /*TODO: combine it to only one struct mCc_ast_program*/
 %define parse.trace
@@ -87,11 +88,15 @@ void mCc_parser_error();
 %type <enum mCc_ast_function_type>function_type
 
 %type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt
-%type <struct mCc_ast_expression *> expression term term_2 single_expr
+%type <struct mCc_ast_expression *> expression term term_2 single_expr call_expr
 %type <struct mCc_ast_literal *> literal
 
 %type <struct mCc_ast_declaration *> declaration
 %type <struct mCc_ast_assignment *> assignment
+
+%type <struct mCc_ast_function_def *> function_def
+%type <struct mCc_ast_parameter *>parameters
+%type <struct mCc_ast_argument_list *> arguments
 
 %start toplevel
 
@@ -99,6 +104,7 @@ void mCc_parser_error();
          
 toplevel : expression { *expr_result = $1; }
 	 | statement  { *stmt_result = $1; }
+	 | function_def { *func_result = $1; }
          ;
 		 
 /* unary operators */
@@ -144,6 +150,7 @@ function_type : BOOL_TYPE { $$ = MCC_AST_FUNCTION_TYPE_BOOL; }
 	 
 /* Expressions */
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
+			| call_expr						  { $$ = $1; }
 			| unary_op INT_LITERAL 			  { $$ = mCc_ast_new_expression_unary_op($1, mCc_ast_new_expression_literal(mCc_ast_new_literal_int($2)));}
             | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
             ;
@@ -211,8 +218,24 @@ assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment(mCc_ast_
 		   ;
 		   
 /* Function definition/call */
+function_def : function_type IDENTIFIER LPARENTH parameters RPARENTH compound_stmt { $$ = 
+							mCc_ast_new_function_def($1, $2, $4, $6); }
+			 | function_type IDENTIFIER LPARENTH RPARENTH compound_stmt { $$ = 
+			 				mCc_ast_new_function_def($1, $2, NULL, $5); }
+			 ;
 
+/* Idea from team 21 */
+parameters  : declaration COMMA parameters { $$ = mCc_ast_new_parameter($1, $3); }
+			| declaration                  { $$ = mCc_ast_new_parameter($1, NULL);                }
+			;
 
+call_expr : IDENTIFIER LPARENTH arguments RPARENTH     { $$ = mCc_ast_new_expression_call($1, $3); }
+          | IDENTIFIER LPARENTH RPARENTH               { $$ = mCc_ast_new_expression_call($1, NULL); }
+		  ;
+
+arguments : expression COMMA arguments         { $$ = mCc_ast_new_argument_list($1); $$->next = $3; }
+		  | expression                         { $$ = mCc_ast_new_argument_list($1);                }
+		  ;
 %%
 
 #include <assert.h>
@@ -246,16 +269,16 @@ void mCc_parser_delete_result(struct mCc_parser_result* result) {
 		mCc_ast_delete_expression(result->expression);
 	}
 
-	if (result->literal != NULL) {
-		mCc_ast_delete_literal(result->literal);
-	}
-
 	if (result->statement != NULL) {
 		mCc_ast_delete_statement(result->statement);
 	}
+	
+	if (result->parameter != NULL) {
+		mCc_ast_delete_parameter(result->parameter);
+	}
 
-	if (result->declaration != NULL) {
-		mCc_ast_delete_declaration(result->declaration);
+	if (result->function_def != NULL) {
+		mCc_ast_delete_function_def(result->function_def);
 	}
 
 	if (result->program != NULL) {
@@ -275,8 +298,8 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		.status = MCC_PARSER_STATUS_OK,
 	};
 
-	if (yyparse(scanner, &result.expression, &result.literal, &result.statement,
-&result.declaration, &result.program) != 0) {
+	if (yyparse(scanner, &result.expression, &result.statement,
+	&result.parameter, &result.function_def, &result.program) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 

@@ -36,6 +36,110 @@ void mCc_ast_delete_program(struct mCc_ast_program *program)
 	free(program);
 }
 
+/* ---------------------------------------------------------------- Literals */
+
+struct mCc_ast_literal *mCc_ast_new_literal_alpha(char value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_ALPHA;
+	lit->a_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_alpha_num(char value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_ALPHA_NUM;
+	lit->an_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_digit(int value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_DIGIT;
+	lit->d_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_identifier(const char* value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_IDENTIFIER;
+	lit->id_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_int(long value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_INT;
+	lit->i_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_float(double value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_FLOAT;
+	lit->f_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_BOOL;
+	lit->b_value = value;
+	return lit;
+}
+
+struct mCc_ast_literal *mCc_ast_new_literal_string(const char* value)
+{
+	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	lit->type = MCC_AST_LITERAL_TYPE_STRING;
+	lit->s_value = value;
+	return lit;
+}
+
+void mCc_ast_delete_literal(struct mCc_ast_literal *literal)
+{
+	assert(literal);
+	free(literal);
+}
+
 /* ------------------------------------------------------------- Expressions */
 
 struct mCc_ast_expression *
@@ -50,6 +154,23 @@ mCc_ast_new_expression_literal(struct mCc_ast_literal *literal)
 
 	expr->type = MCC_AST_EXPRESSION_TYPE_LITERAL;
 	expr->literal = literal;
+	return expr;
+}
+
+struct mCc_ast_expression *
+mCc_ast_new_expression_call(const char* value,
+                            struct mCc_ast_argument_list *arguments)
+{
+	assert(value);
+
+	struct mCc_ast_expression *expr = malloc(sizeof(*expr));
+	if (!expr) {
+		return NULL;
+	}
+
+	expr->type = MCC_AST_EXPRESSION_TYPE_CALL_EXPR;
+	expr->call_expr.identifier = mCc_ast_new_literal_identifier(value);
+	expr->call_expr.arguments = arguments;
 	return expr;
 }
 
@@ -175,6 +296,12 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression)
 		mCc_ast_delete_literal(expression->literal);
 		break;
 
+	case MCC_AST_EXPRESSION_TYPE_CALL_EXPR:
+		mCc_ast_delete_literal(expression->call_expr.identifier);
+		if (expression->call_expr.arguments != NULL) {
+			mCc_ast_delete_argument_list(expression->call_expr.arguments);
+		}
+		break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		mCc_ast_delete_expression(expression->u_rhs);
 		break;
@@ -190,110 +317,6 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression)
 	}
 
 	free(expression);
-}
-
-/* ---------------------------------------------------------------- Literals */
-
-struct mCc_ast_literal *mCc_ast_new_literal_alpha(char value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_ALPHA;
-	lit->a_value = value;
-	return lit;
-}
-
-struct mCc_ast_literal *mCc_ast_new_literal_alpha_num(char value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_ALPHA_NUM;
-	lit->an_value = value;
-	return lit;
-}
-
-struct mCc_ast_literal *mCc_ast_new_literal_digit(int value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_DIGIT;
-	lit->d_value = value;
-	return lit;
-}
-
-struct mCc_ast_literal *mCc_ast_new_literal_identifier(const char* value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_IDENTIFIER;
-	lit->id_value = value;
-	return lit;
-}
-
-struct mCc_ast_literal *mCc_ast_new_literal_int(long value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_INT;
-	lit->i_value = value;
-	return lit;
-}
-
-struct mCc_ast_literal *mCc_ast_new_literal_float(double value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_FLOAT;
-	lit->f_value = value;
-	return lit;
-}
-
-struct mCc_ast_literal *mCc_ast_new_literal_bool(bool value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_BOOL;
-	lit->b_value = value;
-	return lit;
-}
-
-struct mCc_ast_literal *mCc_ast_new_literal_string(const char* value)
-{
-	struct mCc_ast_literal *lit = malloc(sizeof(*lit));
-	if (!lit) {
-		return NULL;
-	}
-
-	lit->type = MCC_AST_LITERAL_TYPE_STRING;
-	lit->s_value = value;
-	return lit;
-}
-
-void mCc_ast_delete_literal(struct mCc_ast_literal *literal)
-{
-	assert(literal);
-	free(literal);
 }
 
 /* ------------------------------------------------------------- Statements/Declaration/Assignment */
@@ -568,4 +591,90 @@ void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 		}
 
 	free(statement);
+}
+
+/* ------------------------------------------------------------- Function Definition/Call */
+struct mCc_ast_parameter *
+mCc_ast_new_parameter(struct mCc_ast_declaration *declaration,
+		struct mCc_ast_parameter *next)
+{
+	assert(declaration);
+
+	struct mCc_ast_parameter *param = malloc(sizeof(*param));
+	assert(param);
+
+	param->declaration = declaration;
+	if (next != NULL) {
+		param->next = next;
+	}
+	return param;
+}
+
+void mCc_ast_delete_parameter(struct mCc_ast_parameter *param)
+{
+	assert(param);
+	mCc_ast_delete_declaration(param->declaration);
+	if (param->next != NULL) {
+		mCc_ast_delete_parameter(param->next);
+	}
+	free(param);
+}
+
+struct mCc_ast_function_def *
+mCc_ast_new_function_def(enum mCc_ast_function_type type,
+                         const char *id_value,
+                         struct mCc_ast_parameter *params,
+                         struct mCc_ast_statement *compound_stmt)
+{
+	assert(type);
+	assert(id_value);
+	assert(compound_stmt);
+
+	struct mCc_ast_function_def *function_def = malloc(sizeof(*function_def));
+	if(!function_def) {
+		return NULL;
+	}
+
+	function_def->type = type;
+	function_def->identifier = mCc_ast_new_literal_identifier(id_value);
+	function_def->compound_stmt = compound_stmt;
+	if (params != NULL) {
+		function_def->parameters = params;
+	}
+
+	return function_def;
+}
+
+void mCc_ast_delete_function_def(struct mCc_ast_function_def *function_def)
+{
+	assert(function_def);
+	mCc_ast_delete_literal(function_def->identifier);
+	if (function_def->parameters != NULL) {
+		mCc_ast_delete_parameter(function_def->parameters);
+	}
+	mCc_ast_delete_statement(function_def->compound_stmt);
+	free(function_def);
+}
+
+struct mCc_ast_argument_list *
+mCc_ast_new_argument_list(struct mCc_ast_expression *expression)
+{
+	assert(expression);
+
+	struct mCc_ast_argument_list *list = malloc(sizeof(*list));
+	assert(list);
+
+	list->expression = expression;
+	list->next = NULL;
+	return list;
+}
+
+void mCc_ast_delete_argument_list(struct mCc_ast_argument_list *argument_list)
+{
+	assert(argument_list);
+	mCc_ast_delete_expression(argument_list->expression);
+	if (argument_list->next != NULL) {
+		mCc_ast_delete_argument_list(argument_list->next);
+	}
+	free(argument_list);
 }
