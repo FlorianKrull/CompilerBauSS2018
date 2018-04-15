@@ -26,6 +26,9 @@ void mCc_parser_error();
 %define api.value.type union
 %define api.token.prefix {TK_}
 
+/* Precedence */
+%right PREC_IF ELSE
+
 %token END 0 "EOF"
 
 
@@ -186,7 +189,7 @@ statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | declaration SEMICOLON   { $$ = mCc_ast_new_statement_declaration($1); }
 		  | assignment SEMICOLON 	{ $$ = mCc_ast_new_statement_assignment($1); }
 		  | compound_stmt			{ $$ = $1; }
-/*		  | if_stmt					{ $$ = $1; }*/
+		  | if_stmt					{ $$ = $1; }
 		  | while_stmt				{ $$ = $1; }
 		  | ret_stmt SEMICOLON		{ $$ = $1; }	  
 		  ;
@@ -194,11 +197,11 @@ statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound(NULL); }
 			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound($2); }
 			  ;
-/*
-if_stmt : IF LPARENTH expression RPARENTH statement 						{$$ = mCc_ast_new_statement_if($3, $5); }
-		| IF LPARENTH expression RPARENTH compound_stmt ELSE compound_stmt 	{$$ = mCc_ast_new_statement_if_else($3, $5, $7); }
+
+if_stmt : IF LPARENTH expression RPARENTH statement %prec PREC_IF	{$$ = mCc_ast_new_statement_if($3, $5, NULL); }
+		| IF LPARENTH expression RPARENTH statement ELSE statement 	{$$ = mCc_ast_new_statement_if($3, $5, $7); }
 		;
-*/	
+
 while_stmt : WHILE LPARENTH expression RPARENTH statement {$$ = mCc_ast_new_statement_while($3, $5); }
 		   ;
   

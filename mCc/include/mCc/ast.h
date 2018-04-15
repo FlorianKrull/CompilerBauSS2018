@@ -325,10 +325,10 @@ struct mCc_ast_statement {
 
 		/* MCC_AST_STATEMENT_TYPE_IF_ELSE */
 		struct {
-			struct mCc_ast_expression *expr_1;
-			struct mCc_ast_statement *compount_stmt_1;
-			struct mCc_ast_statement *compount_stmt_2;
-		};
+			struct mCc_ast_expression *expr;
+			struct mCc_ast_statement *stmt_1;
+			struct mCc_ast_statement *stmt_2;
+		} if_else_stmt;
 
 		/* MCC_AST_STATEMENT_TYPE_DECLARATION */
 		struct mCc_ast_declaration *declaration;
@@ -350,14 +350,11 @@ mCc_ast_new_statement_expression(struct mCc_ast_expression *expression);
 struct mCc_ast_statement *
 mCc_ast_new_statement_compound(struct mCc_ast_statement *statement);
 
-/*
-struct mCc_ast_statement *
-mCc_ast_new_statement_if(struct mCc_ast_expression *expression, struct mCc_ast_statement *statement);
 
 struct mCc_ast_statement *
-mCc_ast_new_statement_if_else(struct mCc_ast_expression *expression,
-		struct mCc_ast_statement *compound_1, struct mCc_ast_statement *compound_2);
-*/
+mCc_ast_new_statement_if(struct mCc_ast_expression *expression, struct mCc_ast_statement *stmt_1,
+						 struct mCc_ast_statement *stmt_2);
+
 struct mCc_ast_statement *
 mCc_ast_new_statement_while(struct mCc_ast_expression *expr, struct mCc_ast_statement *stmt);
 

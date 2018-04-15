@@ -449,26 +449,32 @@ mCc_ast_new_statement_compound(struct mCc_ast_statement *statement)
 	}
 	return stmt;
 }
-/*
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_if(struct mCc_ast_expression *expression,
-		struct mCc_ast_statement *statement)
+		struct mCc_ast_statement *stmt_1, struct mCc_ast_statement *stmt_2)
 {
 	assert(expression);
-	assert(statement);
+	assert(stmt_1);
 
 	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
 	if (!stmt) {
 		return NULL;
 	}
 
-	stmt->type = MCC_AST_STATEMENT_TYPE_IF;
-	stmt->expr = expression;
-	stmt->stmt = statement;
+	if (stmt_2 != NULL) {
+		stmt->type = MCC_AST_STATEMENT_TYPE_IF_ELSE;
+		stmt->if_else_stmt.expr = mCc_ast_new_expression_parenth(expression);
+		stmt->if_else_stmt.stmt_1 = stmt_1;
+		stmt->if_else_stmt.stmt_2 = stmt_2;
+	} else {
+		stmt->type = MCC_AST_STATEMENT_TYPE_IF;
+		stmt->expr = mCc_ast_new_expression_parenth(expression);
+		stmt->stmt = stmt_1;
+	}
 	return stmt;
 }
-
+/*
 struct mCc_ast_statement *
 mCc_ast_new_statement_if_else(struct mCc_ast_expression *expression,
 		struct mCc_ast_statement *compound_1, struct mCc_ast_statement *compound_2)
@@ -546,13 +552,16 @@ void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 			mCc_ast_delete_statement(statement->statement);
 			break;
 		case MCC_AST_STATEMENT_TYPE_IF:
-		case MCC_AST_STATEMENT_TYPE_IF_ELSE:
-
-			break;
 		case MCC_AST_STATEMENT_TYPE_WHILE:
 			mCc_ast_delete_expression(statement->expr);
 			mCc_ast_delete_statement(statement->stmt);
 			break;
+		case MCC_AST_STATEMENT_TYPE_IF_ELSE:
+			mCc_ast_delete_expression(statement->if_else_stmt.expr);
+			mCc_ast_delete_statement(statement->if_else_stmt.stmt_1);
+			mCc_ast_delete_statement(statement->if_else_stmt.stmt_2);
+			break;
+
 		default: break;
 		}
 

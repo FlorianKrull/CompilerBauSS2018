@@ -796,7 +796,7 @@ TEST(Parser, While_1)
 	//root
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_WHILE, stmt->type);
 
-//	//root->expression
+	//root->expression
 	auto expr = stmt->expr;
 
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->type);
@@ -809,6 +809,66 @@ TEST(Parser, While_1)
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY, substmt->type);
 
 	// nothing more
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, If_1)
+{
+	const char input[] = "if (c3 == 0) c3 = 2;";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_IF, stmt->type);
+
+	//root->expression
+	auto expr = stmt->expr;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_PARENTH, expr->type);
+
+	//expression inside parentheses
+	auto subexpr = expr->expression;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_EQ, subexpr->compare_op);
+
+	// subexpr -> lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->lhs->type);
+
+	// subexpr -> lhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, subexpr->lhs->literal->type);
+	ASSERT_STREQ("c3", subexpr->lhs->literal->id_value);
+
+	// subexpr -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->rhs->type);
+
+	// subexpr -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, subexpr->rhs->literal->type);
+	ASSERT_EQ(0, subexpr->rhs->literal->i_value);
+
+	// root->if statement after parentheses
+	auto if_stmt = stmt->stmt;
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_ASSIGNMENT, if_stmt->type);
+
+	// if_stmt->assignment
+	auto asmt = if_stmt->assignment;
+	ASSERT_EQ(MCC_AST_ASSIGNMENT_TYPE_NORMAL, asmt->type);
+
+	// asmt->identifier;
+	auto id = asmt->identifier;
+
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
+	ASSERT_STREQ("c3", id->id_value);
+
+	// asmt->normal_asmt->rhs
+	auto subexpr_asmt = asmt->normal_asmt.rhs;
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr_asmt->type);
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, subexpr_asmt->literal->type);
+	ASSERT_EQ(2, subexpr_asmt->literal->i_value);
+
 	mCc_ast_delete_statement(stmt);
 }
 
