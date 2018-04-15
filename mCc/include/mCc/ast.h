@@ -12,7 +12,6 @@ typedef int bool;
 #endif
 
 /* Forward Declarations */
-struct mCc_ast_program;
 struct mCc_ast_expression;
 struct mCc_ast_literal;
 struct mCc_ast_statement;
@@ -20,6 +19,8 @@ struct mCc_ast_declaration;
 struct mCc_ast_assignment;
 struct mCc_ast_parameter;
 struct mCc_ast_function_def;
+struct mCc_ast_function_def_list;
+struct mCc_ast_program;
 /* ---------------------------------------------------------------- AST Node */
 
 struct mCc_ast_source_location {
@@ -33,18 +34,6 @@ struct mCc_ast_source_location {
 struct mCc_ast_node {
 	struct mCc_ast_source_location sloc;
 };
-
-/* ---------------------------------------------------------------- Program */
-struct mCc_ast_program {
-	union {
-		struct mCc_ast_expression *expression;
-		struct mCc_ast_var_action *var_action;
-	};
-};
-
-struct mCc_ast_program *mCc_ast_new_program_1 (struct mCc_ast_expression *expression);
-//struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action);
-void mCc_ast_delete_program(struct mCc_ast_program *program);
 
 /* --------------------------------------------------------------- Operators */
 
@@ -426,6 +415,28 @@ mCc_ast_new_argument_list(struct mCc_ast_expression *expression);
 
 void mCc_ast_delete_argument_list(struct mCc_ast_argument_list *argument_list);
 
+struct mCc_ast_function_def_list {
+	struct mCc_ast_node node;
+	struct mCc_ast_function_def *function_def;
+	struct mCc_ast_function_def_list *next;
+};
+
+struct mCc_ast_function_def_list *
+mCc_ast_new_function_def_list(struct mCc_ast_function_def *function_def);
+
+void mCc_ast_delete_function_def_list(
+    struct mCc_ast_function_def_list *function_def_list);
+
+/* ---------------------------------------------------------------- Program */
+struct mCc_ast_program {
+	struct mCc_ast_node node;
+	struct mCc_ast_function_def_list *function_def_list;
+};
+
+struct mCc_ast_program *
+mCc_ast_new_program(struct mCc_ast_function_def_list *function_def_list);
+
+void mCc_ast_delete_program(struct mCc_ast_program *program);
 
 #ifdef __cplusplus
 }

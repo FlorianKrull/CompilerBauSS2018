@@ -858,12 +858,63 @@ TEST(Parser, Function_2)
 }
 */
 
-TEST(Parser, Call_Expr_2)
+TEST(Parser, Call_Expr_1)
 {
 	const char input[] = "foo()";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
+	auto expr = result.expression;
 
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_CALL_EXPR, expr->type);
+
+	auto call_expr = expr->call_expr;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, call_expr.identifier->type);
+	ASSERT_STREQ("foo", call_expr.identifier->id_value);
+
+	mCc_ast_delete_expression(expr);
+}
+
+TEST(Parser, Call_Expr_2)
+{
+	const char input[] = "foo(a, 6.2)";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto expr = result.expression;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_CALL_EXPR, expr->type);
+
+	auto call_expr = expr->call_expr;
+
+	//call_expr.identifier
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, call_expr.identifier->type);
+	ASSERT_STREQ("foo", call_expr.identifier->id_value);
+
+	// call_expr->expression
+	auto args = call_expr.arguments;
+	auto args_expr = args->expression;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, args_expr->type);
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, args_expr->literal->type);
+	ASSERT_STREQ("a", args_expr->literal->id_value);
+
+	// call_expr->next->expression
+	auto next_expr = args->next->expression;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, next_expr->type);
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_FLOAT, next_expr->literal->type);
+	ASSERT_EQ(6.2, next_expr->literal->f_value);
+
+	mCc_ast_delete_expression(expr);
+}
+
+TEST(Parser, Call_Expr_3)
+{
+	const char input[] = "foo(";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_NE(MCC_PARSER_STATUS_OK, result.status);
 }

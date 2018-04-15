@@ -2,40 +2,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-
-struct mCc_ast_program *mCc_ast_new_program_1 (struct mCc_ast_expression *expression)
-{
-	assert(expression);
-
-		struct mCc_ast_program *pro = malloc(sizeof(*pro));
-		if (!pro) {
-			return NULL;
-		}
-
-		pro->expression = expression;
-		return pro;
-}
-/*
-struct mCc_ast_program *mCc_ast_new_program_2 (struct mCc_ast_var_action *var_action)
-{
-	assert(var_action);
-
-		struct mCc_ast_program *pro = malloc(sizeof(*pro));
-		if (!pro) {
-			return NULL;
-		}
-
-		pro->var_action = var_action;
-		return pro;
-}*/
-
-void mCc_ast_delete_program(struct mCc_ast_program *program)
-{
-	assert(program);
-//	mCc_ast_delete_function_def_list(program->function_def_list);
-	free(program);
-}
-
 /* ---------------------------------------------------------------- Literals */
 
 struct mCc_ast_literal *mCc_ast_new_literal_alpha(char value)
@@ -601,7 +567,9 @@ mCc_ast_new_parameter(struct mCc_ast_declaration *declaration,
 	assert(declaration);
 
 	struct mCc_ast_parameter *param = malloc(sizeof(*param));
-	assert(param);
+	if (!param) {
+		return NULL;
+	}
 
 	param->declaration = declaration;
 	if (next != NULL) {
@@ -662,7 +630,9 @@ mCc_ast_new_argument_list(struct mCc_ast_expression *expression)
 	assert(expression);
 
 	struct mCc_ast_argument_list *list = malloc(sizeof(*list));
-	assert(list);
+	if(!list) {
+		return NULL;
+	}
 
 	list->expression = expression;
 	list->next = NULL;
@@ -677,4 +647,50 @@ void mCc_ast_delete_argument_list(struct mCc_ast_argument_list *argument_list)
 		mCc_ast_delete_argument_list(argument_list->next);
 	}
 	free(argument_list);
+}
+
+struct mCc_ast_function_def_list *
+mCc_ast_new_function_def_list(struct mCc_ast_function_def *function_def)
+{
+	assert(function_def);
+	struct mCc_ast_function_def_list *list = malloc(sizeof(*list));
+	if(!list) {
+		return NULL;
+	}
+
+	list->function_def = function_def;
+	list->next = NULL;
+	return list;
+}
+
+void mCc_ast_delete_function_def_list(
+    struct mCc_ast_function_def_list *function_def_list)
+{
+	assert(function_def_list);
+	if (function_def_list->next != NULL) {
+		mCc_ast_delete_function_def_list(function_def_list->next);
+	}
+	mCc_ast_delete_function_def(function_def_list->function_def);
+	free(function_def_list);
+}
+
+/* ---------------------------------------------------------------- Program */
+struct mCc_ast_program *
+mCc_ast_new_program(struct mCc_ast_function_def_list *function_def_list)
+{
+	assert(function_def_list);
+	struct mCc_ast_program *program = malloc(sizeof(*program));
+	if(!program) {
+		return NULL;
+	}
+
+	program->function_def_list = function_def_list;
+	return program;
+}
+
+void mCc_ast_delete_program(struct mCc_ast_program *program)
+{
+	assert(program);
+	mCc_ast_delete_function_def_list(program->function_def_list);
+	free(program);
 }

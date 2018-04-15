@@ -97,14 +97,17 @@ void mCc_parser_error();
 %type <struct mCc_ast_function_def *> function_def
 %type <struct mCc_ast_parameter *>parameters
 %type <struct mCc_ast_argument_list *> arguments
+%type <struct mCc_ast_function_def_list *> function_def_list
+%type <struct mCc_ast_program *> program
 
 %start toplevel
 
 %%
          
 toplevel : expression { *expr_result = $1; }
-	 | statement  { *stmt_result = $1; }
-	 | function_def { *func_result = $1; }
+	 	 | statement  { *stmt_result = $1; }
+	 	 | function_def { *func_result = $1; }
+/*	 	 | program { *result = $1; }*/
          ;
 		 
 /* unary operators */
@@ -236,6 +239,13 @@ call_expr : IDENTIFIER LPARENTH arguments RPARENTH     { $$ = mCc_ast_new_expres
 arguments : expression COMMA arguments         { $$ = mCc_ast_new_argument_list($1); $$->next = $3; }
 		  | expression                         { $$ = mCc_ast_new_argument_list($1);                }
 		  ;
+		  
+function_def_list : function_def function_def_list { $$ = mCc_ast_new_function_def_list($1); $$->next = $2; }
+				  | function_def                   { $$ = mCc_ast_new_function_def_list($1);                }
+				  ;
+
+program : function_def_list { $$ = mCc_ast_new_program($1); }
+		;
 %%
 
 #include <assert.h>
