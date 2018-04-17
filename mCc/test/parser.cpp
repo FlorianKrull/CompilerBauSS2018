@@ -2,7 +2,7 @@
 
 #include "mCc/ast.h"
 #include "mCc/parser.h"
-/*
+
 TEST(Parser, BinaryOp_1)
 {
 	const char input[] = "192 + 3.14";
@@ -32,7 +32,7 @@ TEST(Parser, BinaryOp_1)
 
 	mCc_ast_delete_expression(expr);
 }
-
+/*
 TEST(Parser, NestedExpression_1)
 {
 	const char input[] = "42 * (-192 + 3.14)";
@@ -124,7 +124,7 @@ TEST(Parser, NestedExpression_2)
 
 	mCc_ast_delete_expression(expr);
 }
-
+*/
 TEST(Parser, MissingClosingParenthesis_1)
 {
 	const char input[] = "(42";
@@ -468,7 +468,7 @@ TEST(Parser, Identifier_1)
 
 	// root -> lhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, expr->lhs->literal->type);
-//	ASSERT_EQ("my_var", expr->lhs->literal->id_value);
+	ASSERT_STREQ("my_var", expr->lhs->literal->id_value);
 
 	// root -> rhs
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
@@ -497,7 +497,7 @@ TEST(Parser, String_1)
 
 	// root -> rhs -> literal
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_STRING, expr->rhs->literal->type);
-//	ASSERT_EQ("This is a string", expr->rhs->literal->s_value);
+	ASSERT_STREQ("\"This is a string\"", expr->rhs->literal->s_value);
 
 	mCc_ast_delete_expression(expr);
 }
@@ -525,7 +525,7 @@ TEST(Parser, Unary_1)
 
 	mCc_ast_delete_expression(expr);
 }
-*/
+
 /* ------------------------Declaration/Assignment */
 
 TEST(Parser, Declaration_1)

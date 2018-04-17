@@ -5,11 +5,7 @@
 extern "C" {
 #endif
 
-#ifndef __cplusplus
-typedef int bool;
-#define true 1
-#define false 0
-#endif
+#include <stdbool.h>
 
 /* Forward Declarations */
 struct mCc_ast_expression;
@@ -50,11 +46,11 @@ enum mCc_ast_binary_op {
 
 enum mCc_ast_binary_compare_op {
   MCC_AST_BINARY_OP_SMT,
-	MCC_AST_BINARY_OP_GRT,
-	MCC_AST_BINARY_OP_GRE,
-	MCC_AST_BINARY_OP_SME,
+  MCC_AST_BINARY_OP_GRT,
+  MCC_AST_BINARY_OP_GRE,
+  MCC_AST_BINARY_OP_SME,
   MCC_AST_BINARY_OP_EQ,
-	MCC_AST_BINARY_OP_UEQ,
+  MCC_AST_BINARY_OP_UEQ,
 };
 
 /* For precedence cascade technique */
@@ -67,6 +63,14 @@ enum mCc_ast_binary_add_op {
 enum mCc_ast_binary_mul_op {
 	MCC_AST_BINARY_OP_MUL,
 	MCC_AST_BINARY_OP_DIV,
+};
+
+/* For printing only */
+enum mCc_ast_binary_op_type {
+  MCC_AST_BINARY_OP_TYPE_BINARY,
+  MCC_AST_BINARY_OP_TYPE_ADD,
+  MCC_AST_BINARY_OP_TYPE_MUL,
+  MCC_AST_BINARY_OP_TYPE_COMPARE,
 };
 
 /* ------------------------------------------------------------- Expressions */
@@ -111,11 +115,14 @@ struct mCc_ast_expression {
 				/* MCC_AST_EXPRESSION_TYPE_MUL_OP */
 				enum mCc_ast_binary_mul_op mul_op;
 
-        /* MCC_AST_EXPRESSION_TYPE_COMPARE_OP */
+                /* MCC_AST_EXPRESSION_TYPE_COMPARE_OP */
 				enum mCc_ast_binary_compare_op compare_op;
 			};
 			struct mCc_ast_expression *lhs;
 			struct mCc_ast_expression *rhs;
+
+            /* For printing only */
+            enum mCc_ast_binary_op_type binary_op_type;
 		};
 
 		/* MCC_AST_EXPRESSION_TYPE_PARENTH */
