@@ -3,9 +3,10 @@
 %define api.pure full
 %lex-param   {void *scanner}
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result}
-			     {struct mCc_ast_literal** lit_result}
 			     {struct mCc_ast_statement** stmt_result}
-			     {struct mCc_ast_declaration** dec_result}
+			     {struct mCc_ast_parameter** par_result}
+			     {struct mCc_ast_function_def** func_result}
+			     
 			     {struct mCc_ast_program** result}
 /*TODO: combine it to only one struct mCc_ast_program*/
 %define parse.trace
@@ -24,6 +25,9 @@ void mCc_parser_error();
 
 %define api.value.type union
 %define api.token.prefix {TK_}
+
+/* Precedence */
+%right PREC_IF ELSE
 
 %token END 0 "EOF"
 
@@ -86,19 +90,27 @@ void mCc_parser_error();
 %type <enum mCc_ast_var_type>var_type
 %type <enum mCc_ast_function_type>function_type
 
-%type <struct mCc_ast_statement *>statement compound_stmt
-%type <struct mCc_ast_expression *> expression term term_2 single_expr
+%type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt
+%type <struct mCc_ast_expression *> expression term term_2 single_expr call_expr
 %type <struct mCc_ast_literal *> literal
 
 %type <struct mCc_ast_declaration *> declaration
 %type <struct mCc_ast_assignment *> assignment
+
+%type <struct mCc_ast_function_def *> function_def
+%type <struct mCc_ast_parameter *>parameters
+%type <struct mCc_ast_argument_list *> arguments
+%type <struct mCc_ast_function_def_list *> function_def_list
+%type <struct mCc_ast_program *> program
 
 %start toplevel
 
 %%
          
 toplevel : expression { *expr_result = $1; }
-	 | statement  { *stmt_result = $1; }
+	 	 | statement  { *stmt_result = $1; }
+	 	 | function_def { *func_result = $1; }
+/*	 	 | program { *result = $1; }*/
          ;
 		 
 /* unary operators */
@@ -144,6 +156,7 @@ function_type : BOOL_TYPE { $$ = MCC_AST_FUNCTION_TYPE_BOOL; }
 	 
 /* Expressions */
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
+			| call_expr						  { $$ = $1; }
 			| unary_op INT_LITERAL 			  { $$ = mCc_ast_new_expression_unary_op($1, mCc_ast_new_expression_literal(mCc_ast_new_literal_int($2)));}
             | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
             ;
@@ -174,40 +187,68 @@ literal : INT_LITERAL   { $$ = mCc_ast_new_literal_int($1);   }
 
 statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | declaration SEMICOLON   { $$ = mCc_ast_new_statement_declaration($1); }
+		  | assignment SEMICOLON 	{ $$ = mCc_ast_new_statement_assignment($1); }
 		  | compound_stmt			{ $$ = $1; }
-/*		  | if_stmt					{ $$ = $1; }
+		  | if_stmt					{ $$ = $1; }
 		  | while_stmt				{ $$ = $1; }
-		  | ret_stmt				{ $$ = $1; }
-*/		  
+		  | ret_stmt SEMICOLON		{ $$ = $1; }	  
 		  ;
 		  
-compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound_1(); }
-			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound_2($2); }
+compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound(NULL); }
+			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound($2); }
 			  ;
-/*
-if_stmt : IF LPARENTH expression RPARENTH statement 						{$$ = mCc_ast_new_statement_if($3, $5); }
-		| IF LPARENTH expression RPARENTH compound_stmt ELSE compound_stmt 	{$$ = mCc_ast_new_statement_if_else($3, $5, $7); }
+
+if_stmt : IF LPARENTH expression RPARENTH statement %prec PREC_IF	{$$ = mCc_ast_new_statement_if($3, $5, NULL); }
+		| IF LPARENTH expression RPARENTH statement ELSE statement 	{$$ = mCc_ast_new_statement_if($3, $5, $7); }
 		;
-		
+
 while_stmt : WHILE LPARENTH expression RPARENTH statement {$$ = mCc_ast_new_statement_while($3, $5); }
 		   ;
-		   
-ret_stmt : RETURN SEMICOLON				{ $$ = mCc_ast_new_statement_return(); }
-		 | RETURN expression SEMICOLON  { $$ = mCc_ast_new_statement_return_2($2); }
+  
+ret_stmt : RETURN 				{ $$ = mCc_ast_new_statement_return(NULL); }
+		 | RETURN expression   { $$ = mCc_ast_new_statement_return($2); }
 		 ;
-*/
+
 /* Declaration/Assignment */
-/* Idea for array declaration and assignment credits to team 21 */
+/* Solution for array declaration and assignment credits to team 21 */
 declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration($1, mCc_ast_new_literal_identifier($2));}
 			| var_type LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = 
 			mCc_ast_new_array_declaration($1, $3, mCc_ast_new_literal_identifier($5));}
 			;
 			
-assignment : IDENTIFIER EQUAL expression 	{$$ = mCc_ast_new_statement_ass_1(mCc_ast_new_literal_identifier($1),
+assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment(mCc_ast_new_literal_identifier($1),
 											$3);}
-		   | IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET ASSIGN expression	{$$ = $1;}
+		   | IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET ASSIGN expression	{$$ = 
+		   									mCc_ast_new_array_assignment(mCc_ast_new_literal_identifier($1), $3,
+											$6);}
 		   ;
+		   
+/* Function definition/call */
+function_def : function_type IDENTIFIER LPARENTH parameters RPARENTH compound_stmt { $$ = 
+							mCc_ast_new_function_def($1, $2, $4, $6); }
+			 | function_type IDENTIFIER LPARENTH RPARENTH compound_stmt { $$ = 
+			 				mCc_ast_new_function_def($1, $2, NULL, $5); }
+			 ;
 
+/* Idea from team 21 */
+parameters  : declaration COMMA parameters { $$ = mCc_ast_new_parameter($1, $3); }
+			| declaration                  { $$ = mCc_ast_new_parameter($1, NULL);                }
+			;
+
+call_expr : IDENTIFIER LPARENTH arguments RPARENTH     { $$ = mCc_ast_new_expression_call($1, $3); }
+          | IDENTIFIER LPARENTH RPARENTH               { $$ = mCc_ast_new_expression_call($1, NULL); }
+		  ;
+
+arguments : expression COMMA arguments         { $$ = mCc_ast_new_argument_list($1); $$->next = $3; }
+		  | expression                         { $$ = mCc_ast_new_argument_list($1);                }
+		  ;
+		  
+function_def_list : function_def function_def_list { $$ = mCc_ast_new_function_def_list($1); $$->next = $2; }
+				  | function_def                   { $$ = mCc_ast_new_function_def_list($1);                }
+				  ;
+
+program : function_def_list { $$ = mCc_ast_new_program($1); }
+		;
 %%
 
 #include <assert.h>
@@ -241,16 +282,16 @@ void mCc_parser_delete_result(struct mCc_parser_result* result) {
 		mCc_ast_delete_expression(result->expression);
 	}
 
-	if (result->literal != NULL) {
-		mCc_ast_delete_literal(result->literal);
-	}
-
 	if (result->statement != NULL) {
 		mCc_ast_delete_statement(result->statement);
 	}
+	
+	if (result->parameter != NULL) {
+		mCc_ast_delete_parameter(result->parameter);
+	}
 
-	if (result->declaration != NULL) {
-		mCc_ast_delete_declaration(result->declaration);
+	if (result->function_def != NULL) {
+		mCc_ast_delete_function_def(result->function_def);
 	}
 
 	if (result->program != NULL) {
@@ -270,8 +311,8 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		.status = MCC_PARSER_STATUS_OK,
 	};
 
-	if (yyparse(scanner, &result.expression, &result.literal, &result.statement,
-&result.declaration, &result.program) != 0) {
+	if (yyparse(scanner, &result.expression, &result.statement,
+	&result.parameter, &result.function_def, &result.program) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 
