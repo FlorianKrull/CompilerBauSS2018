@@ -110,7 +110,8 @@ void mCc_parser_error();
 toplevel : expression { *expr_result = $1; }
 	 	 | statement  { *stmt_result = $1; }
 	 	 | function_def { *func_result = $1; }
-/*	 	 | program { *result = $1; }*/
+	 	 | parameters { *par_result = $1; }
+	 	 | program { *result = $1; }
          ;
 		 
 /* unary operators */

@@ -873,50 +873,174 @@ TEST(Parser, If_1)
 }
 
 /* ------------------------Function Definition/Call */
-/*
-TEST(Parser, Parameter_2)
+
+TEST(Parser, Parameter_1)
 {
-	const char input[] = "int x, int y";
+	const char input[] = "bool _3";
 	auto result = mCc_parser_parse_string(input);
 
-//	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
 	auto stmt = result.parameter;
 
-	//root
+	//root->declaration
+	auto decl = stmt->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
+
+	//declaration->var_type
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_BOOL, decl->var_type);
+
+	//declaration->identifier
+	auto id = decl->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
+	ASSERT_STREQ("_3", id->id_value);
 
 	// nothing more
 	mCc_ast_delete_parameter(stmt);
 }
 
-TEST(Parser, Function_1)
+TEST(Parser, Parameter_2)
 {
-	const char input[] = "void foo() {bool flag;}";
+	const char input[] = "string _a3, float b4";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
-	auto stmt = result.function_def;
+	auto param = result.parameter;
 
-	//root
+	//root->declaration
+	auto decl = param->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
-	mCc_ast_delete_function_def(stmt);
+	//declaration->var_type
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_STRING, decl->var_type);
+
+	//declaration->identifier
+	auto id = decl->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
+	ASSERT_STREQ("_a3", id->id_value);
+
+	//root->next
+	auto nextdecl = param->next->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
+
+	//nextdecl->var_type
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, nextdecl->var_type);
+
+	//nextdecl->identifier
+	auto nextid = nextdecl->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, nextid->type);
+	ASSERT_STREQ("b4", nextid->id_value);
+
+	mCc_ast_delete_parameter(param);
+}
+
+TEST(Parser, Function_1)
+{
+	const char input[] = "void foo() {}";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto func = result.function_def;
+
+	//root->function type
+	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, func->type);
+
+	//root->identifier
+	auto id = func->identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
+	ASSERT_STREQ("foo", id->id_value);
+
+	//root->compound_stmt
+	auto stmt = func->compound_stmt;
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY, stmt->type);
+
+	mCc_ast_delete_function_def(func);
 }
 
 TEST(Parser, Function_2)
 {
-	const char input[] = "string foo2(int x, float y) {}";
+	const char input[] = "void _sub(int x, float y) {z = x - y;}";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
-	auto stmt = result.function_def;
+	auto func = result.function_def;
 
-	//root
+	//root->function type
+	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, func->type);
 
-	mCc_ast_delete_function_def(stmt);
+	//root->identifier
+	auto id = func->identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
+	ASSERT_STREQ("_sub", id->id_value);
+
+	//root->parameter
+	auto param = func->parameters;
+	//root->declaration
+	auto decl = param->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
+
+	//declaration->var_type
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, decl->var_type);
+
+	//declaration->identifier
+	auto subid = decl->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, subid->type);
+	ASSERT_STREQ("x", subid->id_value);
+
+	//root->next
+	auto nextdecl = param->next->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
+
+	//nextdecl->var_type
+	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, nextdecl->var_type);
+
+	//nextdecl->identifier
+	auto nextid = nextdecl->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, nextid->type);
+	ASSERT_STREQ("y", nextid->id_value);
+
+	//root->compound_stmt
+	auto stmt = func->compound_stmt;
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
+
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_ASSIGNMENT, stmt->statement->type);
+
+	//compound_stmt->statement->assignment
+	auto asmt = stmt->statement->assignment;
+	ASSERT_EQ(MCC_AST_ASSIGNMENT_TYPE_NORMAL, asmt->type);
+
+	// asmt->identifier;
+	auto asmt_id = asmt->identifier;
+
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, asmt_id->type);
+	ASSERT_STREQ("z", asmt_id->id_value);
+
+	// asmt->normal_asmt->rhs
+	auto expr = asmt->normal_asmt.rhs;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
+	ASSERT_EQ(MCC_AST_BINARY_OP_SUB, expr->add_op);
+
+	//expr->lhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
+
+	// expr -> lhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, expr->lhs->literal->type);
+	ASSERT_STREQ("x", expr->lhs->literal->id_value);
+
+	// expr -> rhs
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->rhs->type);
+
+	// expr -> rhs -> literal
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, expr->rhs->literal->type);
+	ASSERT_STREQ("y", expr->rhs->literal->id_value);
+
+	mCc_ast_delete_function_def(func);
 }
-*/
+
 
 TEST(Parser, Call_Expr_1)
 {

@@ -586,9 +586,7 @@ mCc_ast_new_parameter(struct mCc_ast_declaration *declaration,
 	}
 
 	param->declaration = declaration;
-	if (next != NULL) {
-		param->next = next;
-	}
+	param->next = next;
 	return param;
 }
 
@@ -620,9 +618,7 @@ mCc_ast_new_function_def(enum mCc_ast_function_type type,
 	function_def->type = type;
 	function_def->identifier = mCc_ast_new_literal_identifier(id_value);
 	function_def->compound_stmt = compound_stmt;
-	if (params != NULL) {
-		function_def->parameters = params;
-	}
+	function_def->parameters = params;
 
 	return function_def;
 }
@@ -631,7 +627,8 @@ void mCc_ast_delete_function_def(struct mCc_ast_function_def *function_def)
 {
 	assert(function_def);
 	mCc_ast_delete_literal(function_def->identifier);
-	if (function_def->parameters != NULL) {
+//	mCc_ast_delete_parameter(function_def->parameters);
+	if (NULL != function_def->parameters) {
 		mCc_ast_delete_parameter(function_def->parameters);
 	}
 	mCc_ast_delete_statement(function_def->compound_stmt);

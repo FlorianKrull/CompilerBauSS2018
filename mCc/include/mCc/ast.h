@@ -432,6 +432,10 @@ void mCc_ast_delete_function_def_list(
     struct mCc_ast_function_def_list *function_def_list);
 
 /* ---------------------------------------------------------------- Program */
+enum mCc_ast_program_type {
+	MCC_AST_PROGRAM_FUNCTION,
+
+};
 struct mCc_ast_program {
 	struct mCc_ast_node node;
 	struct mCc_ast_function_def_list *function_def_list;
