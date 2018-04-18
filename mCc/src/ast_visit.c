@@ -33,24 +33,35 @@ void mCc_ast_visit_expression(struct mCc_ast_expression *expression,
 	visit_if_pre_order(expression, visitor->expression, visitor);
 
 	switch (expression->type) {
-	case MCC_AST_EXPRESSION_TYPE_LITERAL:
-		visit_if_pre_order(expression, visitor->expression_literal, visitor);
-		mCc_ast_visit_literal(expression->literal, visitor);
-		visit_if_post_order(expression, visitor->expression_literal, visitor);
-		break;
+		case MCC_AST_EXPRESSION_TYPE_LITERAL:
+			visit_if_pre_order(expression, visitor->expression_literal, visitor);
+			mCc_ast_visit_literal(expression->literal, visitor);
+			visit_if_post_order(expression, visitor->expression_literal, visitor);
+			break;
+		case MCC_AST_EXPRESSION_TYPE_CALL_EXPR:
+			//TODO here
+//			visit_if_pre_order(expression, visitor->expression_binary_op, visitor);
+//						mCc_ast_visit_expression(expression->lhs, visitor);
+//						mCc_ast_visit_expression(expression->rhs, visitor);
+//						visit_if_post_order(expression, visitor->expression_binary_op, visitor);
+			break;
+		case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
+			visit_if_pre_order(expression, visitor->expression_binary_op, visitor);
+			mCc_ast_visit_expression(expression->lhs, visitor);
+			mCc_ast_visit_expression(expression->rhs, visitor);
+			visit_if_post_order(expression, visitor->expression_binary_op, visitor);
+			break;
 
-	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
-		visit_if_pre_order(expression, visitor->expression_binary_op, visitor);
-		mCc_ast_visit_expression(expression->lhs, visitor);
-		mCc_ast_visit_expression(expression->rhs, visitor);
-		visit_if_post_order(expression, visitor->expression_binary_op, visitor);
-		break;
-
-	case MCC_AST_EXPRESSION_TYPE_PARENTH:
-		visit_if_pre_order(expression, visitor->expression_parenth, visitor);
-		mCc_ast_visit_expression(expression->expression, visitor);
-		visit_if_post_order(expression, visitor->expression_parenth, visitor);
-		break;
+		case MCC_AST_EXPRESSION_TYPE_PARENTH:
+			visit_if_pre_order(expression, visitor->expression_parenth, visitor);
+			mCc_ast_visit_expression(expression->expression, visitor);
+			visit_if_post_order(expression, visitor->expression_parenth, visitor);
+			break;
+		case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
+			visit_if_pre_order(expression, visitor->expression_unary_op, visitor);
+			mCc_ast_visit_expression(expression->u_rhs, visitor);
+			visit_if_post_order(expression, visitor->expression_binary_op, visitor);
+			break;
 	}
 
 	visit_if_post_order(expression, visitor->expression, visitor);
@@ -65,34 +76,38 @@ void mCc_ast_visit_literal(struct mCc_ast_literal *literal,
 	visit_if_pre_order(literal, visitor->literal, visitor);
 
 	switch (literal->type) {
-	case MCC_AST_LITERAL_TYPE_INT:
-		visit(literal, visitor->literal_int, visitor);
-		break;
+                case MCC_AST_LITERAL_TYPE_INT:
+                        visit(literal, visitor->literal_int, visitor);
+                        break;
 
-	case MCC_AST_LITERAL_TYPE_FLOAT:
-		visit(literal, visitor->literal_float, visitor);
-		break;
+                case MCC_AST_LITERAL_TYPE_FLOAT:
+                        visit(literal, visitor->literal_float, visitor);
+                        break;
 
-	case MCC_AST_LITERAL_TYPE_BOOL:
-		visit(literal, visitor->literal_bool, visitor);
-		break;
+                case MCC_AST_LITERAL_TYPE_BOOL:
+                        visit(literal, visitor->literal_bool, visitor);
+                        break;
 
-	case MCC_AST_LITERAL_TYPE_ALPHA:
-		visit(literal, visitor->literal_alpha, visitor);
-		break;
+                case MCC_AST_LITERAL_TYPE_ALPHA:
+                        visit(literal, visitor->literal_alpha, visitor);
+                        break;
 
-	case MCC_AST_LITERAL_TYPE_ALPHA_NUM:
-		visit(literal, visitor->literal_alpha_num, visitor);
-		break;
+                case MCC_AST_LITERAL_TYPE_ALPHA_NUM:
+                        visit(literal, visitor->literal_alpha_num, visitor);
+                        break;
 
-	case MCC_AST_LITERAL_TYPE_DIGIT:
-		visit(literal, visitor->literal_digit, visitor);
-		break;
+                case MCC_AST_LITERAL_TYPE_DIGIT:
+                        visit(literal, visitor->literal_digit, visitor);
+                        break;
 
-	case MCC_AST_LITERAL_TYPE_IDENTIFIER:
-		visit(literal, visitor->literal_identifier, visitor);
-		break;
-	}
+                case MCC_AST_LITERAL_TYPE_IDENTIFIER:
+                        visit(literal, visitor->literal_identifier, visitor);
+                        break;
+
+                case MCC_AST_LITERAL_TYPE_STRING:
+                        visit(literal, visitor->literal_string, visitor);
+                        break;
+        }
 
 	visit_if_post_order(literal, visitor->literal, visitor);
 }

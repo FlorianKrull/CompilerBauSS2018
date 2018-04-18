@@ -6,18 +6,49 @@
 
 #define LABEL_SIZE 64
 
-const char *mCc_ast_print_binary_op(enum mCc_ast_binary_op op)
+const char *mCc_ast_print_unary_op(enum mCc_ast_unary_op op)
 {
-	/*switch (op) {
-	case MCC_AST_BINARY_OP_ADD: return "+";
-	case MCC_AST_BINARY_OP_SUB: return "-";
-	case MCC_AST_BINARY_OP_MUL: return "*";
-	case MCC_AST_BINARY_OP_DIV: return "/";
-	}*/
+	switch(op){
+		case MCC_AST_UNARY_OP_MINUS: return "-";
+		case MCC_AST_UNARY_OP_EXCLAM: return "!";
+	}
 
 	return "unknown op";
 }
 
+const char *mCc_ast_print_binary_op(struct mCc_ast_expression *expression)
+{
+    if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_ADD){
+      switch(expression->add_op){
+        case MCC_AST_BINARY_OP_ADD: return "+";
+        case MCC_AST_BINARY_OP_SUB: return "-";
+      }
+    }
+    else if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_MUL){
+      switch(expression->mul_op){
+        case MCC_AST_BINARY_OP_MUL: return "*";
+        case MCC_AST_BINARY_OP_DIV: return "/";
+      }
+    }
+    else if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_BINARY){
+      switch(expression->op){
+        case MCC_AST_BINARY_OP_AND: return "&&";
+        case MCC_AST_BINARY_OP_OR: return "||";
+      }
+    }
+    else if(expression->binary_op_type == MCC_AST_BINARY_OP_TYPE_COMPARE){
+      switch (expression->compare_op){
+        case MCC_AST_BINARY_OP_SMT: return "<";
+        case MCC_AST_BINARY_OP_GRT: return ">";
+        case MCC_AST_BINARY_OP_GRE: return ">=";
+        case MCC_AST_BINARY_OP_SME: return "<=";
+        case MCC_AST_BINARY_OP_EQ: return "==";
+        case MCC_AST_BINARY_OP_UEQ: return "!=";
+      }
+    }
+
+	return "unknown op";
+}
 
 
 /* ------------------------------------------------------------- DOT Printer */
@@ -78,12 +109,28 @@ print_dot_expression_binary_op(struct mCc_ast_expression *expression,
 
 	char label[LABEL_SIZE] = { 0 };
 	snprintf(label, sizeof(label), "expr: %s",
-	         mCc_ast_print_binary_op(expression->op));
+	         mCc_ast_print_binary_op(expression));
 
 	FILE *out = data;
 	print_dot_node(out, expression, label);
 	print_dot_edge(out, expression, expression->lhs, "lhs");
 	print_dot_edge(out, expression, expression->rhs, "rhs");
+}
+
+static void
+print_dot_expression_unary_op(struct mCc_ast_expression *expression,
+				void *data)
+{
+	assert(expression);
+	assert(data);
+
+        char label[LABEL_SIZE] = { 0 };
+	snprintf(label, sizeof(label), "expr: %s",
+		 mCc_ast_print_unary_op(expression->unary_op));
+	FILE *out = data;
+	print_dot_node(out, expression, label);
+	print_dot_edge(out, expression, expression->u_rhs, "rhs");
+
 }
 
 static void print_dot_expression_parenth(struct mCc_ast_expression *expression,
@@ -133,6 +180,36 @@ static void print_dot_literal_bool(struct mCc_ast_literal *literal, void *data)
 	print_dot_node(out, literal, label);
 }
 
+static void print_dot_literal_string(struct mCc_ast_literal *literal, void *data)
+{
+        assert(literal);
+        assert(data);
+
+        char* print_string = literal->s_value;
+        int i;
+        for(i = 0; print_string[i] != '\0'; ++i) {
+        }
+        print_string[--i] = '\\';
+
+        char label[LABEL_SIZE] = { 0 };
+        snprintf(label, sizeof(label), "%c%s%c", '\\', print_string, '"');
+
+        FILE *out = data;
+        print_dot_node(out, literal, label);
+}
+
+static void print_dot_literal_identifier(struct mCc_ast_literal *literal, void *data)
+{
+        assert(literal);
+        assert(data);
+
+        char label[LABEL_SIZE] = { 0 };
+        snprintf(label, sizeof(label), "%s", literal->id_value);
+
+        FILE *out = data;
+        print_dot_node(out, literal, label);
+}
+
 static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 {
 	assert(out);
@@ -145,10 +222,14 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 
 		.expression_literal = print_dot_expression_literal,
 		.expression_binary_op = print_dot_expression_binary_op,
+		.expression_unary_op = print_dot_expression_unary_op,
 		.expression_parenth = print_dot_expression_parenth,
 
 		.literal_int = print_dot_literal_int,
 		.literal_float = print_dot_literal_float,
+                .literal_bool = print_dot_literal_bool,
+                .literal_string = print_dot_literal_string,
+                .literal_identifier = print_dot_literal_identifier,
 	};
 }
 

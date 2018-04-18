@@ -18,10 +18,12 @@ enum mCc_parser_status {
 
 struct mCc_parser_result {
 	enum mCc_parser_status status;
-	union {
-		struct mCc_ast_expression *expression;
-		struct mCc_ast_statement *statement;
-	};
+
+	struct mCc_ast_expression *expression;
+	struct mCc_ast_statement *statement;
+	struct mCc_ast_parameter *parameter;
+	struct mCc_ast_function_def *function_def;
+	struct mCc_ast_program *program;
 };
 
 struct mCc_parser_result mCc_parser_parse_string(const char *input);
