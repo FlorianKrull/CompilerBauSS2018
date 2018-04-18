@@ -22,11 +22,16 @@ typedef void (*mCc_ast_visit_expression_cb)(struct mCc_ast_expression *,
                                             void *);
 typedef void (*mCc_ast_visit_literal_cb)(struct mCc_ast_literal *, void *);
 
+typedef void (*mCc_ast_visit_statement_cb)(struct mCc_ast_statement *, void *);
+
 struct mCc_ast_visitor {
 	enum mCc_ast_visit_traversal traversal;
 	enum mCc_ast_visit_order order;
 
 	void *userdata;
+
+        mCc_ast_visit_statement_cb statement;
+        mCc_ast_visit_statement_cb statement_declaration;
 
 	mCc_ast_visit_expression_cb expression;
 	mCc_ast_visit_expression_cb expression_literal;
@@ -50,6 +55,9 @@ void mCc_ast_visit_expression(struct mCc_ast_expression *expression,
 
 void mCc_ast_visit_literal(struct mCc_ast_literal *literal,
                            struct mCc_ast_visitor *visitor);
+
+void mCc_ast_visit_statement(struct mCc_ast_statement *statement,
+			      struct mCc_ast_visitor *visitor);
 
 #ifdef __cplusplus
 }

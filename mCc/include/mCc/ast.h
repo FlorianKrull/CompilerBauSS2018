@@ -196,6 +196,7 @@ struct mCc_ast_literal {
 
 		/* MCC_AST_LITERAL_TYPE_IDENTIFIER */
 		char *id_value;
+
 		/* MCC_AST_LITERAL_TYPE_INT */
 		long i_value;
 

@@ -31,7 +31,7 @@ TEST(dot_printer, PrintBoolLiteral_1)
   fclose(output);
   mCc_ast_delete_literal(lit);
 }
-/*
+
 TEST(dot_printer, PrintStringLiteral_1)
 {
   struct mCc_ast_literal *lit = mCc_ast_new_literal_string("\"my string\"");
@@ -40,7 +40,7 @@ TEST(dot_printer, PrintStringLiteral_1)
   fclose(output);
   mCc_ast_delete_literal(lit);
 }
-*/
+
 TEST(dot_printer, PrintBinaryOp_1)
 {
   struct mCc_ast_literal *lhs = mCc_ast_new_literal_int(5);
@@ -66,7 +66,11 @@ TEST(dot_print, PrintParenthesis_1)
 {
   struct mCc_ast_literal *lhs = mCc_ast_new_literal_int(5);
   struct mCc_ast_literal *rhs = mCc_ast_new_literal_int(4);
-  struct mCc_ast_expression *expr = mCc_ast_new_expression_compare_op(MCC_AST_BINARY_OP_UEQ, mCc_ast_new_expression_literal(lhs), mCc_ast_new_expression_literal(rhs));
+  struct mCc_ast_expression *expr = mCc_ast_new_expression_compare_op(
+          MCC_AST_BINARY_OP_UEQ,
+          mCc_ast_new_expression_literal(lhs),
+          mCc_ast_new_expression_literal(rhs)
+  );
   struct mCc_ast_expression *parenth = mCc_ast_new_expression_parenth(expr);
   FILE *output = fopen("parenthesis.dot", "w");
   mCc_ast_print_dot_expression(output, parenth);
@@ -85,7 +89,7 @@ TEST(dot_print, PrintNested_1)
   fclose(output);
   mCc_ast_delete_expression(expr);
 }
-/*
+
 TEST(dot_print, PrintNested_2)
 {
   const char input[] = "my_string == \"my_string\"";
@@ -97,4 +101,27 @@ TEST(dot_print, PrintNested_2)
   fclose(output);
   mCc_ast_delete_expression(expr);
 }
-*/
+
+TEST(dot_print, PrintDeclaration_1)
+{
+  const char input[] = "int x;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("declaration.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintDeclaration_2)
+{
+  const char input[] = "float[10] x;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("declaration2.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}

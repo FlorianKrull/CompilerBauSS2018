@@ -111,3 +111,31 @@ void mCc_ast_visit_literal(struct mCc_ast_literal *literal,
 
 	visit_if_post_order(literal, visitor->literal, visitor);
 }
+
+void mCc_ast_visit_statement(struct mCc_ast_statement *statement,
+			     struct mCc_ast_visitor *visitor)
+{
+	assert(statement);
+	assert(visitor);
+
+	visit_if_pre_order(statement, visitor->statement, visitor);
+
+	switch (statement->type) {
+		case MCC_AST_STATEMENT_TYPE_DECLARATION:
+                        switch(statement->declaration->type){
+                                case MCC_AST_DECLARATION_TYPE_NORMAL:
+                                        visit_if_pre_order(statement, visitor->statement_declaration, visitor);
+                                        mCc_ast_visit_literal(statement->declaration->normal_decl.identifier, visitor);
+                                        visit_if_post_order(statement, visitor->statement_declaration, visitor);
+                                        break;
+                                case MCC_AST_DECLARATION_TYPE_ARRAY:
+                                        visit_if_pre_order(statement, visitor->statement_declaration, visitor);
+                                        mCc_ast_visit_literal(statement->declaration->array_decl.identifier, visitor);
+                                        mCc_ast_visit_literal(statement->declaration->array_decl.size, visitor);
+                                        visit_if_post_order(statement, visitor->statement_declaration, visitor);
+                                        break;
+                        }
+	}
+
+	visit_if_post_order(statement, visitor->statement, visitor);
+}

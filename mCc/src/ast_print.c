@@ -50,6 +50,27 @@ const char *mCc_ast_print_binary_op(struct mCc_ast_expression *expression)
 	return "unknown op";
 }
 
+const char *mCc_ast_print_var_type(enum mCc_ast_var_type type)
+{
+        switch(type){
+                case MCC_AST_VARIABLES_TYPE_INT: return "int";
+                case MCC_AST_VARIABLES_TYPE_FLOAT: return "float";
+                case MCC_AST_VARIABLES_TYPE_BOOL: return "boolean";
+                case MCC_AST_VARIABLES_TYPE_STRING: return "string";
+        }
+
+        return "unknown type";
+}
+
+const char *mCc_ast_print_declaration_type(enum mCc_ast_declaration_type type)
+{
+        switch(type){
+                case MCC_AST_DECLARATION_TYPE_NORMAL: return "";
+                case MCC_AST_DECLARATION_TYPE_ARRAY: return "[]";
+        }
+
+        return "unknown type";
+}
 
 /* ------------------------------------------------------------- DOT Printer */
 
@@ -198,7 +219,8 @@ static void print_dot_literal_string(struct mCc_ast_literal *literal, void *data
         print_dot_node(out, literal, label);
 }
 
-static void print_dot_literal_identifier(struct mCc_ast_literal *literal, void *data)
+static void print_dot_literal_identifier(struct mCc_ast_literal *literal,
+                                         void *data)
 {
         assert(literal);
         assert(data);
@@ -210,6 +232,31 @@ static void print_dot_literal_identifier(struct mCc_ast_literal *literal, void *
         print_dot_node(out, literal, label);
 }
 
+static void print_dot_statement_declaration(struct mCc_ast_statement *statement,
+                                            void *data)
+{
+        assert(statement);
+        assert(data);
+
+        char label[LABEL_SIZE];
+        snprintf(label, sizeof(label), "declaration: %s%s",
+                 mCc_ast_print_var_type(statement->declaration->var_type),
+                 mCc_ast_print_declaration_type(statement->declaration->type));
+
+        FILE *out = data;
+        print_dot_node(out, statement->declaration, label);
+        if(statement->declaration->type == MCC_AST_DECLARATION_TYPE_ARRAY){
+                print_dot_edge(out, statement->declaration,
+                               statement->declaration->array_decl.identifier, "identifier");
+                print_dot_edge(out, statement->declaration,
+                               statement->declaration->array_decl.size, "size");
+        } else {
+                print_dot_edge(out, statement->declaration,
+                               statement->declaration->normal_decl.identifier, "identifier");
+        }
+
+}
+
 static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 {
 	assert(out);
@@ -219,6 +266,8 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 		.order = MCC_AST_VISIT_PRE_ORDER,
 
 		.userdata = out,
+
+		.statement_declaration = print_dot_statement_declaration,
 
 		.expression_literal = print_dot_expression_literal,
 		.expression_binary_op = print_dot_expression_binary_op,
@@ -256,6 +305,20 @@ void mCc_ast_print_dot_literal(FILE *out, struct mCc_ast_literal *literal)
 
 	struct mCc_ast_visitor visitor = print_dot_visitor(out);
 	mCc_ast_visit_literal(literal, &visitor);
+
+	print_dot_end(out);
+}
+
+void mCc_ast_print_dot_statement(FILE *out,
+				 struct mCc_ast_statement *statement)
+{
+	assert(out);
+	assert(statement);
+
+	print_dot_begin(out);
+
+	struct mCc_ast_visitor visitor = print_dot_visitor(out);
+	mCc_ast_visit_statement(statement, &visitor);
 
 	print_dot_end(out);
 }
