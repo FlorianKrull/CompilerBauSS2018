@@ -5,8 +5,8 @@
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result}
 			     {struct mCc_ast_statement** stmt_result}
 			     {struct mCc_ast_parameter** par_result}
-			     {struct mCc_ast_function_def** func_result}
-			     
+			     /*{struct mCc_ast_function_def** func_result}*/
+			     /*{struct mCc_ast_function_def_list** func_list_result}*/
 			     {struct mCc_ast_program** result}
 /*TODO: combine it to only one struct mCc_ast_program*/
 %define parse.trace
@@ -109,8 +109,8 @@ void mCc_parser_error();
          
 toplevel : expression { *expr_result = $1; }
 	 	 | statement  { *stmt_result = $1; }
-	 	 | function_def { *func_result = $1; }
 	 	 | parameters { *par_result = $1; }
+	 	 /*| function_def { *func_result = $1; }*/
 	 	 | program { *result = $1; }
          ;
 		 
@@ -244,8 +244,8 @@ arguments : expression COMMA arguments         { $$ = mCc_ast_new_argument_list(
 		  | expression                         { $$ = mCc_ast_new_argument_list($1);                }
 		  ;
 		  
-function_def_list : function_def function_def_list { $$ = mCc_ast_new_function_def_list($1); $$->next = $2; }
-				  | function_def                   { $$ = mCc_ast_new_function_def_list($1);                }
+function_def_list : function_def function_def_list { $$ = mCc_ast_new_function_def_list($1, $2); }
+				  | function_def                   { $$ = mCc_ast_new_function_def_list($1, NULL);                }
 				  ;
 
 program : function_def_list { $$ = mCc_ast_new_program($1); }
@@ -291,10 +291,6 @@ void mCc_parser_delete_result(struct mCc_parser_result* result) {
 		mCc_ast_delete_parameter(result->parameter);
 	}
 
-	if (result->function_def != NULL) {
-		mCc_ast_delete_function_def(result->function_def);
-	}
-
 	if (result->program != NULL) {
 		mCc_ast_delete_program(result->program);
 	}
@@ -313,7 +309,7 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 	};
 
 	if (yyparse(scanner, &result.expression, &result.statement,
-	&result.parameter, &result.function_def, &result.program) != 0) {
+	&result.parameter, &result.program) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 

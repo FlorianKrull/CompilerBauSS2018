@@ -661,7 +661,8 @@ void mCc_ast_delete_argument_list(struct mCc_ast_argument_list *argument_list)
 }
 
 struct mCc_ast_function_def_list *
-mCc_ast_new_function_def_list(struct mCc_ast_function_def *function_def)
+mCc_ast_new_function_def_list(struct mCc_ast_function_def *function_def,
+		struct mCc_ast_function_def_list *next)
 {
 	assert(function_def);
 	struct mCc_ast_function_def_list *list = malloc(sizeof(*list));
@@ -670,7 +671,7 @@ mCc_ast_new_function_def_list(struct mCc_ast_function_def *function_def)
 	}
 
 	list->function_def = function_def;
-	list->next = NULL;
+	list->next = next;
 	return list;
 }
 
@@ -678,7 +679,7 @@ void mCc_ast_delete_function_def_list(
     struct mCc_ast_function_def_list *function_def_list)
 {
 	assert(function_def_list);
-	if (function_def_list->next != NULL) {
+	if (NULL != function_def_list->next) {
 		mCc_ast_delete_function_def_list(function_def_list->next);
 	}
 	mCc_ast_delete_function_def(function_def_list->function_def);

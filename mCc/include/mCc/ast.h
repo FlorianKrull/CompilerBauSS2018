@@ -419,6 +419,7 @@ mCc_ast_new_argument_list(struct mCc_ast_expression *expression);
 
 void mCc_ast_delete_argument_list(struct mCc_ast_argument_list *argument_list);
 
+/* ---------------------------------------------------------------- Program */
 struct mCc_ast_function_def_list {
 	struct mCc_ast_node node;
 	struct mCc_ast_function_def *function_def;
@@ -426,12 +427,12 @@ struct mCc_ast_function_def_list {
 };
 
 struct mCc_ast_function_def_list *
-mCc_ast_new_function_def_list(struct mCc_ast_function_def *function_def);
+mCc_ast_new_function_def_list(struct mCc_ast_function_def *function_def,
+		struct mCc_ast_function_def_list *next);
 
 void mCc_ast_delete_function_def_list(
     struct mCc_ast_function_def_list *function_def_list);
 
-/* ---------------------------------------------------------------- Program */
 enum mCc_ast_program_type {
 	MCC_AST_PROGRAM_FUNCTION,
 
