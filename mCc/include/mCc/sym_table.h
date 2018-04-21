@@ -5,16 +5,17 @@
 extern "C" {
 #endif
 
-#define SIZE 99
+#define SIZE 100
 
 struct Entry {
 	char *name;
+	char *type;
 	int count;
 	struct Entry *next;
 };
 
 struct Table {
-	struct Entry entries[100];
+	struct Entry entries[SIZE];
 	struct Table *parent;
 };
 
