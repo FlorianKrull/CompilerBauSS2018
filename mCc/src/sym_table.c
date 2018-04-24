@@ -29,17 +29,28 @@ void mCc_st_delete_item(struct mCc_st_item* item)
 }
 
 /* ---------------------------------------------------------------- Entries */
-struct mCc_st_entry *mCc_st_new_entry(const char* name, const char* id, struct mCc_st_entry* head)
+int mCc_st_hash(const char* str) {
+	long hash = 0;
+	const int len_s = strlen(str);
+	for (int i = 0; i < len_s; i++) {
+		hash += (long) pow(HASH_VALUE, len_s - (i+1)) * str[i];
+		hash = hash % SIZE;
+	}
+	return (int) hash;
+}
+
+struct mCc_st_entry *mCc_st_new_entry(const char* name, struct mCc_st_entry* head)
 {
 	struct mCc_st_entry *en = malloc(sizeof(*en));
 	if (!en) {
 		return NULL;
 	}
 	en->name = strdup(name);
-	en->id = strdup(id);
 	en->head = head;
+	en->id = hash(name);
 	return en;
 }
+
 
 void mCc_st_delete_entry(struct mCc_st_entry* entry)
 {

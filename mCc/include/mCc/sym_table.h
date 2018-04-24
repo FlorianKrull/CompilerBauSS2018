@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-#define SIZE 100
+#define SIZE 50	//Size of each table
+#define HASH_VALUE 131	//A hash value should a minimum prime number larger than ASCII's alphabet size
 
 /* Declare the symbol table as a hashtable of list.
  * More information: https://www.d.umn.edu/~rmaclin/cs5641/Notes/L15_SymbolTable.pdf
@@ -57,7 +58,7 @@ struct mCc_st_table {
 // Init and delete function
 struct mCc_st_item *mCc_st_new_item(const char* type, int scope, struct mCc_st_item* next);
 
-struct mCc_st_entry *mCc_st_new_entry(const char* name, const char* id);
+struct mCc_st_entry *mCc_st_new_entry(const char* name, struct mCc_st_entry* head);
 
 struct mCc_st_table *mCc_st_new_table();
 
@@ -66,6 +67,9 @@ void mCc_st_delete_item(struct mCc_st_item* item);
 void mCc_st_delete_entry(struct mCc_st_entry* entry);
 
 void mCc_st_delete_table(struct mCc_st_table* table);
+
+//Hash function
+int mCc_st_hash(const char* str);
 
 #ifdef __cplusplus
 }
