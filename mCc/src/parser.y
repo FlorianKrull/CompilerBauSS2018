@@ -105,17 +105,29 @@ void mCc_parser_error();
 
 %start toplevel
 
+/* Destructor - to avoid memory leaks */
+/* Ideas from team 21 */
+%destructor {mCc_ast_delete_literal($$);} literal
+%destructor {mCc_ast_delete_expression($$);} expression term term_2 single_expr call_expr
+%destructor {mCc_ast_delete_statement($$);} statement compound_stmt if_stmt while_stmt ret_stmt
+%destructor {mCc_ast_delete_declaration($$);} declaration
+%destructor {mCc_ast_delete_argument_list($$);} arguments
+%destructor {mCc_ast_delete_parameter($$);} parameters
+%destructor {mCc_ast_delete_assignment($$);} assignment
+%destructor {mCc_ast_delete_function_def($$);} function_def
+%destructor {mCc_ast_delete_function_def_list($$);}  function_def_list
+%destructor {mCc_ast_delete_program($$);} program
+
 %%
          
 toplevel : expression { *expr_result = $1; }
-	 	 | statement  { *stmt_result = $1; }
-	 	 | parameters { *par_result = $1; }
-	 	 /*| function_def { *func_result = $1; }*/
-	 	 | program { *result = $1; }
+	 | statement  { *stmt_result = $1; }
+	 | parameters { *par_result = $1; }
+	 /*| function_def { *func_result = $1; }*/
+	 | program { *result = $1; }
          ;
 		 
 /* unary operators */
-
 unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
 		  | PLUS { $$ = MCC_AST_UNARY_OP_PLUS;}
 		  | EXCLAM { $$ = MCC_AST_UNARY_OP_EXCLAM; }
