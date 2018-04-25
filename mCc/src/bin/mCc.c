@@ -50,6 +50,11 @@ int main(int argc, char *argv[])
 	 * - invoke backend compiler
 	 */
 
+	/* Semantic/Type checking */
+
+	void hash() {
+
+	}
 	/* cleanup */
 	mCc_ast_delete_expression(expr);
 

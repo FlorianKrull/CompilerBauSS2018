@@ -5,8 +5,8 @@
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result}
 			     {struct mCc_ast_statement** stmt_result}
 			     {struct mCc_ast_parameter** par_result}
-			     {struct mCc_ast_function_def** func_result}
-			     
+			     /*{struct mCc_ast_function_def** func_result}*/
+			     /*{struct mCc_ast_function_def_list** func_list_result}*/
 			     {struct mCc_ast_program** result}
 /*TODO: combine it to only one struct mCc_ast_program*/
 %define parse.trace
@@ -105,16 +105,29 @@ void mCc_parser_error();
 
 %start toplevel
 
+/* Destructor - to avoid memory leaks */
+/* Ideas from team 21 */
+%destructor {mCc_ast_delete_literal($$);} literal
+%destructor {mCc_ast_delete_expression($$);} expression term term_2 single_expr call_expr
+%destructor {mCc_ast_delete_statement($$);} statement compound_stmt if_stmt while_stmt ret_stmt
+%destructor {mCc_ast_delete_declaration($$);} declaration
+%destructor {mCc_ast_delete_argument_list($$);} arguments
+%destructor {mCc_ast_delete_parameter($$);} parameters
+%destructor {mCc_ast_delete_assignment($$);} assignment
+%destructor {mCc_ast_delete_function_def($$);} function_def
+%destructor {mCc_ast_delete_function_def_list($$);}  function_def_list
+%destructor {mCc_ast_delete_program($$);} program
+
 %%
          
 toplevel : expression { *expr_result = $1; }
-	 	 | statement  { *stmt_result = $1; }
-	 	 | function_def { *func_result = $1; }
-/*	 	 | program { *result = $1; }*/
+	 | statement  { *stmt_result = $1; }
+	 | parameters { *par_result = $1; }
+	 /*| function_def { *func_result = $1; }*/
+	 | program { *result = $1; }
          ;
 		 
 /* unary operators */
-
 unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
 		  | PLUS { $$ = MCC_AST_UNARY_OP_PLUS;}
 		  | EXCLAM { $$ = MCC_AST_UNARY_OP_EXCLAM; }
@@ -243,8 +256,8 @@ arguments : expression COMMA arguments         { $$ = mCc_ast_new_argument_list(
 		  | expression                         { $$ = mCc_ast_new_argument_list($1);                }
 		  ;
 		  
-function_def_list : function_def function_def_list { $$ = mCc_ast_new_function_def_list($1); $$->next = $2; }
-				  | function_def                   { $$ = mCc_ast_new_function_def_list($1);                }
+function_def_list : function_def function_def_list { $$ = mCc_ast_new_function_def_list($1, $2); }
+				  | function_def                   { $$ = mCc_ast_new_function_def_list($1, NULL);                }
 				  ;
 
 program : function_def_list { $$ = mCc_ast_new_program($1); }
@@ -290,10 +303,6 @@ void mCc_parser_delete_result(struct mCc_parser_result* result) {
 		mCc_ast_delete_parameter(result->parameter);
 	}
 
-	if (result->function_def != NULL) {
-		mCc_ast_delete_function_def(result->function_def);
-	}
-
 	if (result->program != NULL) {
 		mCc_ast_delete_program(result->program);
 	}
@@ -312,7 +321,7 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 	};
 
 	if (yyparse(scanner, &result.expression, &result.statement,
-	&result.parameter, &result.function_def, &result.program) != 0) {
+	&result.parameter, &result.program) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 
