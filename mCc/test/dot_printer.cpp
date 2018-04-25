@@ -173,3 +173,63 @@ TEST(dot_print, PrintStatementCompound_1)
   fclose(output);
   mCc_ast_delete_statement(stmt);
 }
+
+TEST(dot_print, PrintReturnStatement_1)
+{
+  const char input[] = "return 0;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("returnStatement.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintReturnStatement_2)
+{
+  const char input[] = "return;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("returnStatementEmpty.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintWhileStatement_1)
+{
+  const char input[] = "while (flag) {}";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("whileStatement.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintIfStatement_1)
+{
+  const char input[] = "if (c3 == 0) c3 = 2;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("ifStatement.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintIfElseStatement_1)
+{
+  const char input[] = "if (c3 == 0) c3 = 2; else c3 = 1;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("ifElseStatement.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}

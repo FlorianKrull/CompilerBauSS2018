@@ -312,6 +312,74 @@ static void print_dot_statement_compound(struct mCc_ast_statement *statement,
         print_dot_edge(out, statement, statement->statement, "statement");
 }
 
+static void print_dot_statement_compound_empty(struct mCc_ast_statement *statement,
+                                               void *data)
+{
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "{ }");
+}
+
+static void print_dot_statement_return(struct mCc_ast_statement *statement,
+                                       void *data)
+{
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "return");
+        print_dot_edge(out, statement, statement->expression, "expression");
+}
+
+static void print_dot_statement_return_empty(struct mCc_ast_statement *statement,
+                                             void *data)
+{
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "return;");
+}
+
+static void print_dot_statement_while(struct mCc_ast_statement *statement,
+                                      void *data)
+{
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "while");
+        print_dot_edge(out, statement, statement->expr, "expression");
+        print_dot_edge(out, statement, statement->stmt, "statement");
+}
+
+static void print_dot_statement_if(struct mCc_ast_statement *statement,
+                                   void *data)
+{
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "if");
+        print_dot_edge(out, statement, statement->expr, "expression");
+        print_dot_edge(out, statement, statement->stmt, "statement");
+}
+
+static void print_dot_statement_if_else(struct mCc_ast_statement *statement,
+                                        void *data)
+{
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "if else");
+        print_dot_edge(out, statement, statement->expr, "expression");
+        print_dot_edge(out, statement, statement->if_else_stmt.stmt_1, "if->statement");
+        print_dot_edge(out, statement, statement->if_else_stmt.stmt_2, "else->statement");
+}
+
 static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 {
 	assert(out);
@@ -326,6 +394,12 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
                 .statement_assignment = print_dot_statement_assignment,
                 .statement_expression = print_dot_statement_expression,
                 .statement_compound = print_dot_statement_compound,
+                .statement_compound_empty = print_dot_statement_compound_empty,
+                .statement_return = print_dot_statement_return,
+                .statement_return_empty = print_dot_statement_return_empty,
+                .statement_while = print_dot_statement_while,
+                .statement_if = print_dot_statement_if,
+                .statement_if_else = print_dot_statement_if_else,
 
 		.expression_literal = print_dot_expression_literal,
 		.expression_binary_op = print_dot_expression_binary_op,

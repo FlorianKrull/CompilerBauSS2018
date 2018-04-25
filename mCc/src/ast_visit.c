@@ -163,6 +163,36 @@ void mCc_ast_visit_statement(struct mCc_ast_statement *statement,
                         mCc_ast_visit_statement(statement->statement, visitor);
                         visit_if_post_order(statement, visitor->statement_compound, visitor);
                         break;
+                case MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY:
+                        visit(statement, visitor->statement_compound_empty, visitor);
+                        break;
+                case MCC_AST_STATEMENT_TYPE_RETURN:
+                        visit_if_pre_order(statement, visitor->statement_return, visitor);
+                        mCc_ast_visit_expression(statement->expression, visitor);
+                        visit_if_post_order(statement, visitor->statement_return, visitor);
+                        break;
+                case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
+                        visit(statement, visitor->statement_return_empty, visitor);
+                        break;
+                case MCC_AST_STATEMENT_TYPE_WHILE:
+                        visit_if_pre_order(statement, visitor->statement_while, visitor);
+                        mCc_ast_visit_expression(statement->expr, visitor);
+                        mCc_ast_visit_statement(statement->stmt, visitor);
+                        visit_if_post_order(statement, visitor->statement_while, visitor);
+                        break;
+                case MCC_AST_STATEMENT_TYPE_IF:
+                        visit_if_pre_order(statement, visitor->statement_if, visitor);
+                        mCc_ast_visit_expression(statement->expr, visitor);
+                        mCc_ast_visit_statement(statement->stmt, visitor);
+                        visit_if_post_order(statement, visitor->statement_if, visitor);
+                        break;
+                case MCC_AST_STATEMENT_TYPE_IF_ELSE:
+                        visit_if_pre_order(statement, visitor->statement_if_else, visitor);
+                        mCc_ast_visit_expression(statement->expr, visitor);
+                        mCc_ast_visit_statement(statement->if_else_stmt.stmt_1, visitor);
+                        mCc_ast_visit_statement(statement->if_else_stmt.stmt_2, visitor);
+                        visit_if_post_order(statement, visitor->statement_if_else, visitor);
+                        break;
 
 	}
 
