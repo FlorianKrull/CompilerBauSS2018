@@ -32,6 +32,7 @@ mCc_inc = include_directories('include')
 mCc_src = [ 'src/ast.c',
             'src/ast_print.c',
             'src/ast_visit.c',
+	    'src/sym_table.c',
             lgen.process('src/scanner.l'),
             pgen.process('src/parser.y') ]
 
@@ -53,7 +54,7 @@ endforeach
 
 gtest = dependency('gtest', fallback: ['gtest', 'gtest_main_dep'])
 
-mCc_uts = [ 'parser', 'dot_printer' ]
+mCc_uts = [ 'parser', 'dot_printer', 'sym_table' ]
 
 
 foreach ut : mCc_uts

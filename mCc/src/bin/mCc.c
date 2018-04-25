@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include "mCc/ast.h"
-//#include "mCc/parser.h"
-#include "mCc/sym_table.h"
+#include "mCc/ast.h"
+#include "mCc/parser.h"
 
 void print_usage(const char *prg)
 {
@@ -20,7 +19,6 @@ int main(int argc, char *argv[])
 	}
 
 	/* determine input source */
-	/*
 	FILE *in;
 	if (strcmp("-", argv[1]) == 0) {
 		in = stdin;
@@ -33,9 +31,8 @@ int main(int argc, char *argv[])
 	}
 
 	struct mCc_ast_expression *expr = NULL;
-	*/
+
 	/* parsing phase */
-	/*
 	{
 		struct mCc_parser_result result = mCc_parser_parse_file(in);
 		fclose(in);
@@ -44,7 +41,7 @@ int main(int argc, char *argv[])
 		}
 		expr = result.expression;
 	}
-	*/
+
 	/*    TODO
 	 * - run semantic checks
 	 * - create three-address code
@@ -54,9 +51,7 @@ int main(int argc, char *argv[])
 	 */
 
 	/* cleanup */
-//	mCc_ast_delete_expression(expr);
+	mCc_ast_delete_expression(expr);
 
-	struct mCc_st_table *tab = mCc_st_new_table();
-	mCc_st_delete_table(tab);
 	return EXIT_SUCCESS;
 }
