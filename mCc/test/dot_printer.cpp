@@ -125,3 +125,51 @@ TEST(dot_print, PrintDeclaration_2)
   fclose(output);
   mCc_ast_delete_statement(stmt);
 }
+
+TEST(dot_print, PrintAssignment_1)
+{
+  const char input[] = "x = 1+2;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("assignment.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintAssignment_2)
+{
+  const char input[] = "arr[1] = 0;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("assignment2.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintStatementExpression_1)
+{
+  const char input[] = "2 + 1;";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("statementExpression.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}
+
+TEST(dot_print, PrintStatementCompound_1)
+{
+  const char input[] = "{var = 1;}";
+  auto result = mCc_parser_parse_string(input);
+
+  auto stmt = result.statement;
+  FILE *output = fopen("statementCompound.dot", "w");
+  mCc_ast_print_dot_statement(output, stmt);
+  fclose(output);
+  mCc_ast_delete_statement(stmt);
+}

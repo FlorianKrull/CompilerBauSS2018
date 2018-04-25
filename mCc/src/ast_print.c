@@ -72,6 +72,16 @@ const char *mCc_ast_print_declaration_type(enum mCc_ast_declaration_type type)
         return "unknown type";
 }
 
+const char *mCc_ast_print_assignment_type(enum mCc_ast_assignment_type type)
+{
+        switch(type){
+                case MCC_AST_ASSIGNMENT_TYPE_NORMAL: return "";
+                case MCC_AST_ASSIGNMENT_TYPE_ARRAY: return "[]";
+        }
+
+        return "unknown type";
+}
+
 /* ------------------------------------------------------------- DOT Printer */
 
 static void print_dot_begin(FILE *out)
@@ -244,6 +254,8 @@ static void print_dot_statement_declaration(struct mCc_ast_statement *statement,
                  mCc_ast_print_declaration_type(statement->declaration->type));
 
         FILE *out = data;
+        print_dot_node(out, statement, "statement;");
+        print_dot_edge(out, statement, statement->declaration, "declaration");
         print_dot_node(out, statement->declaration, label);
         if(statement->declaration->type == MCC_AST_DECLARATION_TYPE_ARRAY){
                 print_dot_edge(out, statement->declaration,
@@ -257,6 +269,49 @@ static void print_dot_statement_declaration(struct mCc_ast_statement *statement,
 
 }
 
+static void print_dot_statement_assignment(struct mCc_ast_statement *statement,
+                                           void *data)
+{
+        assert(statement);
+        assert(data);
+
+        char label[LABEL_SIZE];
+        snprintf(label, sizeof(label), "assignment: =");
+
+        FILE *out = data;
+        print_dot_node(out, statement, "statement;");
+        print_dot_edge(out, statement, statement->assignment, "assignment");
+        print_dot_node(out, statement->assignment, label);
+        print_dot_edge(out, statement->assignment, statement->assignment->identifier, "identifier");
+	if(statement->assignment->type == MCC_AST_ASSIGNMENT_TYPE_ARRAY){
+		print_dot_edge(out, statement->assignment, statement->assignment->array_asmt.index, "index");
+		print_dot_edge(out, statement->assignment, statement->assignment->array_asmt.rhs, "rhs");
+	} else {
+		print_dot_edge(out, statement->assignment, statement->assignment->normal_asmt.rhs, "rhs");
+	}
+}
+
+static void print_dot_statement_expression(struct mCc_ast_statement *statement,
+                                           void *data){
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "statement;");
+        print_dot_edge(out, statement, statement->expression, "expression");
+}
+
+static void print_dot_statement_compound(struct mCc_ast_statement *statement,
+                                         void *data)
+{
+        assert(statement);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement, "{ }");
+        print_dot_edge(out, statement, statement->statement, "statement");
+}
+
 static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 {
 	assert(out);
@@ -268,6 +323,9 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
 		.userdata = out,
 
 		.statement_declaration = print_dot_statement_declaration,
+                .statement_assignment = print_dot_statement_assignment,
+                .statement_expression = print_dot_statement_expression,
+                .statement_compound = print_dot_statement_compound,
 
 		.expression_literal = print_dot_expression_literal,
 		.expression_binary_op = print_dot_expression_binary_op,

@@ -19,6 +19,8 @@ const char *mCc_ast_print_var_type(enum mCc_ast_var_type type);
 
 const char *mCc_ast_print_declaration_type(enum mCc_ast_declaration_type type);
 
+const char *mCc_ast_print_assignment_type(enum mCc_ast_assignment_type type);
+
 /* ------------------------------------------------------------- DOT Printer */
 
 void mCc_ast_print_dot_expression(FILE *out,

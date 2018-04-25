@@ -135,6 +135,35 @@ void mCc_ast_visit_statement(struct mCc_ast_statement *statement,
                                         visit_if_post_order(statement, visitor->statement_declaration, visitor);
                                         break;
                         }
+                        break;
+                case MCC_AST_STATEMENT_TYPE_ASSIGNMENT:
+			switch(statement->assignment->type){
+				case MCC_AST_ASSIGNMENT_TYPE_NORMAL:
+					visit_if_pre_order(statement, visitor->statement_assignment, visitor);
+					mCc_ast_visit_literal(statement->assignment->identifier, visitor);
+					mCc_ast_visit_expression(statement->assignment->normal_asmt.rhs, visitor);
+					visit_if_post_order(statement, visitor->statement_declaration, visitor);
+					break;
+				case MCC_AST_ASSIGNMENT_TYPE_ARRAY:
+					visit_if_pre_order(statement, visitor->statement_assignment, visitor);
+					mCc_ast_visit_literal(statement->assignment->identifier, visitor);
+                                        mCc_ast_visit_expression(statement->assignment->array_asmt.index, visitor);
+					mCc_ast_visit_expression(statement->assignment->array_asmt.rhs, visitor);
+					visit_if_post_order(statement, visitor->statement_declaration, visitor);
+					break;
+			}
+                        break;
+                case MCC_AST_STATEMENT_TYPE_EXPRESSION:
+                        visit_if_pre_order(statement, visitor->statement_expression, visitor);
+                        mCc_ast_visit_expression(statement->expression, visitor);
+                        visit_if_post_order(statement, visitor->statement_expression, visitor);
+                        break;
+                case MCC_AST_STATEMENT_TYPE_COMPOUND:
+                        visit_if_pre_order(statement, visitor->statement_compound, visitor);
+                        mCc_ast_visit_statement(statement->statement, visitor);
+                        visit_if_post_order(statement, visitor->statement_compound, visitor);
+                        break;
+
 	}
 
 	visit_if_post_order(statement, visitor->statement, visitor);

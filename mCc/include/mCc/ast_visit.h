@@ -32,6 +32,9 @@ struct mCc_ast_visitor {
 
         mCc_ast_visit_statement_cb statement;
         mCc_ast_visit_statement_cb statement_declaration;
+        mCc_ast_visit_statement_cb statement_assignment;
+  	mCc_ast_visit_statement_cb statement_expression;
+        mCc_ast_visit_statement_cb statement_compound;
 
 	mCc_ast_visit_expression_cb expression;
 	mCc_ast_visit_expression_cb expression_literal;
