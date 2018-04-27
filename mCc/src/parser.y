@@ -8,6 +8,7 @@
 			     /*{struct mCc_ast_function_def** func_result}*/
 			     /*{struct mCc_ast_function_def_list** func_list_result}*/
 			     {struct mCc_ast_program** result}
+			     {struct mCc_parse_error* result_error}
 /*TODO: combine it to only one struct mCc_ast_program*/
 %define parse.trace
 %define parse.error verbose
@@ -25,6 +26,8 @@ void mCc_parser_error();
 
 %define api.value.type union
 %define api.token.prefix {TK_}
+
+%locations
 
 /* Precedence */
 %right PREC_IF ELSE
@@ -268,7 +271,36 @@ program : function_def_list { $$ = mCc_ast_new_program($1); }
 
 #include "scanner.h"
 
-void yyerror(yyscan_t *scanner, const char *msg) {}
+//void yyerror(yyscan_t *scanner, const char *msg) {}
+
+/* Error handling, idea from team 21 */
+void mCc_parser_error(
+	struct MCC_PARSER_LTYPE *yylloc,
+	yyscan_t *scanner,
+	struct mCc_ast_expression** result_e,
+	struct mCc_ast_literal** result_l,
+	struct mCc_ast_statement** result_s,
+	struct mCc_ast_function_def** result_f,
+	struct mCc_ast_declaration** result_d,
+	struct mCc_ast_program** result,
+	struct mCc_parse_error* result_error,
+	const char *msg)
+{
+	 // suppress the warning unused parameter
+	(void)scanner;
+	(void)result_e;
+	(void)result_l;
+	(void)result_s;
+	(void)result_f;
+	(void)result_d;
+	(void)result;
+	result_error->is_error = true;
+	result_error->location.start_line = yylloc->first_line;
+	result_error->location.end_line = yylloc->last_line;
+	result_error->location.start_col = yylloc->first_column;
+	result_error->location.end_col = yylloc->last_column;
+	result_error->msg = strdup(msg);
+}
 
 struct mCc_parser_result mCc_parser_parse_string(const char *input)
 {
@@ -289,8 +321,8 @@ struct mCc_parser_result mCc_parser_parse_string(const char *input)
 	return result;
 }
 
-/* Idea from team 21 */
 void mCc_parser_delete_result(struct mCc_parser_result* result) {
+	assert(result);
 	if (result->expression != NULL) {
 		mCc_ast_delete_expression(result->expression);
 	}
@@ -320,10 +352,16 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		.status = MCC_PARSER_STATUS_OK,
 	};
 
+	// reset is_error
+	result.parse_error.is_error = false;
+
 	if (yyparse(scanner, &result.expression, &result.statement,
-	&result.parameter, &result.program) != 0) {
+	&result.parameter, &result.program, &result.parse_error) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
+
+	if (result.parse_error.is_error)
+		result.status = MCC_PARSER_STATUS_SYNTAX_ERROR;
 
 	mCc_parser_lex_destroy(scanner);
 

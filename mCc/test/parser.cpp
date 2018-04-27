@@ -1100,6 +1100,7 @@ TEST(Parser, Call_Expr_3)
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_NE(MCC_PARSER_STATUS_OK, result.status);
+	mCc_parser_delete_result(&result);
 }
 
 /* ------------------------Program */
