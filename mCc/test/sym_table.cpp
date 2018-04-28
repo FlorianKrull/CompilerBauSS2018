@@ -25,8 +25,9 @@ TEST(sym_table, NewEntry_1)
 
 TEST(sym_table, NewTable_1)
 {
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_table("void");
 	ASSERT_EQ(0, table->size);
+	ASSERT_STREQ("void", table->type);
 
 	mCc_st_delete_table(table);
 }
@@ -59,8 +60,11 @@ TEST(sym_table, InsertEntry_1)
 	mCc_st_insert_item(entry, new_item1);
 	mCc_st_insert_item(entry, new_item2);
 
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_table("bool");
 	mCc_st_insert_entry(table, entry);
+
+	ASSERT_EQ(1, table->size);
+	ASSERT_STREQ("void", table->type);
 
 	auto tab_entry1 = table->head;
 	ASSERT_STREQ("a1", tab_entry1->name);

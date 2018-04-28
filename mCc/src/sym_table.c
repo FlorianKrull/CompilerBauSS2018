@@ -76,13 +76,14 @@ void mCc_st_delete_entry(struct mCc_st_entry* entry)
 }
 
 /* ---------------------------------------------------------------- Tables */
-struct mCc_st_table *mCc_st_new_table()
+struct mCc_st_table *mCc_st_new_table(const char* type)
 {
 	struct mCc_st_table *tab = malloc(sizeof(*tab));
 	if (!tab) {
 		return NULL;
 	}
 
+	tab->type = type;
 	tab->head = NULL;
 	tab->size = 0;
 	return tab;
@@ -124,6 +125,7 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 	} else {
 		table->head = entry;
 	}
+	++(table->size);
 }
 
 /* ---------------------------------------------------------------- Look up */

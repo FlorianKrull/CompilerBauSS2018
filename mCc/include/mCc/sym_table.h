@@ -44,7 +44,8 @@ struct mCc_st_item {
 	struct mCc_st_item *next;
 };
 
-/* The variable bucket, in which a head pointer pointing to current node. */
+/* The variable bucket, in which a head pointer pointing to current node.
+ * also organized as linked list. */
 struct mCc_st_entry {
 	char *name;
 	int id;
@@ -52,8 +53,9 @@ struct mCc_st_entry {
 	struct mCc_st_entry *next;
 };
 
-/* Hash pointer, stores an array of pointers to entries, and its level of scope. */
+/* Hash table */
 struct mCc_st_table {
+	char *type;
 	struct mCc_st_entry* head;
 	int size;
 };
@@ -65,7 +67,7 @@ struct mCc_st_item *mCc_st_new_item(const char* type, int scope);
 struct mCc_st_entry *mCc_st_new_entry(const char* name, const char* type, int scope);
 
 // Create an empty table
-struct mCc_st_table *mCc_st_new_table();
+struct mCc_st_table *mCc_st_new_table(const char* type);
 
 void mCc_st_delete_item(struct mCc_st_item* item);
 
