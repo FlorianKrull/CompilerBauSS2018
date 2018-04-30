@@ -27,9 +27,9 @@ void mCc_st_delete_item(struct mCc_st_item* item)
 	assert(item);
 	free(item->type);
 //	free(item->scope);
-	if (NULL != item->next) {
+	/*if (NULL != item->next) {
 		mCc_st_delete_item(item->next);
-	}
+	}*/
 	free(item);
 }
 
@@ -46,6 +46,7 @@ int mCc_st_hash(const char* str) {
 	return (int) hash;
 }
 
+// A entry is always initialized when we encounter an item; therefore, we create a new entry along with first item
 struct mCc_st_entry *mCc_st_new_entry(const char* name, const char* type, int scope)
 {
 	struct mCc_st_entry *en = malloc(sizeof(*en));
@@ -69,21 +70,23 @@ void mCc_st_delete_entry(struct mCc_st_entry* entry)
 	if (NULL != entry->head) {
 		mCc_st_delete_item(entry->head);
 	}
+	/*
 	if (NULL != entry->next) {
 		mCc_st_delete_entry(entry->next);
 	}
+	*/
 	free(entry);
 }
 
 /* ---------------------------------------------------------------- Tables */
-struct mCc_st_table *mCc_st_new_table(const char* type)
+// Create an empty table
+struct mCc_st_table *mCc_st_new_table()
 {
 	struct mCc_st_table *tab = malloc(sizeof(*tab));
 	if (!tab) {
 		return NULL;
 	}
 
-	tab->type = type;
 	tab->head = NULL;
 	tab->size = 0;
 	return tab;
@@ -106,6 +109,7 @@ void mCc_st_delete_table(struct mCc_st_table* table)
 	free(table);
 }
 /* ---------------------------------------------------------------- Insert */
+//Insert item at the first location of entry
 void mCc_st_insert_item(struct mCc_st_entry *entry, struct mCc_st_item *item)
 {
 	if (NULL != entry->head) {
@@ -117,6 +121,7 @@ void mCc_st_insert_item(struct mCc_st_entry *entry, struct mCc_st_item *item)
 	entry->head = item;
 }
 
+//Insert item at the last location of entry
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 {
 	if (NULL != table->head) {
@@ -126,6 +131,51 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 		table->head = entry;
 	}
 	++(table->size);
+}
+
+/* ---------------------------------------------------------------- Delete */
+void mCc_st_remove_item(struct mCc_st_entry *entry, struct mCc_st_item *item)
+{
+	struct mCc_st_item *current = entry->head;
+	struct mCc_st_item *prev = NULL;	// Hold the current value while iterating
+
+	while (current->next != NULL && current != item) {	//Iterate while item is not found
+		prev = current;
+		current = current->next;
+	}
+
+	if (current == item) {	// Item found
+		if (current == entry->head) {
+			entry->head = entry->head->next;
+		} else {
+			prev->next = current->next;
+		}
+		mCc_st_delete_item(current);
+	}
+}
+
+void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
+{
+	struct mCc_st_entry *current = table->head;
+	struct mCc_st_entry *prev = NULL;
+
+	while (current->next != NULL && current != entry) {
+		prev = current;
+		current = current->next;
+	}
+
+	if (current == entry) {
+		if (current == table->head) {
+			table->head = table->head->next;
+//			table->head->name = table->head->next->name;
+//			table->head->head = table->head->next->head;
+		} else {
+			prev->next = current->next;
+		}
+		mCc_st_delete_entry(current);
+		--(table->size);
+	}
+
 }
 
 /* ---------------------------------------------------------------- Look up */

@@ -55,19 +55,16 @@ struct mCc_st_entry {
 
 /* Hash table */
 struct mCc_st_table {
-	char *type;
 	struct mCc_st_entry* head;
 	int size;
 };
 
-// Init and delete function
+/* ---------------------------------------------------------------- Initialization */
 struct mCc_st_item *mCc_st_new_item(const char* type, int scope);
 
-// Create a new entry with a first item
 struct mCc_st_entry *mCc_st_new_entry(const char* name, const char* type, int scope);
 
-// Create an empty table
-struct mCc_st_table *mCc_st_new_table(const char* type);
+struct mCc_st_table *mCc_st_new_table();
 
 void mCc_st_delete_item(struct mCc_st_item* item);
 
@@ -75,15 +72,19 @@ void mCc_st_delete_entry(struct mCc_st_entry* entry);
 
 void mCc_st_delete_table(struct mCc_st_table* table);
 
-// Hash function
+/* ---------------------------------------------------------------- Hash function */
 int mCc_st_hash(const char* str);
 
 // Basic function: look up, insert and delete
-/* ---------------------------------------------------------------- Insert */
-//insert item at the first location of entry
+/* ---------------------------------------------------------------- Insert element */
 void mCc_st_insert_item(struct mCc_st_entry *entry, struct mCc_st_item *item);
 
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
+
+/* ---------------------------------------------------------------- Delete element */
+void mCc_st_remove_item(struct mCc_st_entry *entry, struct mCc_st_item *item);
+
+void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
 
 bool mCc_st_lookup(const char* var, struct mCc_st_table* table);
 
