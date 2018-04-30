@@ -19,6 +19,7 @@
 
 %{
 #include <string.h>
+#include <assert.h>
 
 int mCc_parser_lex();
 void mCc_parser_error();
@@ -299,7 +300,8 @@ void mCc_parser_error(
 	result_error->location.end_line = yylloc->last_line;
 	result_error->location.start_col = yylloc->first_column;
 	result_error->location.end_col = yylloc->last_column;
-	result_error->msg = strdup(msg);
+	//result_error->msg = strdup(msg); //ERROR HERE
+	result_error->msg = NULL;
 }
 
 struct mCc_parser_result mCc_parser_parse_string(const char *input)
@@ -323,21 +325,28 @@ struct mCc_parser_result mCc_parser_parse_string(const char *input)
 
 void mCc_parser_delete_result(struct mCc_parser_result* result) {
 	assert(result);
-	if (result->expression != NULL) {
+	
+	if (NULL != result->expression) {
 		mCc_ast_delete_expression(result->expression);
 	}
 
-	if (result->statement != NULL) {
+	if (NULL != result->statement) {
 		mCc_ast_delete_statement(result->statement);
 	}
 	
-	if (result->parameter != NULL) {
+	if (NULL != result->parameter) {
 		mCc_ast_delete_parameter(result->parameter);
 	}
 
-	if (result->program != NULL) {
+	if (NULL != result->program) {
 		mCc_ast_delete_program(result->program);
 	}
+	
+	if (NULL != result->parse_error.msg) {
+		free(result->parse_error.msg);
+	}
+	
+	//free(result);
 }
 
 struct mCc_parser_result mCc_parser_parse_file(FILE *input)

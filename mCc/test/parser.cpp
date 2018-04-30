@@ -3,6 +3,27 @@
 #include "mCc/ast.h"
 #include "mCc/parser.h"
 
+void print_error(struct mCc_parse_error *parse_error)
+{
+	/*
+	struct mCc_error_location location = parse_error.location;
+	char line[10], column[10];
+	if (location.first_line != location.last_line) {
+		sprintf(line, "%d-%d", location.first_line, location.last_line);
+	} else {
+		sprintf(line, "%d", location.first_line);
+	}
+	if (location.first_column != location.last_column) {
+		sprintf(column, "%d-%d", location.first_column, location.last_column);
+	} else {
+		sprintf(column, "%d", location.first_column);
+	}
+	fprintf(stderr, "Error (line %s, column %s): %s\n", line, column,
+	        parse_error.msg);
+	        */
+	fprintf(stderr, "Error: %s\n", parse_error->msg);
+}
+
 TEST(Parser, BinaryOp_1)
 {
 	const char input[] = "192 + 3.14";
@@ -32,105 +53,14 @@ TEST(Parser, BinaryOp_1)
 
 	mCc_ast_delete_expression(expr);
 }
-/*
-TEST(Parser, NestedExpression_1)
-{
-	const char input[] = "42 * (-192 + 3.14)";
-	auto result = mCc_parser_parse_string(input);
 
-	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
-
-	auto expr = result.expression;
-
-	// root
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_MUL, expr->mul_op);
-
-	// root -> lhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
-
-	// root -> lhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->lhs->literal->type);
-	ASSERT_EQ(42, expr->lhs->literal->i_value);
-
-	// root -> rhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_PARENTH, expr->rhs->type);
-
-	auto subexpr = expr->rhs->expression;
-
-	// subexpr
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, subexpr->add_op);
-
-	// subexpr -> lhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->lhs->type);
-
-	// subexpr -> lhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, subexpr->lhs->literal->type);
-	ASSERT_EQ(-192, subexpr->lhs->literal->i_value);
-
-	// subexpr -> rhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->rhs->type);
-
-	// subexpr -> rhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_FLOAT, subexpr->rhs->literal->type);
-	ASSERT_EQ(3.14, subexpr->rhs->literal->f_value);
-
-	mCc_ast_delete_expression(expr);
-}
-
-TEST(Parser, NestedExpression_2)
-{
-	const char input[] = "-192 + 3.14 * 42";
-	auto result = mCc_parser_parse_string(input);
-
-	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
-
-	auto expr = result.expression;
-
-	// root
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_ADD, expr->add_op);
-
-	// root -> lhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->lhs->type);
-
-	// root -> lhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->lhs->literal->type);
-	ASSERT_EQ(-192, expr->lhs->literal->i_value);
-
-	// root -> rhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->rhs->type);
-
-	auto subexpr = expr->rhs;
-
-	// subexpr
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_BINARY_OP, subexpr->type);
-	ASSERT_EQ(MCC_AST_BINARY_OP_MUL, subexpr->mul_op);
-
-	// subexpr -> lhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->lhs->type);
-
-	// subexpr -> lhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_FLOAT, subexpr->lhs->literal->type);
-	ASSERT_EQ(3.14, subexpr->lhs->literal->f_value);
-
-	// subexpr -> rhs
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, subexpr->rhs->type);
-
-	// subexpr -> rhs -> literal
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, subexpr->rhs->literal->type);
-	ASSERT_EQ(42, subexpr->rhs->literal->i_value);
-
-	mCc_ast_delete_expression(expr);
-}
-*/
 TEST(Parser, MissingClosingParenthesis_1)
 {
 	const char input[] = "(42";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_NE(MCC_PARSER_STATUS_OK, result.status);
+	mCc_parser_delete_result(&result);
 }
 
 
