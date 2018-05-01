@@ -202,23 +202,26 @@ TEST(sym_table, RemoveEntry_3)
 }
 
 /* ---------------------------------------------------------------- Lookup */
-/*
+
 TEST(sym_table, Table_Lookup_1)
 {
-	struct mCc_st_item *item = mCc_st_new_item("float", 2, NULL);
-	struct mCc_st_entry *entry = mCc_st_new_entry("x", item);
+	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_item *entry1 = mCc_st_new_entry("y", "float", 2);
+	struct mCc_st_entry *entry2 = mCc_st_new_entry("x", "int", 1);
 
-	struct mCc_st_entry **arr_entries = (struct mCc_st_entry **) calloc(50, sizeof(struct mCc_st_entry));
-	struct mCc_st_table *table = mCc_st_new_table(arr_entries);
+	mCc_st_insert_entry(table, entry1);
+	mCc_st_insert_entry(table, entry2);
 
-	for (int i = 0; i < table->size; i++) {
-		arr_entries[0] = entry;
-	}
+	const char input[] = "x = 1;";
+	auto parse_result = mCc_parser_parse_string(input);
 
-	bool result = mCc_st_lookup("x", table);
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	auto asmt = parse_result.statement->assignment;
+	bool result = mCc_st_lookup(asmt, table);
+
 	ASSERT_EQ(true, result);
-	ASSERT_STREQ("x", table->entries[0]->name);
 
 	mCc_st_delete_table(table);
 }
-*/
+

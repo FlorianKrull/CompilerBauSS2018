@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include "mCc/ast.h"
 
 //#define SIZE 50	//Size of each table
 //#define HASH_VALUE 131	//A hash value should a minimum prime number larger than ASCII's alphabet size
@@ -44,7 +45,7 @@ struct mCc_st_item {
 	struct mCc_st_item *next;
 };
 
-/* The variable bucket, in which a head pointer pointing to current node.
+/* The variable bucket, in which a head pointer pointing to current node,
  * also organized as linked list. */
 struct mCc_st_entry {
 	char *name;
@@ -86,7 +87,7 @@ void mCc_st_remove_item(struct mCc_st_entry *entry, struct mCc_st_item *item);
 
 void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
 
-bool mCc_st_lookup(const char* var, struct mCc_st_table* table);
+bool mCc_st_lookup(struct mCc_ast_assignment *assign, struct mCc_st_table* table);
 
 #ifdef __cplusplus
 }

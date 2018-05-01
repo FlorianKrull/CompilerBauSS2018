@@ -167,8 +167,6 @@ void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 	if (current == entry) {
 		if (current == table->head) {
 			table->head = table->head->next;
-//			table->head->name = table->head->next->name;
-//			table->head->head = table->head->next->head;
 		} else {
 			prev->next = current->next;
 		}
@@ -179,22 +177,24 @@ void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 }
 
 /* ---------------------------------------------------------------- Look up */
-bool mCc_st_lookup(const char* var, struct mCc_st_table *table)
+// Check for undeclared variables
+bool mCc_st_lookup(struct mCc_ast_assignment *assign, struct mCc_st_table *table)
 {
+	assert(assign);
 	assert(table);
-	/*
-	struct mCc_st_entry **tab_entries = table->entries;
-	int len = table->size;
-	if (strcmp(var, strdup(tab_entries[0]->name))) {
-		return true;
-	}
-	for (int i = 0; i < len; i++) {
-		struct mCc_st_entry *current_entry = tab_entries[i];
-		if (!current_entry) return false;
-		else
- 		if (var == strdup(current_entry->name)) {
-			return true;
+
+	char *var_name = assign->identifier->id_value;
+	if (NULL != var_name) {
+		struct mCc_st_entry *current = table->head;
+
+		// Start looking up the table, compare variable to name of the current entry
+		while (current->next != NULL && current->name != var_name) {
+				current = current->next;
 		}
-	}*/
-	return false;
+		if (current->name == var_name) {
+			return true;
+		} else if (current->next == NULL && current->name != var_name) {
+			return false;
+		}
+	}
 }
