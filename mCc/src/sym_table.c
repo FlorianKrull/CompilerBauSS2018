@@ -26,7 +26,7 @@ void mCc_st_delete_item(struct mCc_st_item* item)
 {
 	assert(item);
 	free(item->type);
-//	free(item->scope);
+	//	free(item->scope);
 	/*if (NULL != item->next) {
 		mCc_st_delete_item(item->next);
 	}*/
@@ -66,7 +66,7 @@ void mCc_st_delete_entry(struct mCc_st_entry* entry)
 {
 	assert(entry);
 	free(entry->name);
-//	free(entry->id);
+	//	free(entry->id);
 	if (NULL != entry->head) {
 		mCc_st_delete_item(entry->head);
 	}
@@ -74,7 +74,7 @@ void mCc_st_delete_entry(struct mCc_st_entry* entry)
 	if (NULL != entry->next) {
 		mCc_st_delete_entry(entry->next);
 	}
-	*/
+	 */
 	free(entry);
 }
 
@@ -95,7 +95,7 @@ struct mCc_st_table *mCc_st_new_table()
 void mCc_st_delete_table(struct mCc_st_table* table)
 {
 	assert(table);
-//	free(table->size);
+	//	free(table->size);
 	/*
 	for (int i = 0; i < SIZE; i++) {
 		struct mCc_st_entry *current_entry = table->entries[i];
@@ -178,23 +178,45 @@ void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 
 /* ---------------------------------------------------------------- Look up */
 // Check for undeclared variables
+/*
 bool mCc_st_lookup(struct mCc_ast_assignment *assign, struct mCc_st_table *table)
 {
 	assert(assign);
 	assert(table);
+
+	bool result = false;
 
 	char *var_name = assign->identifier->id_value;
 	if (NULL != var_name) {
 		struct mCc_st_entry *current = table->head;
 
 		// Start looking up the table, compare variable to name of the current entry
-		while (current->next != NULL && current->name != var_name) {
-				current = current->next;
-		}
-		if (current->name == var_name) {
-			return true;
-		} else if (current->next == NULL && current->name != var_name) {
-			return false;
+		while (current != NULL) {
+			if (strcmp(current->name, var_name) == 0) {
+				result = true;
+			}
+			current = current->next;
 		}
 	}
+	return result;
 }
+*/
+bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table)
+{
+	assert(table);
+
+	bool result = false;
+
+	struct mCc_st_entry *current = table->head;
+
+	// Start looking up the table, compare variable to name of the current entry
+	while (current != NULL) {
+		if (strcmp(current->name, var_name) == 0) {
+			result= true;
+		}
+		current = current->next;
+	}
+
+	return result;
+}
+

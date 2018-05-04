@@ -87,7 +87,9 @@ void mCc_st_remove_item(struct mCc_st_entry *entry, struct mCc_st_item *item);
 
 void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
 
-bool mCc_st_lookup(struct mCc_ast_assignment *assign, struct mCc_st_table* table);
+//bool mCc_st_lookup(struct mCc_ast_assignment *assign, struct mCc_st_table* table);
+
+bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table);
 
 #ifdef __cplusplus
 }
