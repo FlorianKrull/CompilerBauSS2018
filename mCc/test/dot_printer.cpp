@@ -233,3 +233,90 @@ TEST(dot_print, PrintIfElseStatement_1)
   fclose(output);
   mCc_ast_delete_statement(stmt);
 }
+
+TEST(dot_print, PrintParameter_1)
+{
+  const char input[] = "string _a3, float b4";
+  auto result = mCc_parser_parse_string(input);
+
+  auto param = result.parameter;
+  FILE *output = fopen("parameter.dot", "w");
+  mCc_ast_print_dot_parameter(output, param);
+  fclose(output);
+  mCc_ast_delete_parameter(param);
+}
+
+TEST(dot_print, PrintCallExpression_1)
+{
+  const char input[] = "foo()";
+  auto result = mCc_parser_parse_string(input);
+
+  auto expr = result.expression;
+  FILE *output = fopen("callExpression.dot", "w");
+  mCc_ast_print_dot_expression(output, expr);
+  fclose(output);
+  mCc_ast_delete_expression(expr);
+}
+
+TEST(dot_print, PrintCallExpression_2)
+{
+  const char input[] = "foo(a, b)";
+  auto result = mCc_parser_parse_string(input);
+
+  auto expr = result.expression;
+  FILE *output = fopen("callExpression2.dot", "w");
+  mCc_ast_print_dot_expression(output, expr);
+  fclose(output);
+  mCc_ast_delete_expression(expr);
+}
+
+TEST(dot_print, PrintFunctionDef_1)
+{
+  const char input[] = "void foo() {}";
+  auto result = mCc_parser_parse_string(input);
+
+  auto program = result.program;
+  FILE *output = fopen("functionDef.dot", "w");
+  mCc_ast_print_dot_function_def(output, program->function_def_list->function_def);
+  fclose(output);
+  mCc_ast_delete_program(program);
+}
+
+TEST(dot_print, PrintFunctionDef_2)
+{
+  const char input[] = "void foo(int a) {if(a==1){ x=2;}}";
+  auto result = mCc_parser_parse_string(input);
+
+  auto program = result.program;
+  FILE *output = fopen("functionDef2.dot", "w");
+  mCc_ast_print_dot_function_def(output, program->function_def_list->function_def);
+  fclose(output);
+  mCc_ast_delete_program(program);
+}
+
+TEST(dot_print, PrintFunctionDefList_1)
+{
+  const char input[] = "void main() { _sub(2, 3.2);} void _sub(int x, float y) {z = x - y;}";
+  auto result = mCc_parser_parse_string(input);
+
+  auto program = result.program;
+  auto func_list = program->function_def_list;
+
+  FILE *output = fopen("functionDefList.dot", "w");
+  mCc_ast_print_dot_function_def_list(output, func_list);
+  fclose(output);
+  mCc_ast_delete_program(program);
+}
+
+TEST(dot_print, PrintProgram_1)
+{
+  const char input[] = "void main() { _sub(2, 3.2);} void _sub(int x, float y) {z = x - y;}";
+  auto result = mCc_parser_parse_string(input);
+
+  auto program = result.program;
+
+  FILE *output = fopen("program.dot", "w");
+  mCc_ast_print_dot_program(output, program);
+  fclose(output);
+  mCc_ast_delete_program(program);
+}
