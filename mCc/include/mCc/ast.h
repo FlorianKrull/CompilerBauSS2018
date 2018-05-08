@@ -196,6 +196,7 @@ struct mCc_ast_literal {
 
 		/* MCC_AST_LITERAL_TYPE_IDENTIFIER */
 		char *id_value;
+
 		/* MCC_AST_LITERAL_TYPE_INT */
 		long i_value;
 
@@ -376,7 +377,7 @@ enum mCc_ast_function_type {
 	MCC_AST_FUNCTION_TYPE_FLOAT,
 	MCC_AST_FUNCTION_TYPE_BOOL,
 	MCC_AST_FUNCTION_TYPE_STRING,
-	MCC_AST_FUNCTION_TYPE_VOID
+	MCC_AST_FUNCTION_TYPE_VOID,
 };
 
 struct mCc_ast_parameter {
