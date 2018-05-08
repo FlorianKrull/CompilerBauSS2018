@@ -33,6 +33,7 @@ void mCc_parser_error();
 /* Precedence */
 %right PREC_IF ELSE
 
+%token START_PROGRAM START_TEST
 %token END 0 "EOF"
 
 
@@ -91,8 +92,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_compare_op> compare_op
 
-%type <enum mCc_ast_var_type>var_type
-%type <enum mCc_ast_function_type>function_type
+%type <enum mCc_ast_type>var_type function_type
 
 %type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt
 %type <struct mCc_ast_expression *> expression term term_2 single_expr call_expr
@@ -124,13 +124,20 @@ void mCc_parser_error();
 
 %%
          
-toplevel : expression { *expr_result = $1; }
-	 | statement  { *stmt_result = $1; }
-	 | parameters { *par_result = $1; }
-	 /*| function_def { *func_result = $1; }*/
-	 | program { *result = $1; }
+toplevel : program { *result = $1; }
+		 | expression { *expr_result = $1; }
+	 	 | statement  { *stmt_result = $1; }
+	 	 | parameters { *par_result = $1; }
          ;
-		 
+
+/*
+toplevel : START_PROGRAM program { *result = $2; }
+	 | START_TEST program    { *result = $2; }
+	 | START_TEST statement  { *stmt_result = $2; }
+	 | START_TEST expression { *expr_result = $2; }
+	 | START_TEST parameters { *par_result = $2; }	
+	 ;
+ */
 /* unary operators */
 unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
 		  | PLUS { $$ = MCC_AST_UNARY_OP_PLUS;}
@@ -158,17 +165,14 @@ mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
        ;
        
 /* Type */
-var_type : INT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_INT; }
-		 | FLOAT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_FLOAT; }
-		 | BOOL_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_BOOL; }
-		 | STRING_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_STRING; }
+var_type : INT_TYPE 	{ $$ = MCC_AST_TYPE_INT; }
+		 | FLOAT_TYPE 	{ $$ = MCC_AST_TYPE_FLOAT; }
+		 | BOOL_TYPE 	{ $$ = MCC_AST_TYPE_BOOL; }
+		 | STRING_TYPE 	{ $$ = MCC_AST_TYPE_STRING; }
 		 ;
 		 
-function_type : BOOL_TYPE { $$ = MCC_AST_FUNCTION_TYPE_BOOL; }
-	     | INT_TYPE  { $$ = MCC_AST_FUNCTION_TYPE_INT; }
-	     | FLOAT_TYPE{ $$ = MCC_AST_FUNCTION_TYPE_FLOAT; }
-	     | STRING_TYPE  { $$ = MCC_AST_FUNCTION_TYPE_STRING; }
-	     | VOID_TYPE { $$ = MCC_AST_FUNCTION_TYPE_VOID; }
+function_type : var_type {$$ = $1; }
+	     | VOID_TYPE { $$ = MCC_AST_TYPE_VOID; }
 	     ;
 	 
 /* Expressions */
@@ -345,8 +349,6 @@ void mCc_parser_delete_result(struct mCc_parser_result* result) {
 	if (NULL != result->parse_error.msg) {
 		free(result->parse_error.msg);
 	}
-	
-	//free(result);
 }
 
 struct mCc_parser_result mCc_parser_parse_file(FILE *input)
@@ -373,6 +375,6 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		result.status = MCC_PARSER_STATUS_SYNTAX_ERROR;
 
 	mCc_parser_lex_destroy(scanner);
-
+	
 	return result;
 }

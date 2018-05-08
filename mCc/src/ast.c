@@ -293,7 +293,7 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression)
 /* ------------------------------------------------------------- Statements/Declaration/Assignment */
 
 struct mCc_ast_declaration *
-mCc_ast_new_declaration(enum mCc_ast_var_type var_type,
+mCc_ast_new_declaration(enum mCc_ast_type var_type,
                         struct mCc_ast_literal *identifier)
 {
 	assert(identifier);
@@ -309,7 +309,7 @@ mCc_ast_new_declaration(enum mCc_ast_var_type var_type,
 }
 
 struct mCc_ast_declaration *
-mCc_ast_new_array_declaration(enum mCc_ast_var_type var_type,
+mCc_ast_new_array_declaration(enum mCc_ast_type var_type,
                               long size, struct mCc_ast_literal *identifier)
 {
 	assert(identifier);
@@ -479,27 +479,7 @@ mCc_ast_new_statement_if(struct mCc_ast_expression *expression,
 	}
 	return stmt;
 }
-/*
-struct mCc_ast_statement *
-mCc_ast_new_statement_if_else(struct mCc_ast_expression *expression,
-		struct mCc_ast_statement *compound_1, struct mCc_ast_statement *compound_2)
-{
-	assert(expression);
-	assert(compound_1);
-	assert(compound_2);
 
-	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
-	if (!stmt) {
-		return NULL;
-	}
-
-	stmt->type = MCC_AST_STATEMENT_TYPE_IF_ELSE;
-	stmt->expr_1 = expression;
-	stmt->compount_stmt_1 = compound_1;
-	stmt->compount_stmt_2 = compound_2;
-	return stmt;
-}
-*/
 struct mCc_ast_statement *
 mCc_ast_new_statement_while(struct mCc_ast_expression *expression,
 		struct mCc_ast_statement *statement)
@@ -601,12 +581,11 @@ void mCc_ast_delete_parameter(struct mCc_ast_parameter *param)
 }
 
 struct mCc_ast_function_def *
-mCc_ast_new_function_def(enum mCc_ast_function_type type,
+mCc_ast_new_function_def(enum mCc_ast_type type,
                          const char *id_value,
                          struct mCc_ast_parameter *params,
                          struct mCc_ast_statement *compound_stmt)
 {
-	assert(type);
 	assert(id_value);
 	assert(compound_stmt);
 
@@ -627,7 +606,7 @@ void mCc_ast_delete_function_def(struct mCc_ast_function_def *function_def)
 {
 	assert(function_def);
 	mCc_ast_delete_literal(function_def->identifier);
-//	mCc_ast_delete_parameter(function_def->parameters);
+
 	if (NULL != function_def->parameters) {
 		mCc_ast_delete_parameter(function_def->parameters);
 	}

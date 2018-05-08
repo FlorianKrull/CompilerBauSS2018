@@ -473,7 +473,7 @@ TEST(Parser, Declaration_1)
 	// root->declaration
 	auto decl = stmt->declaration;
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_INT, decl->var_type);
 
 	// decl->normal_decl->identifier;
 	auto normal_decl = decl->normal_decl;
@@ -498,7 +498,7 @@ TEST(Parser, Declaration_2)
 	// root->declaration
 	auto decl = stmt->declaration;
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_ARRAY, decl->type);
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_FLOAT, decl->var_type);
 
 	// decl->array_decl->identifier;
 	auto array_decl = decl->array_decl;
@@ -818,7 +818,7 @@ TEST(Parser, Parameter_1)
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
 	//declaration->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_BOOL, decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_BOOL, decl->var_type);
 
 	//declaration->identifier
 	auto id = decl->normal_decl.identifier;
@@ -843,7 +843,7 @@ TEST(Parser, Parameter_2)
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
 	//declaration->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_STRING, decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_STRING, decl->var_type);
 
 	//declaration->identifier
 	auto id = decl->normal_decl.identifier;
@@ -855,7 +855,7 @@ TEST(Parser, Parameter_2)
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
 	//nextdecl->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, nextdecl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_FLOAT, nextdecl->var_type);
 
 	//nextdecl->identifier
 	auto nextid = nextdecl->normal_decl.identifier;
@@ -875,7 +875,7 @@ TEST(Parser, Function_1)
 	auto func = result.function_def;
 
 	//root->function type
-	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, func->type);
+	ASSERT_EQ(MCC_AST_TYPE_VOID, func->type);
 
 	//root->identifier
 	auto id = func->identifier;
@@ -899,7 +899,7 @@ TEST(Parser, Function_2)
 	auto func = result.function_def;
 
 	//root->function type
-	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, func->type);
+	ASSERT_EQ(MCC_AST_TYPE_VOID, func->type);
 
 	//root->identifier
 	auto id = func->identifier;
@@ -913,7 +913,7 @@ TEST(Parser, Function_2)
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
 	//declaration->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_INT, decl->var_type);
 
 	//declaration->identifier
 	auto subid = decl->normal_decl.identifier;
@@ -925,7 +925,7 @@ TEST(Parser, Function_2)
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
 	//nextdecl->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, nextdecl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_FLOAT, nextdecl->var_type);
 
 	//nextdecl->identifier
 	auto nextid = nextdecl->normal_decl.identifier;
@@ -1034,7 +1034,7 @@ TEST(Parser, Call_Expr_3)
 }
 
 /* ------------------------Program */
-/*Combine program, function_def_list and function_def test*/
+/*Combine: program, function_def_list and function_def*/
 TEST(Parser, Program_1)
 {
 	const char input[] = "void main() {}";
@@ -1044,11 +1044,11 @@ TEST(Parser, Program_1)
 
 	auto program = result.program;
 
-	//program->function_def_list->function_def
+	//MAIN function
 	auto func = program->function_def_list->function_def;
 
 	//func->function type
-	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, func->type);
+	ASSERT_EQ(MCC_AST_TYPE_VOID, func->type);
 
 	//func->identifier
 	auto id = func->identifier;
@@ -1064,28 +1064,27 @@ TEST(Parser, Program_1)
 
 TEST(Parser, Program_2)	// Final, longest test
 {
-	const char input[] = "void main() { _sub(2, 3.2);} void _sub(int x, float y) {z = x - y;}";
+	const char input[] = "void main() { _sub(2, 3.2);} int _sub(int x, float y) {z = x - y;}";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
 	auto program = result.program;
 
-	//program->function_def_list;
 	auto func_list = program->function_def_list;
 
-	//program->function_def_list->function_def
+	//function MAIN
 	auto func = func_list->function_def;
 
-	//func->function type
-	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, func->type);
+	//MAIN->function type
+	ASSERT_EQ(MCC_AST_TYPE_VOID, func->type);
 
-	//func->identifier
+	//MAIN->identifier
 	auto id = func->identifier;
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
 	ASSERT_STREQ("main", id->id_value);
 
-	//func->compound_stmt
+	//MAIN->compound_stmt
 	auto stmt = func->compound_stmt;
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
 
@@ -1117,25 +1116,25 @@ TEST(Parser, Program_2)	// Final, longest test
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_FLOAT, next_expr->literal->type);
 	ASSERT_EQ(3.2, next_expr->literal->f_value);
 
-	//program->function_def_list->next function_def_list->function_def
+	//function _SUB
 	auto nextfunc = func_list->next->function_def;
 
-	//nextfunc->function type
-	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, nextfunc->type);
+	//_SUB->function type
+	ASSERT_EQ(MCC_AST_TYPE_INT, nextfunc->type);
 
-	//nextfunc->identifier
+	//_SUB->identifier
 	auto nextid = nextfunc->identifier;
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, nextid->type);
 	ASSERT_STREQ("_sub", nextid->id_value);
 
-	//nextfunc->parameter
+	//_SUB->parameter
 	auto param = nextfunc->parameters;
-	//nextfunc->param->declaration
+	//_SUB->param->declaration
 	auto decl = param->declaration;
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
 	//declaration->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_INT, decl->var_type);
 
 	//declaration->identifier
 	auto subid = decl->normal_decl.identifier;
@@ -1147,7 +1146,7 @@ TEST(Parser, Program_2)	// Final, longest test
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
 
 	//nextdecl->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, nextdecl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_FLOAT, nextdecl->var_type);
 
 	//nextdecl->identifier
 	auto next_subid = nextdecl->normal_decl.identifier;

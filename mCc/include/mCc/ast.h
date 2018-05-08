@@ -229,12 +229,13 @@ struct mCc_ast_literal *mCc_ast_new_literal_string(const char *value);
 
 void mCc_ast_delete_literal(struct mCc_ast_literal *literal);
 
-/* --------------------------------------------------------------- Variable type */
-enum mCc_ast_var_type {
-	MCC_AST_VARIABLES_TYPE_INT,
-	MCC_AST_VARIABLES_TYPE_FLOAT,
-	MCC_AST_VARIABLES_TYPE_BOOL,
-	MCC_AST_VARIABLES_TYPE_STRING
+/* --------------------------------------------------------------- Variable and Function types */
+enum mCc_ast_type {
+	MCC_AST_TYPE_INT,
+	MCC_AST_TYPE_FLOAT,
+	MCC_AST_TYPE_BOOL,
+	MCC_AST_TYPE_STRING,
+	MCC_AST_TYPE_VOID,
 };
 
 /* ------------------------------------------------------------- Statements/Declaration/Assignment */
@@ -246,7 +247,7 @@ enum mCc_ast_declaration_type {
 struct mCc_ast_declaration {
 	struct mCc_ast_node node;
 	enum mCc_ast_declaration_type type;
-	enum mCc_ast_var_type var_type;
+	enum mCc_ast_type var_type;
 	union {
 		struct {
 			struct mCc_ast_literal *identifier;
@@ -260,11 +261,11 @@ struct mCc_ast_declaration {
 };
 
 struct mCc_ast_declaration *
-mCc_ast_new_declaration(enum mCc_ast_var_type var_type,
+mCc_ast_new_declaration(enum mCc_ast_type var_type,
                         struct mCc_ast_literal *identifier);
 
 struct mCc_ast_declaration *
-mCc_ast_new_array_declaration(enum mCc_ast_var_type var_type,
+mCc_ast_new_array_declaration(enum mCc_ast_type var_type,
                               long size, struct mCc_ast_literal *identifier);
 
 void mCc_ast_delete_declaration(struct mCc_ast_declaration *declaration);
@@ -372,13 +373,6 @@ mCc_ast_new_statement_return(struct mCc_ast_expression *expression);
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
 
 /* ------------------------------------------------------------- Function Definition/Call */
-enum mCc_ast_function_type {
-	MCC_AST_FUNCTION_TYPE_INT,
-	MCC_AST_FUNCTION_TYPE_FLOAT,
-	MCC_AST_FUNCTION_TYPE_BOOL,
-	MCC_AST_FUNCTION_TYPE_STRING,
-	MCC_AST_FUNCTION_TYPE_VOID,
-};
 
 struct mCc_ast_parameter {
 	struct mCc_ast_node node;
@@ -394,7 +388,7 @@ void mCc_ast_delete_parameter(struct mCc_ast_parameter *param);
 struct mCc_ast_function_def {
 	struct mCc_ast_node node;
 
-	enum mCc_ast_function_type type;
+	enum mCc_ast_type type;
 
 	struct mCc_ast_literal *identifier;
 	struct mCc_ast_parameter *parameters;
@@ -402,7 +396,7 @@ struct mCc_ast_function_def {
 };
 
 struct mCc_ast_function_def *
-mCc_ast_new_function_def(enum mCc_ast_function_type type,
+mCc_ast_new_function_def(enum mCc_ast_type type,
                          const char *id_value,
                          struct mCc_ast_parameter *params,
                          struct mCc_ast_statement *compound_stmt);
