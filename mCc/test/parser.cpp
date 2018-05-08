@@ -803,7 +803,7 @@ TEST(Parser, If_1)
 }
 
 /* ------------------------Function Definition/Call */
-
+/*
 TEST(Parser, Parameter_1)
 {
 	const char input[] = "bool _3";
@@ -864,6 +864,7 @@ TEST(Parser, Parameter_2)
 
 	mCc_ast_delete_parameter(param);
 }
+*/
 /*
 TEST(Parser, Function_1)
 {

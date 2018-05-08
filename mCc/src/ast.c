@@ -294,9 +294,8 @@ void mCc_ast_delete_expression(struct mCc_ast_expression *expression)
 
 struct mCc_ast_declaration *
 mCc_ast_new_declaration(enum mCc_ast_type var_type,
-                        struct mCc_ast_literal *identifier)
+                        const char *id_value)
 {
-	assert(identifier);
 	struct mCc_ast_declaration *decl = malloc(sizeof(*decl));
 	if (!decl) {
 		return NULL;
@@ -304,16 +303,14 @@ mCc_ast_new_declaration(enum mCc_ast_type var_type,
 
 	decl->type = MCC_AST_DECLARATION_TYPE_NORMAL;
 	decl->var_type = var_type;
-	decl->normal_decl.identifier = identifier;
+	decl->normal_decl.identifier = mCc_ast_new_literal_identifier(id_value);
 	return decl;
 }
 
 struct mCc_ast_declaration *
 mCc_ast_new_array_declaration(enum mCc_ast_type var_type,
-                              long size, struct mCc_ast_literal *identifier)
+                              long size, const char *id_value)
 {
-	assert(identifier);
-
 	struct mCc_ast_declaration *decl = malloc(sizeof(*decl));
 	if (!decl) {
 		return NULL;
@@ -321,7 +318,7 @@ mCc_ast_new_array_declaration(enum mCc_ast_type var_type,
 
 	decl->type = MCC_AST_DECLARATION_TYPE_ARRAY;
 	decl->var_type = var_type;
-	decl->array_decl.identifier = identifier;
+	decl->array_decl.identifier = mCc_ast_new_literal_identifier(id_value);
 	decl->array_decl.size = mCc_ast_new_literal_int(size);
 	return decl;
 }
@@ -340,10 +337,9 @@ void mCc_ast_delete_declaration(struct mCc_ast_declaration *decl)
 }
 
 struct mCc_ast_assignment *
-mCc_ast_new_assignment(struct mCc_ast_literal *identifier,
+mCc_ast_new_assignment(const char *id_value,
                        struct mCc_ast_expression *rhs)
 {
-	assert(identifier);
 	assert(rhs);
 
 	struct mCc_ast_assignment *asmt = malloc(sizeof(*asmt));
@@ -352,17 +348,16 @@ mCc_ast_new_assignment(struct mCc_ast_literal *identifier,
 	}
 
 	asmt->type = MCC_AST_ASSIGNMENT_TYPE_NORMAL;
-	asmt->identifier = identifier;
+	asmt->identifier = mCc_ast_new_literal_identifier(id_value);
 	asmt->normal_asmt.rhs = rhs;
 	return asmt;
 }
 
 struct mCc_ast_assignment *
-mCc_ast_new_array_assignment(struct mCc_ast_literal *identifier,
+mCc_ast_new_array_assignment(const char *id_value,
                              struct mCc_ast_expression *index,
                              struct mCc_ast_expression *rhs)
 {
-	assert(identifier);
 	assert(index);
 	assert(rhs);
 
@@ -372,7 +367,7 @@ mCc_ast_new_array_assignment(struct mCc_ast_literal *identifier,
 		}
 
 	asmt->type = MCC_AST_ASSIGNMENT_TYPE_ARRAY;
-	asmt->identifier = identifier;
+	asmt->identifier = mCc_ast_new_literal_identifier(id_value);
 	asmt->array_asmt.index = index;
 	asmt->array_asmt.rhs = rhs;
 	return asmt;

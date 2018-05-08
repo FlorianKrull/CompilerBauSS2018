@@ -262,11 +262,11 @@ struct mCc_ast_declaration {
 
 struct mCc_ast_declaration *
 mCc_ast_new_declaration(enum mCc_ast_type var_type,
-                        struct mCc_ast_literal *identifier);
+                        const char *id_value);
 
 struct mCc_ast_declaration *
 mCc_ast_new_array_declaration(enum mCc_ast_type var_type,
-                              long size, struct mCc_ast_literal *identifier);
+                              long size, const char *id_value);
 
 void mCc_ast_delete_declaration(struct mCc_ast_declaration *declaration);
 
@@ -292,11 +292,11 @@ struct mCc_ast_assignment {
 };
 
 struct mCc_ast_assignment *
-mCc_ast_new_assignment(struct mCc_ast_literal *identifier,
+mCc_ast_new_assignment(const char *id_value,
                        struct mCc_ast_expression *rhs);
 
 struct mCc_ast_assignment *
-mCc_ast_new_array_assignment(struct mCc_ast_literal *identifier,
+mCc_ast_new_array_assignment(const char *id_value,
                              struct mCc_ast_expression *index,
                              struct mCc_ast_expression *rhs);
 

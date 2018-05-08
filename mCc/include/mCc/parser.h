@@ -30,8 +30,7 @@ struct mCc_parser_result {
 	struct mCc_ast_expression *expression;
 	struct mCc_ast_statement *statement;
 	struct mCc_ast_parameter *parameter;
-//	struct mCc_ast_function_def *function_def;
-//	struct mCc_ast_function_def_list *function_def_list;
+	struct mCc_ast_declaration *declaration;
 	struct mCc_ast_program *program;
 	struct mCc_parse_error parse_error;
 };

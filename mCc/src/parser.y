@@ -5,11 +5,10 @@
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result}
 			     {struct mCc_ast_statement** stmt_result}
 			     {struct mCc_ast_parameter** par_result}
-			     /*{struct mCc_ast_function_def** func_result}*/
-			     /*{struct mCc_ast_function_def_list** func_list_result}*/
+			     {struct mCc_ast_declaration** decl_result}
 			     {struct mCc_ast_program** result}
 			     {struct mCc_parse_error* result_error}
-/*TODO: combine it to only one struct mCc_ast_program*/
+
 %define parse.trace
 %define parse.error verbose
 
@@ -128,6 +127,7 @@ toplevel : program { *result = $1; }
 		 | expression { *expr_result = $1; }
 	 	 | statement  { *stmt_result = $1; }
 	 	 | parameters { *par_result = $1; }
+	 	 | declaration { *decl_result = $1; }
          ;
 
 /*
@@ -232,15 +232,15 @@ ret_stmt : RETURN 				{ $$ = mCc_ast_new_statement_return(NULL); }
 
 /* Declaration/Assignment */
 /* Solution for array declaration and assignment credits to team 21 */
-declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration($1, mCc_ast_new_literal_identifier($2));}
+declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration($1, $2);}
 			| var_type LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = 
-			mCc_ast_new_array_declaration($1, $3, mCc_ast_new_literal_identifier($5));}
+			mCc_ast_new_array_declaration($1, $3, $5);}
 			;
 			
-assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment(mCc_ast_new_literal_identifier($1),
+assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment($1,
 											$3);}
 		   | IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET ASSIGN expression	{$$ = 
-		   									mCc_ast_new_array_assignment(mCc_ast_new_literal_identifier($1), $3,
+		   									mCc_ast_new_array_assignment($1, $3,
 											$6);}
 		   ;
 		   
@@ -341,6 +341,10 @@ void mCc_parser_delete_result(struct mCc_parser_result* result) {
 	if (NULL != result->parameter) {
 		mCc_ast_delete_parameter(result->parameter);
 	}
+	
+	if (NULL != result->declaration) {
+		mCc_ast_delete_declaration(result->declaration);
+	}
 
 	if (NULL != result->program) {
 		mCc_ast_delete_program(result->program);
@@ -367,7 +371,7 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 	result.parse_error.is_error = false;
 
 	if (yyparse(scanner, &result.expression, &result.statement,
-	&result.parameter, &result.program, &result.parse_error) != 0) {
+	&result.parameter, &result.declaration, &result.program, &result.parse_error) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 

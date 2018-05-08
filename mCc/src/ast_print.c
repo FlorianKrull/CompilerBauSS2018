@@ -57,6 +57,7 @@ const char *mCc_ast_print_var_type(enum mCc_ast_type type)
                 case MCC_AST_TYPE_FLOAT: return "float";
                 case MCC_AST_TYPE_BOOL: return "boolean";
                 case MCC_AST_TYPE_STRING: return "string";
+                case MCC_AST_TYPE_VOID: return "void";
         }
 
         return "unknown type";
