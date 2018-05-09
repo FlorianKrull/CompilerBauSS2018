@@ -50,13 +50,14 @@ const char *mCc_ast_print_binary_op(struct mCc_ast_expression *expression)
 	return "unknown op";
 }
 
-const char *mCc_ast_print_var_type(enum mCc_ast_var_type type)
+const char *mCc_ast_print_var_type(enum mCc_ast_type type)
 {
         switch(type){
-                case MCC_AST_VARIABLES_TYPE_INT: return "int";
-                case MCC_AST_VARIABLES_TYPE_FLOAT: return "float";
-                case MCC_AST_VARIABLES_TYPE_BOOL: return "boolean";
-                case MCC_AST_VARIABLES_TYPE_STRING: return "string";
+                case MCC_AST_TYPE_INT: return "int";
+                case MCC_AST_TYPE_FLOAT: return "float";
+                case MCC_AST_TYPE_BOOL: return "boolean";
+                case MCC_AST_TYPE_STRING: return "string";
+                case MCC_AST_TYPE_VOID: return "void";
         }
 
         return "unknown type";
@@ -82,14 +83,14 @@ const char *mCc_ast_print_assignment_type(enum mCc_ast_assignment_type type)
         return "unknown type";
 }
 
-const char *mCc_ast_print_function_type(enum mCc_ast_function_type type)
+const char *mCc_ast_print_function_type(enum mCc_ast_type type)
 {
         switch(type){
-                case MCC_AST_FUNCTION_TYPE_INT: return "int";
-                case MCC_AST_FUNCTION_TYPE_FLOAT: return "float";
-                case MCC_AST_FUNCTION_TYPE_BOOL: return "bool";
-                case MCC_AST_FUNCTION_TYPE_STRING: return "string";
-                case MCC_AST_FUNCTION_TYPE_VOID: return "void";
+                case MCC_AST_TYPE_INT: return "int";
+                case MCC_AST_TYPE_FLOAT: return "float";
+                case MCC_AST_TYPE_BOOL: return "bool";
+                case MCC_AST_TYPE_STRING: return "string";
+                case MCC_AST_TYPE_VOID: return "void";
         }
 
         return "unknown type";
@@ -636,4 +637,5 @@ void mCc_ast_print_dot_program(FILE *out, struct mCc_ast_program *program)
         mCc_ast_visit_program(program, &visitor);
 
         print_dot_end(out);
+
 }

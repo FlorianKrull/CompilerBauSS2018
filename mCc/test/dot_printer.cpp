@@ -310,7 +310,7 @@ TEST(dot_print, PrintFunctionDefList_1)
 
 TEST(dot_print, PrintProgram_1)
 {
-  const char input[] = "void main() { _sub(2, 3.2);} void _sub(int x, float y) {z = x - y;}";
+  const char input[] = "void main() { _sub(2, 3.2);} int _sub(int x, float y) {z = x - y;}";
   auto result = mCc_parser_parse_string(input);
 
   auto program = result.program;

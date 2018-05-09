@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <mCc/ast.h>
 
 #include "mCc/ast.h"
 
@@ -13,7 +14,14 @@ extern "C" {
 enum mCc_parser_status {
 	MCC_PARSER_STATUS_OK,
 	MCC_PARSER_STATUS_UNABLE_TO_OPEN_STREAM,
+	MCC_PARSER_STATUS_SYNTAX_ERROR,
 	MCC_PARSER_STATUS_UNKNOWN_ERROR,
+};
+
+struct mCc_parse_error {
+	bool is_error;
+	char *msg;
+	struct mCc_ast_source_location location;
 };
 
 struct mCc_parser_result {
@@ -22,9 +30,9 @@ struct mCc_parser_result {
 	struct mCc_ast_expression *expression;
 	struct mCc_ast_statement *statement;
 	struct mCc_ast_parameter *parameter;
-//	struct mCc_ast_function_def *function_def;
-//	struct mCc_ast_function_def_list *function_def_list;
+	struct mCc_ast_declaration *declaration;
 	struct mCc_ast_program *program;
+	struct mCc_parse_error parse_error;
 };
 
 struct mCc_parser_result mCc_parser_parse_string(const char *input);

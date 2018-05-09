@@ -2,15 +2,20 @@
 
 %option batch
 %option bison-bridge
+%option bison-locations
 %option noinput
 %option nounput
 %option noyywrap
 %option reentrant
+%option yylineno
+
 
 %{
 #include "parser.tab.h"
 
 #define YYSTYPE MCC_PARSER_STYPE
+#define YYLTYPE MCC_PARSER_LTYPE
+
 %}
 
 identifier		[a-zA-Z_][a-zA-Z0-9_]*
