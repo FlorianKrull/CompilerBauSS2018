@@ -8,66 +8,44 @@ extern "C" {
 #include <stdbool.h>
 #include "mCc/ast.h"
 
-//#define SIZE 50	//Size of each table
-//#define HASH_VALUE 131	//A hash value should a minimum prime number larger than ASCII's alphabet size
-
-/* Declare the symbol table as a hashtable of list.
+/* Declare the symbol table as a list of hashtables
  * More information: https://www.d.umn.edu/~rmaclin/cs5641/Notes/L15_SymbolTable.pdf
- * When processing a scope S, the structure of the symbol table should look
- * like this:
- *
- * f : void, 1
- * a : int, 2
- * x : char, 3 -> int, 2
- * y : char, 3 -> float 2
- * z : bool, 3
- *
- * The structure corresponding to the following code:
- * void f(int a) {
- * int x; float y;
- * if (...) {
- * char x, y;
- * bool z;
- * ...
- * }
- * }
- * void main() {
- * f(10);
- * }
- * */
+*/
 
-/* The basic element; storing declaration of a variables and its scope, respectively.
- * It's also organized as linked list; in which next pointer hold the address of the
- * next node. */
-struct mCc_st_item {
-	char *type;
-	int scope;
-	struct mCc_st_item *next;
+enum mCc_st_entry_type {
+	MCC_ST_ENTRY_TYPE_VARIABLE,
+	MCC_ST_ENTRY_TYPE_FUNCTION
 };
-
-/* The variable bucket, in which a head pointer pointing to current node,
- * also organized as linked list. */
+/* The basic element; storing declaration of a variables
+ * It's organized as linked list; in which next pointer hold the address of the
+ * next node. */
 struct mCc_st_entry {
+	enum mCc_ast_type data_type;
+	enum mCc_st_entry_type entry_type;
 	char *name;
-	int id;
-	struct mCc_st_item *head;
 	struct mCc_st_entry *next;
 };
 
-/* Hash table */
+/* Table, in which a head pointer pointing to current entry
+ * Also organized as linked list to another table
+ */
 struct mCc_st_table {
-	struct mCc_st_entry* head;
+	struct mCc_st_entry *head;
+	int scope;	// Necessary for nested scope
 	int size;
+	struct mCc_st_table *prev;
+	struct mCc_st_table *next;
 };
 
 /* ---------------------------------------------------------------- Initialization */
-struct mCc_st_item *mCc_st_new_item(const char* type, int scope);
 
-struct mCc_st_entry *mCc_st_new_entry(const char* name, const char* type, int scope);
+struct mCc_st_entry *mCc_st_new_entry(const char* name,
+									enum mCc_ast_type data_type,
+									enum mCc_st_entry_type entry_type);
 
 struct mCc_st_table *mCc_st_new_table();
 
-void mCc_st_delete_item(struct mCc_st_item* item);
+void mCc_st_update_scope (struct mCc_st_table* table, int scope);
 
 void mCc_st_delete_entry(struct mCc_st_entry* entry);
 
@@ -78,12 +56,10 @@ int mCc_st_hash(const char* str);
 
 // Basic function: look up, insert and delete
 /* ---------------------------------------------------------------- Insert element */
-void mCc_st_insert_item(struct mCc_st_entry *entry, struct mCc_st_item *item);
 
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
 
 /* ---------------------------------------------------------------- Delete element */
-void mCc_st_remove_item(struct mCc_st_entry *entry, struct mCc_st_item *item);
 
 void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
 
