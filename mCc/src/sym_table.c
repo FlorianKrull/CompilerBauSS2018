@@ -1,6 +1,7 @@
 #include "mCc/sym_table.h"
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -81,14 +82,19 @@ void mCc_st_delete_table(struct mCc_st_table* table)
 //Insert entry at the last location of table
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 {
-	if (NULL != table->head) {
-		//Link old first node to entry
-		table->head->next = entry;
+	struct mCc_st_entry *last = table->head;
+	if (NULL != last) {
+		// Traverse until the end
+		while (last->next != NULL) {
+			last = last->next;
+		}
+		last->next = entry;
 
 	} else {
 		//point head to new first node
 		table->head = entry;
 	}
+	entry->next = NULL;
 	++(table->size);
 }
 
@@ -134,6 +140,34 @@ void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 		--(table->size);
 	}
 
+}
+
+/* ---------------------------------------------------------------- Print */
+void mCc_st_print_entry(struct mCc_st_entry *en) {
+    assert(en);
+    printf("(Entry: %s, Type: %d)", en->name, en->data_type);
+
+}
+
+void mCc_st_print_table(struct mCc_st_table *table) {
+    printf("Table in scope %i : %p\n", table->scope, table);
+    assert(table);
+    struct mCc_st_entry *ptr = table->head;
+    //start from the beginning
+       while(ptr != NULL) {
+    	   mCc_st_print_entry(ptr);
+    	   printf(" -> ");
+    	   ptr = ptr->next;
+       }
+    printf("Size = %i\n", table->size);
+}
+
+void mCc_st_print_table_list(struct mCc_st_table *tab_tail) {
+    assert(tab_tail);
+    mCc_st_print_table(tab_tail);
+    if (NULL != tab_tail->prev) {
+    	mCc_st_print_table_list(tab_tail->prev);
+    }
 }
 
 /* ---------------------------------------------------------------- Look up */

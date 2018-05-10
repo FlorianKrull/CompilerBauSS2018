@@ -5,41 +5,7 @@
 #include "mCc/parser.h"
 
 /* ---------------------------------------------------------------- Initialization */
-/*
-TEST(sym_table, NewItem_1)
-{
-	struct mCc_st_item *item = mCc_st_new_item("int", 1);
 
-	ASSERT_STREQ("int", item->type);
-	ASSERT_EQ(1, item->scope);
-	ASSERT_EQ(NULL, item->next);
-
-	mCc_st_delete_item(item);
-}
-
-TEST(sym_table, NewEntry_1)
-{
-	struct mCc_st_entry *entry = mCc_st_new_entry("my_var", "bool", 2);
-	ASSERT_STREQ("my_var", entry->name);
-
-	auto head = entry->head;
-	ASSERT_STREQ("bool", head->type);
-	ASSERT_EQ(2, head->scope);
-
-	ASSERT_EQ(NULL, entry->next);
-
-	mCc_st_delete_entry(entry);
-}
-
-TEST(sym_table, NewTable_1)
-{
-	struct mCc_st_table *table = mCc_st_new_table();
-	ASSERT_EQ(0, table->size);
-	ASSERT_EQ(NULL, table->head);
-
-	mCc_st_delete_table(table);
-}
-*/
 TEST(sym_table, NewEntry_1)
 {
 	struct mCc_st_entry *entry = mCc_st_new_entry("my_var", MCC_AST_TYPE_BOOL, MCC_ST_ENTRY_TYPE_VARIABLE);
@@ -293,6 +259,9 @@ TEST(sym_table, Table_Lookup_3)
 
 	auto result = mCc_st_lookup(asmt_id->id_value, table);
 	ASSERT_EQ(true, result);
+
+	// Print
+	mCc_st_print_table(table);
 
 	mCc_st_delete_table(table);
 	mCc_ast_delete_program(program);

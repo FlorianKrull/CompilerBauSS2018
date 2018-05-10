@@ -63,8 +63,12 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 
 void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
 
-//bool mCc_st_lookup(struct mCc_ast_assignment *assign, struct mCc_st_table* table);
+/* ---------------------------------------------------------------- Print */
+void mCc_st_print_entry(struct mCc_st_entry *en);
+void mCc_st_print_table(struct mCc_st_table *table);
+void mCc_st_print_table_list(struct mCc_st_table *tab_tail);
 
+/* ---------------------------------------------------------------- Look up */
 bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table);
 
 #ifdef __cplusplus
