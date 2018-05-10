@@ -273,7 +273,7 @@ TEST(sym_table, Table_Lookup_3)
 	auto func = program->function_def_list->function_def;
 
 	//func->function type
-	ASSERT_EQ(MCC_AST_FUNCTION_TYPE_VOID, func->type);
+	ASSERT_EQ(MCC_AST_TYPE_VOID, func->type);
 
 	//func->identifier
 	auto id = func->identifier;
@@ -290,7 +290,7 @@ TEST(sym_table, Table_Lookup_3)
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, x_decl->type);
 
 	//x->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_INT, x_decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_INT, x_decl->var_type);
 
 	//x->identifier
 	auto x_subid = x_decl->normal_decl.identifier;
@@ -306,7 +306,7 @@ TEST(sym_table, Table_Lookup_3)
 	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, y_decl->type);
 
 	//y->var_type
-	ASSERT_EQ(MCC_AST_VARIABLES_TYPE_FLOAT, y_decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_FLOAT, y_decl->var_type);
 
 	//y->identifier
 	auto y_subid = y_decl->normal_decl.identifier;

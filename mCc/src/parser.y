@@ -5,10 +5,10 @@
 %parse-param {void *scanner} {struct mCc_ast_expression** expr_result}
 			     {struct mCc_ast_statement** stmt_result}
 			     {struct mCc_ast_parameter** par_result}
-			     /*{struct mCc_ast_function_def** func_result}*/
-			     /*{struct mCc_ast_function_def_list** func_list_result}*/
+			     {struct mCc_ast_declaration** decl_result}
 			     {struct mCc_ast_program** result}
-/*TODO: combine it to only one struct mCc_ast_program*/
+			     {struct mCc_parse_error* result_error}
+
 %define parse.trace
 %define parse.error verbose
 
@@ -18,6 +18,7 @@
 
 %{
 #include <string.h>
+#include <assert.h>
 
 int mCc_parser_lex();
 void mCc_parser_error();
@@ -26,9 +27,12 @@ void mCc_parser_error();
 %define api.value.type union
 %define api.token.prefix {TK_}
 
+%locations
+
 /* Precedence */
 %right PREC_IF ELSE
 
+%token START_PROGRAM START_TEST
 %token END 0 "EOF"
 
 
@@ -87,8 +91,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_binary_add_op> add_op
 %type <enum mCc_ast_binary_compare_op> compare_op
 
-%type <enum mCc_ast_var_type>var_type
-%type <enum mCc_ast_function_type>function_type
+%type <enum mCc_ast_type>var_type function_type
 
 %type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt
 %type <struct mCc_ast_expression *> expression term term_2 single_expr call_expr
@@ -105,17 +108,37 @@ void mCc_parser_error();
 
 %start toplevel
 
+/* Destructor - to avoid memory leaks */
+/* Ideas from team 21 */
+%destructor {mCc_ast_delete_literal($$);} literal
+%destructor {mCc_ast_delete_expression($$);} expression term term_2 single_expr call_expr
+%destructor {mCc_ast_delete_statement($$);} statement compound_stmt if_stmt while_stmt ret_stmt
+%destructor {mCc_ast_delete_declaration($$);} declaration
+%destructor {mCc_ast_delete_argument_list($$);} arguments
+%destructor {mCc_ast_delete_parameter($$);} parameters
+%destructor {mCc_ast_delete_assignment($$);} assignment
+%destructor {mCc_ast_delete_function_def($$);} function_def
+%destructor {mCc_ast_delete_function_def_list($$);}  function_def_list
+%destructor {mCc_ast_delete_program($$);} program
+
 %%
          
-toplevel : expression { *expr_result = $1; }
+toplevel : program { *result = $1; }
+		 | expression { *expr_result = $1; }
 	 	 | statement  { *stmt_result = $1; }
 	 	 | parameters { *par_result = $1; }
-	 	 /*| function_def { *func_result = $1; }*/
-	 	 | program { *result = $1; }
+	 	 | declaration { *decl_result = $1; }
          ;
-		 
-/* unary operators */
 
+/*
+toplevel : START_PROGRAM program { *result = $2; }
+	 | START_TEST program    { *result = $2; }
+	 | START_TEST statement  { *stmt_result = $2; }
+	 | START_TEST expression { *expr_result = $2; }
+	 | START_TEST parameters { *par_result = $2; }	
+	 ;
+ */
+/* unary operators */
 unary_op  : MINUS { $$ = MCC_AST_UNARY_OP_MINUS; }
 		  | PLUS { $$ = MCC_AST_UNARY_OP_PLUS;}
 		  | EXCLAM { $$ = MCC_AST_UNARY_OP_EXCLAM; }
@@ -142,17 +165,14 @@ mul_op : ASTER { $$ = MCC_AST_BINARY_OP_MUL; }
        ;
        
 /* Type */
-var_type : INT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_INT; }
-		 | FLOAT_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_FLOAT; }
-		 | BOOL_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_BOOL; }
-		 | STRING_TYPE 	{ $$ = MCC_AST_VARIABLES_TYPE_STRING; }
+var_type : INT_TYPE 	{ $$ = MCC_AST_TYPE_INT; }
+		 | FLOAT_TYPE 	{ $$ = MCC_AST_TYPE_FLOAT; }
+		 | BOOL_TYPE 	{ $$ = MCC_AST_TYPE_BOOL; }
+		 | STRING_TYPE 	{ $$ = MCC_AST_TYPE_STRING; }
 		 ;
 		 
-function_type : BOOL_TYPE { $$ = MCC_AST_FUNCTION_TYPE_BOOL; }
-	     | INT_TYPE  { $$ = MCC_AST_FUNCTION_TYPE_INT; }
-	     | FLOAT_TYPE{ $$ = MCC_AST_FUNCTION_TYPE_FLOAT; }
-	     | STRING_TYPE  { $$ = MCC_AST_FUNCTION_TYPE_STRING; }
-	     | VOID_TYPE { $$ = MCC_AST_FUNCTION_TYPE_VOID; }
+function_type : var_type {$$ = $1; }
+	     | VOID_TYPE { $$ = MCC_AST_TYPE_VOID; }
 	     ;
 	 
 /* Expressions */
@@ -212,15 +232,15 @@ ret_stmt : RETURN 				{ $$ = mCc_ast_new_statement_return(NULL); }
 
 /* Declaration/Assignment */
 /* Solution for array declaration and assignment credits to team 21 */
-declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration($1, mCc_ast_new_literal_identifier($2));}
+declaration : var_type IDENTIFIER {$$ = mCc_ast_new_declaration($1, $2);}
 			| var_type LSQUARE_BRACKET INT_LITERAL RSQUARE_BRACKET IDENTIFIER {$$ = 
-			mCc_ast_new_array_declaration($1, $3, mCc_ast_new_literal_identifier($5));}
+			mCc_ast_new_array_declaration($1, $3, $5);}
 			;
 			
-assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment(mCc_ast_new_literal_identifier($1),
+assignment : IDENTIFIER ASSIGN expression 	{$$ = mCc_ast_new_assignment($1,
 											$3);}
 		   | IDENTIFIER LSQUARE_BRACKET expression RSQUARE_BRACKET ASSIGN expression	{$$ = 
-		   									mCc_ast_new_array_assignment(mCc_ast_new_literal_identifier($1), $3,
+		   									mCc_ast_new_array_assignment($1, $3,
 											$6);}
 		   ;
 		   
@@ -256,7 +276,37 @@ program : function_def_list { $$ = mCc_ast_new_program($1); }
 
 #include "scanner.h"
 
-void yyerror(yyscan_t *scanner, const char *msg) {}
+//void yyerror(yyscan_t *scanner, const char *msg) {}
+
+/* Error handling, idea from team 21 */
+void mCc_parser_error(
+	struct MCC_PARSER_LTYPE *yylloc,
+	yyscan_t *scanner,
+	struct mCc_ast_expression** result_e,
+	struct mCc_ast_literal** result_l,
+	struct mCc_ast_statement** result_s,
+	struct mCc_ast_function_def** result_f,
+	struct mCc_ast_declaration** result_d,
+	struct mCc_ast_program** result,
+	struct mCc_parse_error* result_error,
+	const char *msg)
+{
+	 // suppress the warning unused parameter
+	(void)scanner;
+	(void)result_e;
+	(void)result_l;
+	(void)result_s;
+	(void)result_f;
+	(void)result_d;
+	(void)result;
+	result_error->is_error = true;
+	result_error->location.start_line = yylloc->first_line;
+	result_error->location.end_line = yylloc->last_line;
+	result_error->location.start_col = yylloc->first_column;
+	result_error->location.end_col = yylloc->last_column;
+	//result_error->msg = strdup(msg); //ERROR HERE
+	result_error->msg = NULL;
+}
 
 struct mCc_parser_result mCc_parser_parse_string(const char *input)
 {
@@ -277,22 +327,31 @@ struct mCc_parser_result mCc_parser_parse_string(const char *input)
 	return result;
 }
 
-/* Idea from team 21 */
 void mCc_parser_delete_result(struct mCc_parser_result* result) {
-	if (result->expression != NULL) {
+	assert(result);
+	
+	if (NULL != result->expression) {
 		mCc_ast_delete_expression(result->expression);
 	}
 
-	if (result->statement != NULL) {
+	if (NULL != result->statement) {
 		mCc_ast_delete_statement(result->statement);
 	}
 	
-	if (result->parameter != NULL) {
+	if (NULL != result->parameter) {
 		mCc_ast_delete_parameter(result->parameter);
 	}
+	
+	if (NULL != result->declaration) {
+		mCc_ast_delete_declaration(result->declaration);
+	}
 
-	if (result->program != NULL) {
+	if (NULL != result->program) {
 		mCc_ast_delete_program(result->program);
+	}
+	
+	if (NULL != result->parse_error.msg) {
+		free(result->parse_error.msg);
 	}
 }
 
@@ -308,12 +367,18 @@ struct mCc_parser_result mCc_parser_parse_file(FILE *input)
 		.status = MCC_PARSER_STATUS_OK,
 	};
 
+	// reset is_error
+	result.parse_error.is_error = false;
+
 	if (yyparse(scanner, &result.expression, &result.statement,
-	&result.parameter, &result.program) != 0) {
+	&result.parameter, &result.declaration, &result.program, &result.parse_error) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 
-	mCc_parser_lex_destroy(scanner);
+	if (result.parse_error.is_error)
+		result.status = MCC_PARSER_STATUS_SYNTAX_ERROR;
 
+	mCc_parser_lex_destroy(scanner);
+	
 	return result;
 }
