@@ -178,7 +178,9 @@ function_type : var_type {$$ = $1; }
 /* Expressions */
 single_expr : literal                         { $$ = mCc_ast_new_expression_literal($1); }
 			| call_expr						  { $$ = $1; }
-			| unary_op INT_LITERAL 			  { $$ = mCc_ast_new_expression_unary_op($1, mCc_ast_new_expression_literal(mCc_ast_new_literal_int($2)));}
+			| MINUS expression 			  	  { $$ = mCc_ast_new_expression_unary_op(MCC_AST_UNARY_OP_MINUS, ($2));}
+			| EXCLAM INT_LITERAL			  { $$ = mCc_ast_new_expression_unary_op(MCC_AST_UNARY_OP_EXCLAM, 
+												mCc_ast_new_expression_literal(mCc_ast_new_literal_int(($2))));}
             | LPARENTH expression RPARENTH    { $$ = mCc_ast_new_expression_parenth($2); }
             ;
             

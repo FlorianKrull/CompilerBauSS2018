@@ -65,11 +65,20 @@ void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 
 /* ---------------------------------------------------------------- Print */
 void mCc_st_print_entry(struct mCc_st_entry *en);
+
 void mCc_st_print_table(struct mCc_st_table *table);
+
 void mCc_st_print_table_list(struct mCc_st_table *tab_tail);
 
 /* ---------------------------------------------------------------- Look up */
 bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table);
+
+/* ---------------------------------------------------------------- Type checking */
+
+bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *literal);
+
+enum mCc_ast_literal_type
+	mCc_st_check_type_expression(struct mCc_ast_expression *expr);
 
 #ifdef __cplusplus
 }

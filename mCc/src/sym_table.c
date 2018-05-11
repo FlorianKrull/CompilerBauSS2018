@@ -119,7 +119,7 @@ void mCc_st_remove_item(struct mCc_st_entry *entry, struct mCc_st_item *item)
 		mCc_st_delete_item(current);
 	}
 }
-*/
+ */
 void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 {
 	struct mCc_st_entry *current = table->head;
@@ -144,30 +144,30 @@ void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 
 /* ---------------------------------------------------------------- Print */
 void mCc_st_print_entry(struct mCc_st_entry *en) {
-    assert(en);
-    printf("(Entry: %s, Type: %d)", en->name, en->data_type);
+	assert(en);
+	printf("(Entry: %s, Type: %d)", en->name, en->data_type);
 
 }
 
 void mCc_st_print_table(struct mCc_st_table *table) {
-    printf("Table in scope %i : %p\n", table->scope, table);
-    assert(table);
-    struct mCc_st_entry *ptr = table->head;
-    //start from the beginning
-       while(ptr != NULL) {
-    	   mCc_st_print_entry(ptr);
-    	   printf(" -> ");
-    	   ptr = ptr->next;
-       }
-    printf("Size = %i\n", table->size);
+	printf("Table in scope %i : %p\n", table->scope, table);
+	assert(table);
+	struct mCc_st_entry *ptr = table->head;
+	//start from the beginning
+	while(ptr != NULL) {
+		mCc_st_print_entry(ptr);
+		printf(" -> ");
+		ptr = ptr->next;
+	}
+	printf("Size = %i\n", table->size);
 }
 
 void mCc_st_print_table_list(struct mCc_st_table *tab_tail) {
-    assert(tab_tail);
-    mCc_st_print_table(tab_tail);
-    if (NULL != tab_tail->prev) {
-    	mCc_st_print_table_list(tab_tail->prev);
-    }
+	assert(tab_tail);
+	mCc_st_print_table(tab_tail);
+	if (NULL != tab_tail->prev) {
+		mCc_st_print_table_list(tab_tail->prev);
+	}
 }
 
 /* ---------------------------------------------------------------- Look up */
@@ -191,3 +191,119 @@ bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table)
 	return result;
 }
 
+/* ---------------------------------------------------------------- Type checking */
+
+// Check if literal value and type are compatible, i.e: int x = 1; float y = 3.5;
+bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *literal)
+{
+	assert(literal);
+	bool result = false;
+
+	enum mCc_ast_literal_type lit_type = literal->type;
+	switch(type) {
+	case MCC_AST_TYPE_INT:	// int x = 1 -> valid
+		if (lit_type == MCC_AST_LITERAL_TYPE_INT) {
+			result = true;
+		}
+
+	case MCC_AST_TYPE_FLOAT: // float x = 1.5 or float x = 1
+		if ((lit_type == MCC_AST_LITERAL_TYPE_FLOAT) || (lit_type == MCC_AST_LITERAL_TYPE_INT)) {
+			result = true;
+		}
+
+	case MCC_AST_TYPE_STRING: // string x = "abc";
+		if (lit_type != MCC_AST_LITERAL_TYPE_STRING) {
+			result = true;
+		}
+	case MCC_AST_TYPE_BOOL:
+		if (lit_type != MCC_AST_LITERAL_TYPE_BOOL) {
+			result = true;
+		}
+	}
+	return result;
+}
+
+// Check literal type of expression (int, float, bool) using bottom-up parsing
+// Not check invalid type, i.e: "a" + "b"
+enum mCc_ast_literal_type
+mCc_st_check_type_expression(struct mCc_ast_expression *expr)
+{
+	assert(expr);
+
+	switch(expr->type) {
+	case MCC_AST_EXPRESSION_TYPE_LITERAL:
+		return (expr->literal->type);
+
+	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
+		// -(4 + 6); !(a == 1); -> return type of expression inside
+//		mCc_st_check_type_expression(expr->u_rhs);
+		return MCC_AST_LITERAL_TYPE_BOOL;
+		break;
+
+	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
+		switch(expr->binary_op_type) {
+		case MCC_AST_BINARY_OP_TYPE_BINARY:
+			// a && b; a || b -> return bool;
+			return MCC_AST_LITERAL_TYPE_BOOL;
+//			break;
+/*
+		case MCC_AST_BINARY_OP_TYPE_ADD:
+			// 6 - 1; 7 + 2.5;
+			enum mCc_ast_literal_type lhs_type =
+					mCc_st_check_type_expression(expr->lhs);
+			enum mCc_ast_literal_type rhs_type =
+					mCc_st_check_type_expression(expr->rhs);
+
+			if ((lhs_type == MCC_AST_LITERAL_TYPE_INT) && (rhs_type == MCC_AST_LITERAL_TYPE_INT)) {
+				return MCC_AST_LITERAL_TYPE_INT;
+			} else {
+				if ((lhs_type == MCC_AST_LITERAL_TYPE_INT) && (rhs_type == MCC_AST_LITERAL_TYPE_FLOAT)) {
+					return MCC_AST_LITERAL_TYPE_FLOAT;
+				}
+				if ((lhs_type == MCC_AST_LITERAL_TYPE_FLOAT) && (rhs_type == MCC_AST_LITERAL_TYPE_INT)) {
+					return MCC_AST_LITERAL_TYPE_FLOAT;
+				}
+			}
+			break;
+
+		case MCC_AST_BINARY_OP_TYPE_MUL:
+			enum mCc_ast_literal_type lhs_type =
+					mCc_st_check_type_expression(expr->lhs);
+			enum mCc_ast_literal_type rhs_type =
+					mCc_st_check_type_expression(expr->rhs);
+
+			switch(expr->mul_op) {
+			case MCC_AST_BINARY_OP_MUL:	// same with ADD operator
+				if ((lhs_type == MCC_AST_LITERAL_TYPE_INT) && (rhs_type == MCC_AST_LITERAL_TYPE_INT)) {
+					return MCC_AST_LITERAL_TYPE_INT;
+				} else {
+					if ((lhs_type == MCC_AST_LITERAL_TYPE_INT) && (rhs_type == MCC_AST_LITERAL_TYPE_FLOAT)) {
+						return MCC_AST_LITERAL_TYPE_FLOAT;
+					}
+					if ((lhs_type == MCC_AST_LITERAL_TYPE_FLOAT) && (rhs_type == MCC_AST_LITERAL_TYPE_INT)) {
+						return MCC_AST_LITERAL_TYPE_FLOAT;
+					}
+				}
+				break;
+
+			case MCC_AST_BINARY_OP_DIV:	// 2/5; 7.2/6; -> return FLOAT
+				if ((lhs_type == MCC_AST_LITERAL_TYPE_INT) || (lhs_type == MCC_AST_LITERAL_TYPE_FLOAT)) {
+					if ((rhs_type == MCC_AST_LITERAL_TYPE_INT) || (rhs_type == MCC_AST_LITERAL_TYPE_FLOAT)) {
+						return MCC_AST_LITERAL_TYPE_FLOAT;
+					}
+				}
+			}
+			break;
+*/
+		case MCC_AST_BINARY_OP_TYPE_COMPARE:
+			return MCC_AST_LITERAL_TYPE_BOOL;
+			break;
+		}
+		break;
+
+		case MCC_AST_EXPRESSION_TYPE_PARENTH:
+			return mCc_st_check_type_expression(expr->expression);
+		default:
+			break;
+	}
+}
