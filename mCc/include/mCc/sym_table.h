@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include "mCc/ast.h"
+#include "mCc/parser.h"
 
 /* Declare the symbol table as a list of hashtables
  * More information: https://www.d.umn.edu/~rmaclin/cs5641/Notes/L15_SymbolTable.pdf
@@ -43,7 +44,7 @@ struct mCc_st_entry *mCc_st_new_entry(const char* name,
 									enum mCc_ast_type data_type,
 									enum mCc_st_entry_type entry_type);
 
-struct mCc_st_table *mCc_st_new_table();
+struct mCc_st_table *mCc_st_new_empty_table();
 
 void mCc_st_update_scope (struct mCc_st_table* table, int scope);
 
@@ -58,6 +59,8 @@ int mCc_st_hash(const char* str);
 /* ---------------------------------------------------------------- Insert element */
 
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
+
+struct mCc_st_table *mCc_st_new_table(const char *input);
 
 /* ---------------------------------------------------------------- Delete element */
 

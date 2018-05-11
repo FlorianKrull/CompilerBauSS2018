@@ -1,4 +1,5 @@
 #include "mCc/sym_table.h"
+#include "mCc/parser.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -49,7 +50,7 @@ void mCc_st_delete_entry(struct mCc_st_entry* entry)
 
 /* ---------------------------------------------------------------- Tables */
 // Create an empty table
-struct mCc_st_table *mCc_st_new_table()
+struct mCc_st_table *mCc_st_new_empty_table()
 {
 	struct mCc_st_table *tab = malloc(sizeof(*tab));
 	if (!tab) {
@@ -96,6 +97,45 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 	}
 	entry->next = NULL;
 	++(table->size);
+}
+
+// Get the AST tree from parser and construct symbol table
+struct mCc_st_table *mCc_st_new_table(const char *input)
+{
+//	assert(result);
+
+	struct mCc_st_table *table = mCc_st_new_empty_table();
+
+	if (!table) {
+		return NULL;
+	}
+	int scope = 1;
+	mCc_st_update_scope(table, scope);
+
+	auto result = mCc_parser_parse_string(input);
+	auto list = result.program->function_def_list;
+	auto func = list->function_def;
+
+	// Insert first fuction
+	struct mCc_st_entry *entry = mCc_st_new_entry(func->identifier->id_value,
+						func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
+
+	mCc_st_insert_entry(table, entry);
+
+	// Insert the remaining functions
+	auto next_list = list->next;
+	while (next_list != NULL) {
+		auto next_func = next_list->function_def;
+		struct mCc_st_entry *entry = mCc_st_new_entry(next_func->identifier->id_value,
+				next_func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
+
+		mCc_st_insert_entry(table, entry);
+
+		next_list = next_list->next;
+	}
+
+	mCc_parser_delete_result(&result);
+	return table;
 }
 
 /* ---------------------------------------------------------------- Delete */
@@ -236,8 +276,8 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		// -(4 + 6); !(a == 1); -> return type of expression inside
-//		mCc_st_check_type_expression(expr->u_rhs);
-		return MCC_AST_LITERAL_TYPE_BOOL;
+		return mCc_st_check_type_expression(expr->u_rhs);
+//		return MCC_AST_LITERAL_TYPE_BOOL;
 		break;
 
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:

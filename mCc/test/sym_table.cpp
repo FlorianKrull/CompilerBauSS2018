@@ -21,7 +21,7 @@ TEST(sym_table, NewEntry_1)
 
 TEST(sym_table, NewTable_1)
 {
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	ASSERT_EQ(0, table->size);
 	ASSERT_EQ(NULL, table->head);
 	ASSERT_EQ(NULL, table->prev);
@@ -37,7 +37,7 @@ TEST(sym_table, InsertEntry_1)
 	struct mCc_st_entry *entry1 = mCc_st_new_entry("_1st", MCC_AST_TYPE_BOOL, MCC_ST_ENTRY_TYPE_FUNCTION);
 	struct mCc_st_entry *entry2 = mCc_st_new_entry("_2nd", MCC_AST_TYPE_INT, MCC_ST_ENTRY_TYPE_VARIABLE);
 
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	mCc_st_insert_entry(table, entry1);
 	mCc_st_insert_entry(table, entry2);
 
@@ -59,7 +59,7 @@ TEST(sym_table, InsertEntry_1)
 /* ---------------------------------------------------------------- Delete */
 TEST(sym_table, RemoveEntry_1)
 {
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	struct mCc_st_entry *new_entry = mCc_st_new_entry("c2", MCC_AST_TYPE_BOOL, MCC_ST_ENTRY_TYPE_VARIABLE);
 
 	mCc_st_insert_entry(table, new_entry);
@@ -74,7 +74,7 @@ TEST(sym_table, RemoveEntry_1)
 // Remove head
 TEST(sym_table, RemoveEntry_2)
 {
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	struct mCc_st_entry *new_entry1 = mCc_st_new_entry("a1",
 									MCC_AST_TYPE_STRING, MCC_ST_ENTRY_TYPE_VARIABLE);
 	struct mCc_st_entry *new_entry2 = mCc_st_new_entry("b2",
@@ -98,7 +98,7 @@ TEST(sym_table, RemoveEntry_2)
 //Remove last element
 TEST(sym_table, RemoveEntry_3)
 {
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	struct mCc_st_entry *new_entry1 = mCc_st_new_entry("a1",
 										MCC_AST_TYPE_STRING, MCC_ST_ENTRY_TYPE_VARIABLE);
 		struct mCc_st_entry *new_entry2 = mCc_st_new_entry("b2",
@@ -123,7 +123,7 @@ TEST(sym_table, RemoveEntry_3)
 
 TEST(sym_table, Table_Lookup_1)
 {
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	struct mCc_st_entry *entry1 = mCc_st_new_entry("y", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_VARIABLE);
 	struct mCc_st_entry *entry2 = mCc_st_new_entry("x", MCC_AST_TYPE_INT, MCC_ST_ENTRY_TYPE_VARIABLE);
 
@@ -149,7 +149,7 @@ TEST(sym_table, Table_Lookup_1)
 
 TEST(sym_table, Table_Lookup_2)
 {
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	struct mCc_st_entry *entry1 = mCc_st_new_entry("y", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_VARIABLE);
 	struct mCc_st_entry *entry2 = mCc_st_new_entry("x", MCC_AST_TYPE_INT, MCC_ST_ENTRY_TYPE_VARIABLE);
 
@@ -180,7 +180,7 @@ TEST(sym_table, Table_Lookup_3)
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	int scope = 1;
 	mCc_st_update_scope(table, scope);
 
@@ -335,7 +335,7 @@ TEST(sym_table, Type_Checking_5)
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	struct mCc_st_table *table = mCc_st_new_table();
+	struct mCc_st_table *table = mCc_st_new_empty_table();
 	int scope = 1;
 	mCc_st_update_scope(table, scope);
 
