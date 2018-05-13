@@ -1,5 +1,6 @@
 #include "mCc/sym_table.h"
 #include "mCc/parser.h"
+#include "mCc/ast.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -83,6 +84,9 @@ void mCc_st_delete_table(struct mCc_st_table* table)
 //Insert entry at the last location of table
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 {
+	assert(table);
+	assert(entry);
+
 	struct mCc_st_entry *last = table->head;
 	if (NULL != last) {
 		// Traverse until the end
@@ -99,12 +103,87 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 	++(table->size);
 }
 
-// Get the AST tree from parser and construct symbol table
+void mCc_st_insert_variable(struct mCc_st_table *table, struct mCc_ast_declaration *decl)
+{
+	assert(table);
+	assert(decl);
 
+	struct mCc_st_entry *entry;
+	switch(decl->type) {
+	case MCC_AST_DECLARATION_TYPE_NORMAL:
+		entry = mCc_st_new_entry(decl->normal_decl.identifier->id_value,
+				decl->type, MCC_ST_ENTRY_TYPE_VARIABLE);
+		break;
+	case MCC_AST_DECLARATION_TYPE_ARRAY:
+		entry = mCc_st_new_entry(decl->array_decl.identifier->id_value,
+				decl->type, MCC_ST_ENTRY_TYPE_VARIABLE);
+		break;
+	}
+
+	mCc_st_insert_entry(table, entry);
+}
+
+//TODO: fix bug when iterate to next declaration
+void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_def *func)
+{
+	assert(table);
+	assert(func);
+
+	// Insert function name
+	struct mCc_st_entry *entry = mCc_st_new_entry(func->identifier->id_value,
+			func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
+	mCc_st_insert_entry(table, entry);
+
+	// Insert variable if function has parameters; resulting new entries in child table
+	struct mCc_ast_parameter *param = func->parameters;
+	if (NULL != param) {
+
+		struct mCc_st_table *child_table;
+		if (NULL != table->next) {
+			child_table = table->next;
+		} else {
+			child_table = mCc_st_new_empty_table();
+			int scope = table->scope;
+			scope++;
+			mCc_st_update_scope(child_table, scope);
+			table->next = child_table;
+		}
+		mCc_st_insert_variable(child_table, param->declaration);
+
+		struct mCc_ast_parameter *next_param = param->next;
+		while(next_param != NULL) {
+			mCc_st_insert_variable(child_table, next_param->declaration);
+			next_param = next_param->next;
+		}
+	}
+
+	// Retrieve entries inside compound_stmt
+	/*
+	struct mCc_ast_statement *stmt = func->compound_stmt->statement;
+	switch(statement->type) {
+	case MCC_AST_STATEMENT_TYPE_DECLARATION:
+		// TODO: add new declaration
+		break;
+	case MCC_AST_STATEMENT_TYPE_ASSIGNMENT:
+	case MCC_AST_STATEMENT_TYPE_EXPRESSION:
+	case MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY:
+	case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
+	case MCC_AST_STATEMENT_TYPE_RETURN:
+		break;
+	case MCC_AST_STATEMENT_TYPE_IF:
+	case MCC_AST_STATEMENT_TYPE_WHILE:
+		// TODO: go inside if/while statement
+		break;
+	case MCC_AST_STATEMENT_TYPE_IF_ELSE:
+		// TODO: Go inside if statement + else statement
+		break;
+	}
+	*/
+}
+
+// Get the AST tree from parser and construct symbol table
 struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result)
 {
-//	assert(result);
-
 	struct mCc_st_table *table = mCc_st_new_empty_table();
 
 	if (!table) {
@@ -113,27 +192,20 @@ struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result)
 	int scope = 1;
 	mCc_st_update_scope(table, scope);
 
-//	struct mCc_parser_result result = mCc_parser_parse_string(input);
 	struct mCc_ast_function_def_list *list = result.program->function_def_list;
 	struct mCc_ast_function_def *func = list->function_def;
 
-	// Insert first fuction
-	struct mCc_st_entry *entry = mCc_st_new_entry(func->identifier->id_value,
-			func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
-
-	mCc_st_insert_entry(table, entry);
+	// Insert first function
+	mCc_st_insert_function(table, func);
 
 	// Insert the remaining functions
 	struct mCc_ast_function_def_list *next_list = list->next;
 	while (next_list != NULL) {
 		struct mCc_ast_function_def *next_func = next_list->function_def;
-		struct mCc_st_entry *entry = mCc_st_new_entry(next_func->identifier->id_value,
-				next_func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
-		mCc_st_insert_entry(table, entry);
+		mCc_st_insert_function(table, next_func);
 		next_list = next_list->next;
 	}
 
-//	mCc_parser_delete_result(&result);
 	return table;
 }
 
@@ -155,27 +227,7 @@ void print(const char *input)
 }
 
 /* ---------------------------------------------------------------- Delete */
-/*
-void mCc_st_remove_item(struct mCc_st_entry *entry, struct mCc_st_item *item)
-{
-	struct mCc_st_item *current = entry->head;
-	struct mCc_st_item *prev = NULL;	// Hold the current value while iterating
 
-	while (current->next != NULL && current != item) {	//Iterate while item is not found
-		prev = current;
-		current = current->next;
-	}
-
-	if (current == item) {	// Item found
-		if (current == entry->head) {
-			entry->head = entry->head->next;
-		} else {
-			prev->next = current->next;
-		}
-		mCc_st_delete_item(current);
-	}
-}
- */
 void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 {
 	struct mCc_st_entry *current = table->head;
@@ -206,7 +258,7 @@ void mCc_st_print_entry(struct mCc_st_entry *en) {
 }
 
 void mCc_st_print_table(struct mCc_st_table *table) {
-	printf("Table in scope %i : %p\n", table->scope, table);
+	printf("Table in scope %i :\n", table->scope);
 	assert(table);
 	struct mCc_st_entry *ptr = table->head;
 	//start from the beginning
@@ -215,15 +267,16 @@ void mCc_st_print_table(struct mCc_st_table *table) {
 		printf(" -> ");
 		ptr = ptr->next;
 	}
-	printf("Size = %i\n", table->size);
+	printf("Size = %i -> ", table->size);
 	printf("Scope = %i\n", table->scope);
 }
 
 void mCc_st_print_table_list(struct mCc_st_table *tab_tail) {
 	assert(tab_tail);
 	mCc_st_print_table(tab_tail);
-	if (NULL != tab_tail->prev) {
-		mCc_st_print_table_list(tab_tail->prev);
+	struct mCc_st_table *next = tab_tail->next;
+	if (NULL != next) {
+		mCc_st_print_table_list(next);
 	}
 }
 

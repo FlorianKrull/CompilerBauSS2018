@@ -140,7 +140,7 @@ void mCc_ast_visit_statement(struct mCc_ast_statement *statement,
                         break;
                 case MCC_AST_STATEMENT_TYPE_COMPOUND:
                         visit_if_pre_order(statement, visitor->statement_compound, visitor);
-                        mCc_ast_visit_statement(statement->statement, visitor);
+                        mCc_ast_visit_statement_list(statement->statement_list, visitor);
                         visit_if_post_order(statement, visitor->statement_compound, visitor);
                         break;
                 case MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY:
@@ -177,6 +177,39 @@ void mCc_ast_visit_statement(struct mCc_ast_statement *statement,
 	}
 
 	visit_if_post_order(statement, visitor->statement, visitor);
+}
+
+void mCc_ast_visit_statement_list(struct mCc_ast_statement_list *statement_list,
+                                  struct mCc_ast_visitor *visitor)
+{
+	assert(statement_list);
+	assert(visitor);
+/*
+	struct mCc_ast_statement_list *next = statement_list;
+	while (next != NULL) {
+		visit_if_pre_order(next, visitor->statement_list, visitor);
+		mCc_ast_visit_statement(next->statement, visitor);
+		visit_if_post_order(statement_list, visitor->statement_list, visitor);
+		next = next->next;
+	}
+	*/
+	visit_if_pre_order(statement_list, visitor->statement_list, visitor);
+	mCc_ast_visit_statement(statement_list->statement, visitor);
+	if(statement_list->next != NULL){
+		mCc_ast_visit_statement_list(statement_list->next, visitor);
+	}
+	visit_if_post_order(statement_list, visitor->statement_list, visitor);
+}
+
+void mCc_ast_visit_compound(struct mCc_ast_statement *compound,
+                           struct mCc_ast_visitor *visitor)
+{
+        assert(compound);
+        assert(visitor);
+
+        visit_if_pre_order(compound, visitor->compound, visitor);
+        mCc_ast_visit_statement_list(compound->statement_list, visitor);
+        visit_if_post_order(compound, visitor->compound, visitor);
 }
 
 void mCc_ast_visit_declaration(struct mCc_ast_declaration *declaration,

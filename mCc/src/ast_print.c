@@ -332,25 +332,42 @@ static void print_dot_statement_expression(struct mCc_ast_statement *statement,
         print_dot_edge(out, statement, statement->expression, "expression");
 }
 
-static void print_dot_statement_compound(struct mCc_ast_statement *statement,
-                                         void *data)
+static void print_dot_statement_list(struct mCc_ast_statement_list *statement_list,
+                                        void *data)
 {
-        assert(statement);
+        assert(statement_list);
         assert(data);
 
         FILE *out = data;
-        print_dot_node(out, statement, "{ }");
-        print_dot_edge(out, statement, statement->statement, "statement");
+        print_dot_node(out, statement_list, "function def list");
+        print_dot_edge(out, statement_list, statement_list->statement, "function def");
+        if(statement_list->next != NULL) {
+                print_dot_edge(out, statement_list, statement_list->next, "next");
+        }
 }
 
-static void print_dot_statement_compound_empty(struct mCc_ast_statement *statement,
-                                               void *data)
+static void print_dot_statement_compound(struct mCc_ast_statement_list *statement_list,
+                                         void *data)
 {
-        assert(statement);
+        assert(statement_list);
         assert(data);
 
         FILE *out = data;
-        print_dot_node(out, statement, "{ }");
+        print_dot_node(out, statement_list, "{ }");
+        print_dot_edge(out, statement_list, statement_list->statement, "statement");
+        if(statement_list->next != NULL) {
+        	print_dot_edge(out, statement_list, statement_list->next, "next");
+        }
+}
+
+static void print_dot_statement_compound_empty(struct mCc_ast_statement_list *statement_list,
+                                               void *data)
+{
+        assert(statement_list);
+        assert(data);
+
+        FILE *out = data;
+        print_dot_node(out, statement_list, "{ }");
 }
 
 static void print_dot_statement_return(struct mCc_ast_statement *statement,
@@ -515,6 +532,8 @@ static struct mCc_ast_visitor print_dot_visitor(FILE *out)
                 .statement_if = print_dot_statement_if,
                 .statement_if_else = print_dot_statement_if_else,
 
+				.statement_list = print_dot_statement_list,
+
                 .declaration = print_dot_declaration,
 
                 .assignment = print_dot_assignment,
@@ -582,6 +601,20 @@ void mCc_ast_print_dot_statement(FILE *out,
 	mCc_ast_visit_statement(statement, &visitor);
 
 	print_dot_end(out);
+}
+
+void mCc_ast_print_dot_statement_list(FILE *out,
+                                         struct mCc_ast_statement_list *statement_list)
+{
+        assert(out);
+        assert(statement_list);
+
+        print_dot_begin(out);
+
+        struct mCc_ast_visitor visitor = print_dot_visitor(out);
+        mCc_ast_visit_statement_list(statement_list, &visitor);
+
+        print_dot_end(out);
 }
 
 void mCc_ast_print_dot_parameter(FILE *out,

@@ -432,18 +432,16 @@ mCc_ast_new_statement_expression(struct mCc_ast_expression *expression)
 }
 
 struct mCc_ast_statement *
-mCc_ast_new_statement_compound(struct mCc_ast_statement *statement)
+mCc_ast_new_statement_compound(struct mCc_ast_statement_list *statement_list)
 {
-//	assert(statement);
-
 	struct mCc_ast_statement *stmt = malloc(sizeof(*stmt));
 	if (!stmt) {
 		return NULL;
 	}
 
-	if (statement != NULL) {
+	if (statement_list != NULL) {
 		stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND;
-		stmt->statement = statement;
+		stmt->statement_list = statement_list;
 	} else {
 		stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY;
 	}
@@ -513,6 +511,29 @@ mCc_ast_new_statement_return(struct mCc_ast_expression *expression)
 	return stmt;
 }
 
+struct mCc_ast_statement_list *
+mCc_ast_new_statement_list(struct mCc_ast_statement *statement)
+{
+	assert(statement);
+	struct mCc_ast_statement_list *list = malloc(sizeof(*list));
+	assert(list);
+
+	list->statement = statement;
+	list->next = NULL;
+	return list;
+}
+
+void mCc_ast_delete_statement_list(
+    struct mCc_ast_statement_list *statement_list)
+{
+	assert(statement_list);
+	if (statement_list->next != NULL) {
+		mCc_ast_delete_statement_list(statement_list->next);
+	}
+	mCc_ast_delete_statement(statement_list->statement);
+	free(statement_list);
+}
+
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 {
 	assert(statement);
@@ -529,7 +550,7 @@ void mCc_ast_delete_statement(struct mCc_ast_statement *statement)
 			mCc_ast_delete_expression(statement->expression);
 			break;
 		case MCC_AST_STATEMENT_TYPE_COMPOUND:
-			mCc_ast_delete_statement(statement->statement);
+			mCc_ast_delete_statement_list(statement->statement_list);
 			break;
 		case MCC_AST_STATEMENT_TYPE_IF:
 		case MCC_AST_STATEMENT_TYPE_WHILE:

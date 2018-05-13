@@ -94,6 +94,7 @@ void mCc_parser_error();
 %type <enum mCc_ast_type>var_type function_type
 
 %type <struct mCc_ast_statement *>statement compound_stmt if_stmt while_stmt ret_stmt
+%type <struct mCc_ast_statement_list *> statement_list
 %type <struct mCc_ast_expression *> expression term term_2 single_expr call_expr
 %type <struct mCc_ast_literal *> literal
 
@@ -216,9 +217,13 @@ statement : expression SEMICOLON	{ $$ = mCc_ast_new_statement_expression($1); }
 		  | while_stmt				{ $$ = $1; }
 		  | ret_stmt SEMICOLON		{ $$ = $1; }	  
 		  ;
+
+statement_list : statement statement_list { $$ = mCc_ast_new_statement_list($1); $$->next = $2; }
+	       | statement                { $$ = mCc_ast_new_statement_list($1);    				}
+	       ;
 		  
 compound_stmt : LBRACKET RBRACKET			{ $$ = mCc_ast_new_statement_compound(NULL); }
-			  | LBRACKET statement RBRACKET	{ $$ = mCc_ast_new_statement_compound($2); }
+			  | LBRACKET statement_list RBRACKET	{ $$ = mCc_ast_new_statement_compound($2); }
 			  ;
 
 if_stmt : IF LPARENTH expression RPARENTH statement %prec PREC_IF	{$$ = mCc_ast_new_statement_if($3, $5, NULL); }

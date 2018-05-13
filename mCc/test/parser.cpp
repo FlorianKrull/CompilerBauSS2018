@@ -638,7 +638,7 @@ TEST(Parser, Stmt_Compound_1)
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
 
 	//root->statement (assignment SEMICOLON)
-	auto sub_stmt = stmt->statement;
+	auto sub_stmt = stmt->statement_list->statement;
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_ASSIGNMENT, sub_stmt->type);
 
 	//root->statement->assignment
@@ -672,6 +672,55 @@ TEST(Parser, Stmt_Compound_2)
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY, stmt->type);
 
 	// nothing more
+	mCc_ast_delete_statement(stmt);
+}
+
+TEST(Parser, Stmt_Compound_3)
+{
+	const char input[] = "{var = 1; bool x;}";
+	auto result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
+
+	auto stmt = result.statement;
+
+	//root
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
+
+	//root->list->statement (assignment SEMICOLON)
+	auto list = stmt->statement_list;
+	auto sub_stmt = list->statement;
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_ASSIGNMENT, sub_stmt->type);
+
+	//root->statement->assignment
+	auto asmt = sub_stmt->assignment;
+	ASSERT_EQ(MCC_AST_ASSIGNMENT_TYPE_NORMAL, asmt->type);
+
+	// asmt -> lhs
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, asmt->identifier->type);
+	ASSERT_STREQ("var", asmt->identifier->id_value);
+
+	// asmt -> rhs
+	auto expr = asmt->normal_asmt.rhs;
+
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, expr->type);
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, expr->literal->type);
+	ASSERT_EQ(1, expr->literal->i_value);
+
+	// list->next statement
+	auto next_stmt = list->next->statement;
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_DECLARATION, next_stmt->type);
+
+	// next_stmt->declaration
+	auto decl = next_stmt->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
+	ASSERT_EQ(MCC_AST_TYPE_BOOL, decl->var_type);
+
+	// next_stmt->normal_decl->identifier;
+	auto id = decl->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
+	ASSERT_STREQ("x", id->id_value);
+
 	mCc_ast_delete_statement(stmt);
 }
 
@@ -1065,7 +1114,7 @@ TEST(Parser, Program_1)
 
 TEST(Parser, Program_2)	// Final, longest test
 {
-	const char input[] = "void main() { _sub(2, 3.2);} int _sub(int x, float y) {z = x - y;}";
+	const char input[] = "void main() { _sub(2, 3.2);} int _sub(int x, float y) {int z; z = x - y;}";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
@@ -1090,9 +1139,9 @@ TEST(Parser, Program_2)	// Final, longest test
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
 
 	//compound_stmt->statement (expression SEMICOLON)
-	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_EXPRESSION, stmt->statement->type);
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_EXPRESSION, stmt->statement_list->statement->type);
 
-	auto expr = stmt->statement->expression;
+	auto expr = stmt->statement_list->statement->expression;
 
 	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_CALL_EXPR, expr->type);
 
@@ -1118,50 +1167,64 @@ TEST(Parser, Program_2)	// Final, longest test
 	ASSERT_EQ(3.2, next_expr->literal->f_value);
 
 	//function _SUB
-	auto nextfunc = func_list->next->function_def;
+	auto func2 = func_list->next->function_def;
 
 	//_SUB->function type
-	ASSERT_EQ(MCC_AST_TYPE_INT, nextfunc->type);
+	ASSERT_EQ(MCC_AST_TYPE_INT, func2->type);
 
 	//_SUB->identifier
-	auto nextid = nextfunc->identifier;
+	auto nextid = func2->identifier;
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, nextid->type);
 	ASSERT_STREQ("_sub", nextid->id_value);
 
 	//_SUB->parameter
-	auto param = nextfunc->parameters;
+	auto param = func2->parameters;
 	//_SUB->param->declaration
-	auto decl = param->declaration;
-	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
+	auto decl1 = param->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl1->type);
 
 	//declaration->var_type
-	ASSERT_EQ(MCC_AST_TYPE_INT, decl->var_type);
+	ASSERT_EQ(MCC_AST_TYPE_INT, decl1->var_type);
 
 	//declaration->identifier
-	auto subid = decl->normal_decl.identifier;
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, subid->type);
-	ASSERT_STREQ("x", subid->id_value);
+	auto id1 = decl1->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id1->type);
+	ASSERT_STREQ("x", id1->id_value);
 
 	//declaration->next
-	auto nextdecl = param->next->declaration;
-	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl->type);
+	auto decl2 = param->next->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl2->type);
 
-	//nextdecl->var_type
-	ASSERT_EQ(MCC_AST_TYPE_FLOAT, nextdecl->var_type);
+	//decl2->var_type
+	ASSERT_EQ(MCC_AST_TYPE_FLOAT, decl2->var_type);
 
-	//nextdecl->identifier
-	auto next_subid = nextdecl->normal_decl.identifier;
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, next_subid->type);
-	ASSERT_STREQ("y", next_subid->id_value);
+	//decl2->identifier
+	auto id2 = decl2->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id2->type);
+	ASSERT_STREQ("y", id2->id_value);
 
-	//nextfunc->compound_stmt
-	auto nextstmt = nextfunc->compound_stmt;
+	//_SUB->compound_stmt
+	auto nextstmt = func2->compound_stmt;
 	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, nextstmt->type);
 
-	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_ASSIGNMENT, nextstmt->statement->type);
+	auto list = nextstmt->statement_list;
 
-	//compound_stmt->statement->assignment
-	auto asmt = nextstmt->statement->assignment;
+	//list: 1st statement
+	auto sub_stmt = list->statement;
+	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_DECLARATION, sub_stmt->type);
+
+	// sub_stmt->declaration
+	auto decl3 = sub_stmt->declaration;
+	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, decl3->type);
+	ASSERT_EQ(MCC_AST_TYPE_INT, decl3->var_type);
+
+	// next_stmt->normal_decl->identifier;
+	auto id3 = decl3->normal_decl.identifier;
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id3->type);
+	ASSERT_STREQ("z", id3->id_value);
+
+	// list: 2nd statement
+	auto asmt = list->next->statement->assignment;
 	ASSERT_EQ(MCC_AST_ASSIGNMENT_TYPE_NORMAL, asmt->type);
 
 	// asmt->identifier;
