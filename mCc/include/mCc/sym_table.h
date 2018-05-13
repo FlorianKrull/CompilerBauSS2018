@@ -24,6 +24,7 @@ struct mCc_st_entry {
 	enum mCc_ast_type data_type;
 	enum mCc_st_entry_type entry_type;
 	char *name;
+	int array_size; // in case entry is variable and an array, i.e: int[10] x -> array_size = 10
 	struct mCc_st_entry *next;
 };
 
@@ -46,7 +47,7 @@ struct mCc_st_entry *mCc_st_new_entry(const char* name,
 
 struct mCc_st_table *mCc_st_new_empty_table();
 
-void mCc_st_update_scope (struct mCc_st_table* table, int scope);
+void mCc_st_update_scope(struct mCc_st_table* table, int scope);
 
 void mCc_st_delete_entry(struct mCc_st_entry* entry);
 
@@ -59,6 +60,10 @@ int mCc_st_hash(const char* str);
 /* ---------------------------------------------------------------- Insert element */
 
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
+
+void mCc_st_insert_variable(struct mCc_st_table *table, struct mCc_ast_declaration *func);
+
+void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_def *func);
 
 struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result);
 

@@ -10,6 +10,7 @@ extern "C" {
 /* Forward Declarations */
 struct mCc_ast_expression;
 struct mCc_ast_literal;
+struct mCc_ast_statement_list;
 struct mCc_ast_statement;
 struct mCc_ast_declaration;
 struct mCc_ast_assignment;
@@ -324,7 +325,7 @@ struct mCc_ast_statement {
 		struct mCc_ast_expression *expression;
 
 		/* MCC_AST_STATEMENT_TYPE_COMPOUND */
-		struct mCc_ast_statement *statement;
+		struct mCc_ast_statement_list *statement_list;
 
 		/* MCC_AST_STATEMENT_TYPE_IF, MCC_AST_STATEMENT_TYPE_WHILE */
 		struct {
@@ -347,6 +348,12 @@ struct mCc_ast_statement {
 	};
 };
 
+struct mCc_ast_statement_list {
+	struct mCc_ast_node node;
+	struct mCc_ast_statement *statement;
+	struct mCc_ast_statement_list *next;
+};
+
 struct mCc_ast_statement *
 mCc_ast_new_statement_declaration(struct mCc_ast_declaration *declaration);
 
@@ -357,8 +364,7 @@ struct mCc_ast_statement *
 mCc_ast_new_statement_expression(struct mCc_ast_expression *expression);
 
 struct mCc_ast_statement *
-mCc_ast_new_statement_compound(struct mCc_ast_statement *statement);
-
+mCc_ast_new_statement_compound(struct mCc_ast_statement_list *statement_list);
 
 struct mCc_ast_statement *
 mCc_ast_new_statement_if(struct mCc_ast_expression *expression, struct mCc_ast_statement *stmt_1,
@@ -368,9 +374,15 @@ struct mCc_ast_statement *
 mCc_ast_new_statement_while(struct mCc_ast_expression *expr, struct mCc_ast_statement *stmt);
 
 struct mCc_ast_statement *
-mCc_ast_new_statement_return(struct mCc_ast_expression *expression);
+mCc_ast_new_statement_compound(struct mCc_ast_statement_list *statement_list);
 
 void mCc_ast_delete_statement(struct mCc_ast_statement *statement);
+
+struct mCc_ast_statement_list *
+mCc_ast_new_statement_list(struct mCc_ast_statement *statement);
+
+void mCc_ast_delete_statement_list(
+    struct mCc_ast_statement_list *statement_list);
 
 /* ------------------------------------------------------------- Function Definition/Call */
 

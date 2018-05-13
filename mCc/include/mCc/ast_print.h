@@ -31,6 +31,9 @@ void mCc_ast_print_dot_literal(FILE *out, struct mCc_ast_literal *literal);
 void mCc_ast_print_dot_statement(FILE *out,
                                  struct mCc_ast_statement *statement);
 
+void mCc_ast_print_dot_statement_list(FILE *out,
+                                         struct mCc_ast_statement_list *function_def_list);
+
 void mCc_ast_print_dot_parameter(FILE *out,
                                  struct mCc_ast_parameter *parameter);
 
