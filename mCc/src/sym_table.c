@@ -100,7 +100,8 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 }
 
 // Get the AST tree from parser and construct symbol table
-struct mCc_st_table *mCc_st_new_table(const char *input)
+
+struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result)
 {
 //	assert(result);
 
@@ -112,30 +113,45 @@ struct mCc_st_table *mCc_st_new_table(const char *input)
 	int scope = 1;
 	mCc_st_update_scope(table, scope);
 
-	auto result = mCc_parser_parse_string(input);
-	auto list = result.program->function_def_list;
-	auto func = list->function_def;
+//	struct mCc_parser_result result = mCc_parser_parse_string(input);
+	struct mCc_ast_function_def_list *list = result.program->function_def_list;
+	struct mCc_ast_function_def *func = list->function_def;
 
 	// Insert first fuction
 	struct mCc_st_entry *entry = mCc_st_new_entry(func->identifier->id_value,
-						func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
+			func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
 
 	mCc_st_insert_entry(table, entry);
 
 	// Insert the remaining functions
-	auto next_list = list->next;
+	struct mCc_ast_function_def_list *next_list = list->next;
 	while (next_list != NULL) {
-		auto next_func = next_list->function_def;
+		struct mCc_ast_function_def *next_func = next_list->function_def;
 		struct mCc_st_entry *entry = mCc_st_new_entry(next_func->identifier->id_value,
 				next_func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
-
 		mCc_st_insert_entry(table, entry);
-
 		next_list = next_list->next;
 	}
 
-	mCc_parser_delete_result(&result);
+//	mCc_parser_delete_result(&result);
 	return table;
+}
+
+void print(const char *input)
+{
+	struct mCc_st_table *table = mCc_st_new_empty_table();
+
+
+	int scope = 1;
+	mCc_st_update_scope(table, scope);
+
+	struct mCc_parser_result result = mCc_parser_parse_string(input);
+	struct mCc_ast_function_def_list *list = result.program->function_def_list;
+	struct mCc_ast_function_def *func = list->function_def;
+
+	printf("Function name: %s\n", func->identifier->id_value);
+
+	mCc_parser_delete_result(&result);
 }
 
 /* ---------------------------------------------------------------- Delete */
@@ -200,6 +216,7 @@ void mCc_st_print_table(struct mCc_st_table *table) {
 		ptr = ptr->next;
 	}
 	printf("Size = %i\n", table->size);
+	printf("Scope = %i\n", table->scope);
 }
 
 void mCc_st_print_table_list(struct mCc_st_table *tab_tail) {
@@ -276,8 +293,8 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		// -(4 + 6); !(a == 1); -> return type of expression inside
-		return mCc_st_check_type_expression(expr->u_rhs);
-//		return MCC_AST_LITERAL_TYPE_BOOL;
+		//		return mCc_st_check_type_expression(expr->u_rhs);
+		return MCC_AST_LITERAL_TYPE_BOOL;
 		break;
 
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
@@ -285,8 +302,8 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 		case MCC_AST_BINARY_OP_TYPE_BINARY:
 			// a && b; a || b -> return bool;
 			return MCC_AST_LITERAL_TYPE_BOOL;
-//			break;
-/*
+			//			break;
+			/*
 		case MCC_AST_BINARY_OP_TYPE_ADD:
 			// 6 - 1; 7 + 2.5;
 			enum mCc_ast_literal_type lhs_type =
@@ -334,7 +351,7 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 				}
 			}
 			break;
-*/
+			 */
 		case MCC_AST_BINARY_OP_TYPE_COMPARE:
 			return MCC_AST_LITERAL_TYPE_BOOL;
 			break;

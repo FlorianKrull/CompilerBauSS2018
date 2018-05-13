@@ -56,6 +56,23 @@ TEST(sym_table, InsertEntry_1)
 	mCc_st_delete_table(table);
 }
 
+TEST(sym_table, Insert_1)
+{
+	const char input[] = "void main(){} float sub(){} int add(int x, float y) {x = 1;}";
+
+	auto parse_result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+
+	// Print
+	mCc_st_print_table(table);
+
+
+	mCc_parser_delete_result(&parse_result);
+}
+
 /* ---------------------------------------------------------------- Delete */
 TEST(sym_table, RemoveEntry_1)
 {
@@ -152,9 +169,11 @@ TEST(sym_table, Table_Lookup_2)
 	struct mCc_st_table *table = mCc_st_new_empty_table();
 	struct mCc_st_entry *entry1 = mCc_st_new_entry("y", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_VARIABLE);
 	struct mCc_st_entry *entry2 = mCc_st_new_entry("x", MCC_AST_TYPE_INT, MCC_ST_ENTRY_TYPE_VARIABLE);
+	struct mCc_st_entry *entry3 = mCc_st_new_entry("main", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_FUNCTION);
 
 	mCc_st_insert_entry(table, entry1);
 	mCc_st_insert_entry(table, entry2);
+	mCc_st_insert_entry(table, entry3);
 
 	const char input[] = "z = 1;";
 	auto parse_result = mCc_parser_parse_string(input);
@@ -260,9 +279,6 @@ TEST(sym_table, Table_Lookup_3)
 	auto result = mCc_st_lookup(asmt_id->id_value, table);
 	ASSERT_EQ(true, result);
 
-	// Print
-	mCc_st_print_table(table);
-
 	mCc_st_delete_table(table);
 	mCc_ast_delete_program(program);
 }
@@ -282,7 +298,7 @@ TEST(sym_table, Type_Checking_1)
 	mCc_parser_delete_result(&result);
 
 }
-
+/*
 TEST(sym_table, Type_Checking_2)
 {
 	const char input[] = "!(true)";
@@ -297,7 +313,7 @@ TEST(sym_table, Type_Checking_2)
 	mCc_parser_delete_result(&result);
 
 }
-
+*/
 TEST(sym_table, Type_Checking_3)
 {
 	const char input[] = "-(4 + 6)";
@@ -335,19 +351,12 @@ TEST(sym_table, Type_Checking_5)
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	struct mCc_st_table *table = mCc_st_new_empty_table();
-	int scope = 1;
-	mCc_st_update_scope(table, scope);
-
 	auto program = parse_result.program;
 
-	//program->function_def_list->function_def
-	auto func = program->function_def_list->function_def;
+	// Insert function to table
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
 
-	// Add function declaration to table
-	struct mCc_st_entry *func_entry = mCc_st_new_entry(func->identifier->id_value, func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
-	mCc_st_insert_entry(table, func_entry);
-
+	auto func = parse_result.program->function_def_list->function_def;
 	auto param = func->parameters;
 	//x declaration
 	auto x_decl = param->declaration;
@@ -357,7 +366,7 @@ TEST(sym_table, Type_Checking_5)
 	auto x_subid = param->declaration->normal_decl.identifier;
 	ASSERT_STREQ("x", x_subid->id_value);
 
-	// Add variable declaration to table
+	// Insert variable declaration to table
 	struct mCc_st_entry *var_x = mCc_st_new_entry(x_subid->id_value, x_decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
 	mCc_st_insert_entry(table, var_x);
 

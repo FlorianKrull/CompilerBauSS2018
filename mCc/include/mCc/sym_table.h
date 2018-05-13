@@ -60,7 +60,9 @@ int mCc_st_hash(const char* str);
 
 void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
 
-struct mCc_st_table *mCc_st_new_table(const char *input);
+struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result);
+
+void print(const char *input);
 
 /* ---------------------------------------------------------------- Delete element */
 
