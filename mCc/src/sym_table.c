@@ -77,6 +77,12 @@ void mCc_st_delete_table(struct mCc_st_table* table)
 	if (NULL != table->head) {
 		mCc_st_delete_entry(table->head);
 	}
+	if (NULL != table->prev) {
+		mCc_st_delete_table(table->prev);
+	}
+	if (NULL != table->next) {
+			mCc_st_delete_table(table->next);
+		}
 	free(table);
 }
 /* ---------------------------------------------------------------- Insert */
@@ -112,15 +118,31 @@ void mCc_st_insert_variable(struct mCc_st_table *table, struct mCc_ast_declarati
 	switch(decl->type) {
 	case MCC_AST_DECLARATION_TYPE_NORMAL:
 		entry = mCc_st_new_entry(decl->normal_decl.identifier->id_value,
-				decl->type, MCC_ST_ENTRY_TYPE_VARIABLE);
+				decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
 		break;
 	case MCC_AST_DECLARATION_TYPE_ARRAY:
 		entry = mCc_st_new_entry(decl->array_decl.identifier->id_value,
-				decl->type, MCC_ST_ENTRY_TYPE_VARIABLE);
+				decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
 		break;
 	}
 
 	mCc_st_insert_entry(table, entry);
+}
+
+struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent)
+{
+	assert(parent);
+	struct mCc_st_table *child_table;
+	if (NULL != parent->next) {
+		child_table = parent->next;
+	} else {
+		child_table = mCc_st_new_empty_table();
+		int scope = parent->scope;
+		scope++;
+		mCc_st_update_scope(child_table, scope);
+		parent->next = child_table;
+	}
+	return child_table;
 }
 
 //TODO: fix bug when iterate to next declaration
@@ -137,17 +159,7 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 	// Insert variable if function has parameters; resulting new entries in child table
 	struct mCc_ast_parameter *param = func->parameters;
 	if (NULL != param) {
-
-		struct mCc_st_table *child_table;
-		if (NULL != table->next) {
-			child_table = table->next;
-		} else {
-			child_table = mCc_st_new_empty_table();
-			int scope = table->scope;
-			scope++;
-			mCc_st_update_scope(child_table, scope);
-			table->next = child_table;
-		}
+		struct mCc_st_table *child_table = mCc_st_new_child_table(table);
 		mCc_st_insert_variable(child_table, param->declaration);
 
 		struct mCc_ast_parameter *next_param = param->next;
@@ -158,27 +170,34 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 	}
 
 	// Retrieve entries inside compound_stmt
-	/*
-	struct mCc_ast_statement *stmt = func->compound_stmt->statement;
-	switch(statement->type) {
-	case MCC_AST_STATEMENT_TYPE_DECLARATION:
-		// TODO: add new declaration
-		break;
-	case MCC_AST_STATEMENT_TYPE_ASSIGNMENT:
-	case MCC_AST_STATEMENT_TYPE_EXPRESSION:
-	case MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY:
-	case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
-	case MCC_AST_STATEMENT_TYPE_RETURN:
-		break;
-	case MCC_AST_STATEMENT_TYPE_IF:
-	case MCC_AST_STATEMENT_TYPE_WHILE:
-		// TODO: go inside if/while statement
-		break;
-	case MCC_AST_STATEMENT_TYPE_IF_ELSE:
-		// TODO: Go inside if statement + else statement
-		break;
+
+	if (NULL != func->compound_stmt && func->compound_stmt->type == MCC_AST_STATEMENT_TYPE_COMPOUND) {
+		struct mCc_ast_statement_list *stmt_list = func->compound_stmt->statement_list;
+		struct mCc_ast_statement *stmt = stmt_list->statement;
+		switch(stmt->type) {
+		case MCC_AST_STATEMENT_TYPE_DECLARATION:
+		{
+			struct mCc_st_table *child_table = mCc_st_new_child_table(table);
+			mCc_st_insert_variable(child_table, stmt->declaration);
+			break;
+		}
+		case MCC_AST_STATEMENT_TYPE_ASSIGNMENT:
+		case MCC_AST_STATEMENT_TYPE_EXPRESSION:
+		case MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY:
+		case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
+		case MCC_AST_STATEMENT_TYPE_RETURN:
+			break;
+		case MCC_AST_STATEMENT_TYPE_IF:
+		case MCC_AST_STATEMENT_TYPE_WHILE:
+			// TODO: go inside if/while statement
+			break;
+		case MCC_AST_STATEMENT_TYPE_IF_ELSE:
+			// TODO: Go inside if statement + else statement
+			break;
+		}
+
+//		mCc_ast_delete_statement_list(stmt_list);
 	}
-	*/
 }
 
 // Get the AST tree from parser and construct symbol table

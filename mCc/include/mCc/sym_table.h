@@ -63,6 +63,8 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 
 void mCc_st_insert_variable(struct mCc_st_table *table, struct mCc_ast_declaration *func);
 
+struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent);
+
 void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_def *func);
 
 struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result);

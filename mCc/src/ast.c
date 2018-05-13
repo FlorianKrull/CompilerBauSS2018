@@ -439,7 +439,7 @@ mCc_ast_new_statement_compound(struct mCc_ast_statement_list *statement_list)
 		return NULL;
 	}
 
-	if (statement_list != NULL) {
+	if (NULL != statement_list) {
 		stmt->type = MCC_AST_STATEMENT_TYPE_COMPOUND;
 		stmt->statement_list = statement_list;
 	} else {

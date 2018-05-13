@@ -58,7 +58,7 @@ TEST(sym_table, InsertEntry_1)
 
 TEST(sym_table, Insert_1)
 {
-	const char input[] = "void main(bool id){} float sub(){} int add(int x, float y) {x = 1;}";
+	const char input[] = "void main(bool id){} float sub(){} float add(int x, float y) {float z; z = x + y; return z;}";
 
 	auto parse_result = mCc_parser_parse_string(input);
 
@@ -69,7 +69,7 @@ TEST(sym_table, Insert_1)
 	// Print
 	mCc_st_print_table_list(table);
 
-
+	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
 
@@ -191,7 +191,7 @@ TEST(sym_table, Table_Lookup_2)
 
 	mCc_st_delete_table(table);
 }
-/*
+/*\
 TEST(sym_table, Table_Lookup_3)
 {
 	const char input[] = "void add(int x, float y) {x = 1;}";
