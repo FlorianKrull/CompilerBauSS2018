@@ -58,7 +58,25 @@ TEST(sym_table, InsertEntry_1)
 
 TEST(sym_table, Insert_1)
 {
-	const char input[] = "void main(bool id){} float sub(){} float add(int x, float y) {float z; z = x + y; return z;}";
+	const char input[] = "void main(bool id){} float sub(){string s;} float add(int x, float y) {float z; z = x + y; return z;}";
+
+	auto parse_result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+
+	// Print
+	mCc_st_print_table_list(table);
+
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
+}
+
+// input is part of the example leap_year.mC
+TEST(sym_table, Insert_2)
+{
+	const char input[] = "bool isLeapYear(int n) {  if ((modulo(n,4) == 0 && modulo(n,100) != 0) || (modulo(n,400) == 0)){ return true;  } return false; } int modulo(int k, int i) { while (k > 0){ k = k - i;  } return k;}";
 
 	auto parse_result = mCc_parser_parse_string(input);
 
@@ -147,12 +165,13 @@ TEST(sym_table, Table_Lookup_1)
 	mCc_st_insert_entry(table, entry1);
 	mCc_st_insert_entry(table, entry2);
 
-	const char input[] = "x = 1;";
+	const char input[] = "void f() {x = 1;}";
 	auto parse_result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	auto asmt = parse_result.statement->assignment;
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
+			statement_list->statement->assignment;
 
 	// asmt->identifier;
 	auto id = asmt->identifier->id_value;
@@ -175,12 +194,13 @@ TEST(sym_table, Table_Lookup_2)
 	mCc_st_insert_entry(table, entry2);
 	mCc_st_insert_entry(table, entry3);
 
-	const char input[] = "z = 1;";
+	const char input[] = "void f() {z = 1;}";
 	auto parse_result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	auto asmt = parse_result.statement->assignment;
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
+				statement_list->statement->assignment;
 
 	// asmt->identifier;
 	auto id = asmt->identifier->id_value;
@@ -191,7 +211,7 @@ TEST(sym_table, Table_Lookup_2)
 
 	mCc_st_delete_table(table);
 }
-/*\
+/*
 TEST(sym_table, Table_Lookup_3)
 {
 	const char input[] = "void add(int x, float y) {x = 1;}";
@@ -199,69 +219,11 @@ TEST(sym_table, Table_Lookup_3)
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	struct mCc_st_table *table = mCc_st_new_empty_table();
-	int scope = 1;
-	mCc_st_update_scope(table, scope);
-
-	// Add declaration to symbol table
-	auto program = parse_result.program;
-
-	//program->function_def_list->function_def
-	auto func = program->function_def_list->function_def;
-
-	//func->function type
-	ASSERT_EQ(MCC_AST_TYPE_VOID, func->type);
-
-	//func->identifier
-	auto id = func->identifier;
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, id->type);
-	ASSERT_STREQ("add", id->id_value);
-
-	// Add function declaration to table
-	struct mCc_st_entry *func_entry = mCc_st_new_entry(id->id_value, func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
-	mCc_st_insert_entry(table, func_entry);
-
-	auto param = func->parameters;
-	//func->param->x declaration
-	auto x_decl = param->declaration;
-	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, x_decl->type);
-
-	//x->var_type
-	ASSERT_EQ(MCC_AST_TYPE_INT, x_decl->var_type);
-
-	//x->identifier
-	auto x_subid = x_decl->normal_decl.identifier;
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, x_subid->type);
-	ASSERT_STREQ("x", x_subid->id_value);
-
-	// Add variable declaration to table
-	struct mCc_st_entry *var_x = mCc_st_new_entry(x_subid->id_value, x_decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
-	mCc_st_insert_entry(table, var_x);
-
-	//x->next = y declaration
-	auto y_decl = param->next->declaration;
-	ASSERT_EQ(MCC_AST_DECLARATION_TYPE_NORMAL, y_decl->type);
-
-	//y->var_type
-	ASSERT_EQ(MCC_AST_TYPE_FLOAT, y_decl->var_type);
-
-	//y->identifier
-	auto y_subid = y_decl->normal_decl.identifier;
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, y_subid->type);
-	ASSERT_STREQ("y", y_subid->id_value);
-
-	// Add variable declaration to table
-	struct mCc_st_entry *var_y = mCc_st_new_entry(y_subid->id_value, y_decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
-	mCc_st_insert_entry(table, var_y);
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
 
 	// Start looking up
-	//func->compound_stmt
-	auto stmt = func->compound_stmt;
-	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_COMPOUND, stmt->type);
-	ASSERT_EQ(MCC_AST_STATEMENT_TYPE_ASSIGNMENT, stmt->statement_list->statement->type);
-
 	//compound_stmt->statement->assignment
-	auto asmt = stmt->statement->assignment;
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->statement_list->statement->assignment;
 	ASSERT_EQ(MCC_AST_ASSIGNMENT_TYPE_NORMAL, asmt->type);
 
 	// asmt->identifier;
@@ -280,18 +242,18 @@ TEST(sym_table, Table_Lookup_3)
 	ASSERT_EQ(true, result);
 
 	mCc_st_delete_table(table);
-	mCc_ast_delete_program(program);
+	mCc_parser_delete_result(&parse_result);
 }
 */
 /* ---------------------------------------------------------------- Type checking */
 TEST(sym_table, Type_Checking_1)
 {
-	const char input[] = "x = 1.5;";
+	const char input[] = "void f() {x = 1.5;}";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
-	auto expr = result.statement->assignment->normal_asmt.rhs;
+	auto expr = result.program->function_def_list->function_def->compound_stmt->statement_list->statement->assignment->normal_asmt.rhs;
 
 	ASSERT_EQ(MCC_AST_LITERAL_TYPE_FLOAT, mCc_st_check_type_expression(expr));
 
@@ -356,52 +318,8 @@ TEST(sym_table, Type_Checking_5)
 	// Insert function to table
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
 
-	auto func = parse_result.program->function_def_list->function_def;
-	auto param = func->parameters;
-	//x declaration
-	auto x_decl = param->declaration;
-
-	//y->var_type
-	ASSERT_EQ(MCC_AST_TYPE_INT, x_decl->var_type);
-	auto x_subid = param->declaration->normal_decl.identifier;
-	ASSERT_STREQ("x", x_subid->id_value);
-
-	// Insert variable declaration to table
-	struct mCc_st_entry *var_x = mCc_st_new_entry(x_subid->id_value, x_decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
-	mCc_st_insert_entry(table, var_x);
-
-	//x->next = y declaration
-	auto y_decl = param->next->declaration;
-
-	//y->var_type
-	ASSERT_EQ(MCC_AST_TYPE_FLOAT, y_decl->var_type);
-
-	//y->identifier
-	auto y_subid = y_decl->normal_decl.identifier;
-	ASSERT_STREQ("y", y_subid->id_value);
-
-	// Add variable declaration to table
-	struct mCc_st_entry *var_y = mCc_st_new_entry(y_subid->id_value, y_decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
-	mCc_st_insert_entry(table, var_y);
-
-	// Start check type and value
-	//func->compound_stmt
-	auto stmt = func->compound_stmt;
-
-	//compound_stmt->statement->assignment
-	auto asmt = stmt->statement_list->statement->assignment;
-
-	// asmt->identifier;
-	auto asmt_id = asmt->identifier;
-
-	ASSERT_STREQ("x", asmt_id->id_value);
-
-	// asmt->normal_asmt->rhs
-	auto literal = asmt->normal_asmt.rhs->literal;
-
-	auto result = mCc_st_check_type_value(x_decl->var_type, literal);
-	ASSERT_EQ(true, result);
-
+	// Print
+	mCc_st_print_table_list(table);
 
 	mCc_st_delete_table(table);
 	mCc_ast_delete_program(program);

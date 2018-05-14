@@ -125,10 +125,10 @@ void mCc_parser_error();
 %%
          
 toplevel : program { *result = $1; }
-		 | expression { *expr_result = $1; }
+		 | expression { *expr_result = $1; }/*
 	 	 | statement  { *stmt_result = $1; }
 	 	 | parameters { *par_result = $1; }
-	 	 | declaration { *decl_result = $1; }
+	 	 | declaration { *decl_result = $1; }*/
          ;
 
 /*

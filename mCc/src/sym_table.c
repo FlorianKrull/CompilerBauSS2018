@@ -129,6 +129,32 @@ void mCc_st_insert_variable(struct mCc_st_table *table, struct mCc_ast_declarati
 	mCc_st_insert_entry(table, entry);
 }
 
+void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statement *stmt)
+{
+	switch(stmt->type) {
+	case MCC_AST_STATEMENT_TYPE_DECLARATION:
+	{
+		struct mCc_st_table *child_table = mCc_st_new_child_table(table);
+		mCc_st_insert_variable(child_table, stmt->declaration);
+		break;
+	}
+	case MCC_AST_STATEMENT_TYPE_ASSIGNMENT:
+	case MCC_AST_STATEMENT_TYPE_EXPRESSION:
+	case MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY:
+	case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
+	case MCC_AST_STATEMENT_TYPE_RETURN:
+		break;
+	case MCC_AST_STATEMENT_TYPE_IF:
+	case MCC_AST_STATEMENT_TYPE_WHILE:
+		mCc_st_insert_statement(table, stmt->stmt);
+		break;
+	case MCC_AST_STATEMENT_TYPE_IF_ELSE:
+		mCc_st_insert_statement(table, stmt->if_else_stmt.stmt_1);
+		mCc_st_insert_statement(table, stmt->if_else_stmt.stmt_2);
+		break;
+	}
+}
+
 struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent)
 {
 	assert(parent);
@@ -170,37 +196,18 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 	}
 
 	// Retrieve entries inside compound_stmt
-
 	if (NULL != func->compound_stmt && func->compound_stmt->type == MCC_AST_STATEMENT_TYPE_COMPOUND) {
 		struct mCc_ast_statement_list *stmt_list = func->compound_stmt->statement_list;
 		struct mCc_ast_statement *stmt = stmt_list->statement;
-		switch(stmt->type) {
-		case MCC_AST_STATEMENT_TYPE_DECLARATION:
-		{
-			struct mCc_st_table *child_table = mCc_st_new_child_table(table);
-			mCc_st_insert_variable(child_table, stmt->declaration);
-			break;
-		}
-		case MCC_AST_STATEMENT_TYPE_ASSIGNMENT:
-		case MCC_AST_STATEMENT_TYPE_EXPRESSION:
-		case MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY:
-		case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
-		case MCC_AST_STATEMENT_TYPE_RETURN:
-			break;
-		case MCC_AST_STATEMENT_TYPE_IF:
-		case MCC_AST_STATEMENT_TYPE_WHILE:
-			// TODO: go inside if/while statement
-			break;
-		case MCC_AST_STATEMENT_TYPE_IF_ELSE:
-			// TODO: Go inside if statement + else statement
-			break;
-		}
 
-//		mCc_ast_delete_statement_list(stmt_list);
+		mCc_st_insert_statement(table, stmt);
+		//		mCc_ast_delete_statement_list(stmt_list);
 	}
+
 }
 
 // Get the AST tree from parser and construct symbol table
+// TODO: insert built-in functions
 struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result)
 {
 	struct mCc_st_table *table = mCc_st_new_empty_table();
@@ -226,23 +233,6 @@ struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result)
 	}
 
 	return table;
-}
-
-void print(const char *input)
-{
-	struct mCc_st_table *table = mCc_st_new_empty_table();
-
-
-	int scope = 1;
-	mCc_st_update_scope(table, scope);
-
-	struct mCc_parser_result result = mCc_parser_parse_string(input);
-	struct mCc_ast_function_def_list *list = result.program->function_def_list;
-	struct mCc_ast_function_def *func = list->function_def;
-
-	printf("Function name: %s\n", func->identifier->id_value);
-
-	mCc_parser_delete_result(&result);
 }
 
 /* ---------------------------------------------------------------- Delete */
@@ -301,6 +291,7 @@ void mCc_st_print_table_list(struct mCc_st_table *tab_tail) {
 
 /* ---------------------------------------------------------------- Look up */
 // Check for undeclared variables
+// TODO: Look up in nested table
 bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table)
 {
 	assert(table);

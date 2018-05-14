@@ -54,7 +54,7 @@ endforeach
 
 gtest = dependency('gtest', fallback: ['gtest', 'gtest_main_dep'])
 
-mCc_uts = [ 'parser', 'dot_printer', 'sym_table' ]
+mCc_uts = [ 'sym_table' ]
 
 
 foreach ut : mCc_uts
