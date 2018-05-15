@@ -297,13 +297,14 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 {
 	assert(table);
 
-	struct mCc_st_checking *type_checking = malloc(sizeof(*type_checking));
+	struct mCc_st_checking *check_manager = malloc(sizeof(*check_manager));
 
-	if (!type_checking) {
+	if (!check_manager) {
 		return NULL;
 	}
 
-	type_checking->is_error = false;
+	check_manager->is_error = true;
+	check_manager->msg = "Undeclared variable";
 
 	while (scope > table->scope && table->next != NULL) {	// Iterate to come to table with corresponding scope
 		table = table->next;
@@ -312,17 +313,19 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 		result = mCc_st_lookup(var_name, scope, table->next);
 	}*/
 	if (scope < table->scope && table->prev != NULL) {	// Come back to look up parent table
-		type_checking->is_error = mCc_st_lookup(var_name, scope, table->prev);
+		check_manager = mCc_st_lookup(var_name, scope, table->prev);
 	} else if (scope == table->scope) {					// Start looking up the table, compare variable to name of the current entry
 		struct mCc_st_entry *current = table->head;
 		while (current != NULL) {
 			if (strcmp(current->name, var_name) == 0) {
-				type_checking->is_error = true;
+				check_manager->is_error = false;
+				strcpy(check_manager->msg, "");
+				check_manager->entry = current;	// For checking
 			}
 			current = current->next;
 		}
 	}
-	return type_checking;
+	return check_manager;
 }
 
 /* ---------------------------------------------------------------- Type checking */
@@ -330,43 +333,51 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 void mCc_st_delete_checking(struct mCc_st_checking *tc)
 {
 	assert(tc);
-
+	if (NULL != tc->entry) {
+		mCc_st_delete_entry(tc->entry);
+	}
+	free(tc);
 }
 
 // Check if literal value and type are compatible, i.e: int x = 1; float y = 3.5;
-bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *literal)
+bool mCc_st_type_rules(enum mCc_ast_type type, enum mCc_ast_literal_type lit_type)
 {
-	assert(literal);
 	bool result = false;
 
-	enum mCc_ast_literal_type lit_type = literal->type;
 	switch(type) {
 	case MCC_AST_TYPE_INT:	// int x = 1 -> valid
 		if (lit_type == MCC_AST_LITERAL_TYPE_INT) {
 			result = true;
 		}
+		break;
 
 	case MCC_AST_TYPE_FLOAT: // float x = 1.5 or float x = 1
 		if ((lit_type == MCC_AST_LITERAL_TYPE_FLOAT) || (lit_type == MCC_AST_LITERAL_TYPE_INT)) {
 			result = true;
 		}
+		break;
 
 	case MCC_AST_TYPE_STRING: // string x = "abc";
 		if (lit_type != MCC_AST_LITERAL_TYPE_STRING) {
 			result = true;
 		}
+		break;
+
 	case MCC_AST_TYPE_BOOL:
 		if (lit_type != MCC_AST_LITERAL_TYPE_BOOL) {
 			result = true;
 		}
+		break;
+	default:
+		break;
 	}
 	return result;
 }
 
-// Check literal type of expression (int, float, bool) using bottom-up parsing
+// Return literal type of expression (int, float, bool) using expression rules, i.e: int + float = float
 // Not check invalid type, i.e: "a" + "b"
 enum mCc_ast_literal_type
-mCc_st_check_type_expression(struct mCc_ast_expression *expr)
+mCc_st_return_type_expression(struct mCc_ast_expression *expr)
 {
 	assert(expr);
 
@@ -376,7 +387,7 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		// -(4 + 6); !(a == 1); -> return type of expression inside
-		//		return mCc_st_check_type_expression(expr->u_rhs);
+		//		return mCc_st_return_type_expression(expr->u_rhs);
 		return MCC_AST_LITERAL_TYPE_BOOL;
 		break;
 
@@ -385,15 +396,14 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 		case MCC_AST_BINARY_OP_TYPE_BINARY:
 			// a && b; a || b -> return bool;
 			return MCC_AST_LITERAL_TYPE_BOOL;
-			//			break;
 
 		case MCC_AST_BINARY_OP_TYPE_ADD:
 		{
 			// 6 - 1; 7 + 2.5;
 			enum mCc_ast_literal_type lhs_type =
-					mCc_st_check_type_expression(expr->lhs);
+					mCc_st_return_type_expression(expr->lhs);
 			enum mCc_ast_literal_type rhs_type =
-					mCc_st_check_type_expression(expr->rhs);
+					mCc_st_return_type_expression(expr->rhs);
 
 			if ((lhs_type == MCC_AST_LITERAL_TYPE_INT) && (rhs_type == MCC_AST_LITERAL_TYPE_INT)) {
 				return MCC_AST_LITERAL_TYPE_INT;
@@ -411,9 +421,9 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 		case MCC_AST_BINARY_OP_TYPE_MUL:
 		{
 			enum mCc_ast_literal_type lhs_type =
-					mCc_st_check_type_expression(expr->lhs);
+					mCc_st_return_type_expression(expr->lhs);
 			enum mCc_ast_literal_type rhs_type =
-					mCc_st_check_type_expression(expr->rhs);
+					mCc_st_return_type_expression(expr->rhs);
 
 			switch(expr->mul_op) {
 			case MCC_AST_BINARY_OP_MUL:	// same with ADD operator
@@ -445,7 +455,7 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 		break;
 
 		case MCC_AST_EXPRESSION_TYPE_PARENTH:
-			return mCc_st_check_type_expression(expr->expression);
+			return mCc_st_return_type_expression(expr->expression);
 		default:
 			break;
 	}

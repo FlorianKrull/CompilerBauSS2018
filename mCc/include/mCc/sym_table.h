@@ -47,7 +47,9 @@ struct mCc_st_error {
 // Used for Task 1 -> Task 4
 struct mCc_st_checking {
 	bool is_error;
-	const char *msg;
+	char *msg;
+	struct mCc_st_entry *entry;
+	/*
 	union {
 		// for Task 4
 		struct {
@@ -58,7 +60,7 @@ struct mCc_st_checking {
 		struct {
 			struct mCc_st_entry *entry;
 		} other_checking;
-	};
+	};*/
 };
 
 /* ---------------------------------------------------------------- Initialization */
@@ -109,10 +111,12 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 
 /* ---------------------------------------------------------------- Type checking */
 
-bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *literal);
+void mCc_st_type_checking();
+
+bool mCc_st_type_rules(enum mCc_ast_type type, enum mCc_ast_literal_type lit_type);
 
 enum mCc_ast_literal_type
-	mCc_st_check_type_expression(struct mCc_ast_expression *expr);
+mCc_st_return_type_expression(struct mCc_ast_expression *expr);
 
 #ifdef __cplusplus
 }
