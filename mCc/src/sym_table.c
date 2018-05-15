@@ -299,14 +299,16 @@ bool mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table)
 
 	bool result = false;
 
-	if (scope > table->scope && table->next != NULL) {
+	while (scope > table->scope && table->next != NULL) {	// Iterate to come to table with corresponding scope
+		table = table->next;
+	}
+	/*if (scope > table->scope && table->next != NULL) {
 		result = mCc_st_lookup(var_name, scope, table->next);
-	} else if (scope < table->scope && table->prev != NULL) {
+	}*/
+	if (scope < table->scope && table->prev != NULL) {	// Come back to look up parent table
 		result = mCc_st_lookup(var_name, scope, table->prev);
-	} else if (scope == table->scope) {
+	} else if (scope == table->scope) {					// Start looking up the table, compare variable to name of the current entry
 		struct mCc_st_entry *current = table->head;
-
-		// Start looking up the table, compare variable to name of the current entry
 		while (current != NULL) {
 			if (strcmp(current->name, var_name) == 0) {
 				result = true;
@@ -378,8 +380,9 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 			// a && b; a || b -> return bool;
 			return MCC_AST_LITERAL_TYPE_BOOL;
 			//			break;
-			/*
+
 		case MCC_AST_BINARY_OP_TYPE_ADD:
+		{
 			// 6 - 1; 7 + 2.5;
 			enum mCc_ast_literal_type lhs_type =
 					mCc_st_check_type_expression(expr->lhs);
@@ -396,9 +399,11 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 					return MCC_AST_LITERAL_TYPE_FLOAT;
 				}
 			}
-			break;
+		}
+		break;
 
 		case MCC_AST_BINARY_OP_TYPE_MUL:
+		{
 			enum mCc_ast_literal_type lhs_type =
 					mCc_st_check_type_expression(expr->lhs);
 			enum mCc_ast_literal_type rhs_type =
@@ -424,12 +429,12 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 						return MCC_AST_LITERAL_TYPE_FLOAT;
 					}
 				}
+				break;
 			}
 			break;
-			 */
+		}
 		case MCC_AST_BINARY_OP_TYPE_COMPARE:
 			return MCC_AST_LITERAL_TYPE_BOOL;
-			break;
 		}
 		break;
 
