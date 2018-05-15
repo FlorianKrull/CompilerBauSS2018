@@ -177,13 +177,12 @@ TEST(sym_table, Table_Lookup_1)
 	auto id = asmt->identifier->id_value;
 	ASSERT_STREQ("x", id);
 
-	mCc_st_print_table_list(table);
-
 	bool result = mCc_st_lookup(id, 1, table);
 
 	ASSERT_EQ(true, result);
 
 	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
 }
 
 TEST(sym_table, Table_Lookup_2)
@@ -213,6 +212,7 @@ TEST(sym_table, Table_Lookup_2)
 	ASSERT_EQ(false, result);
 
 	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
 }
 
 // Look up in nested table
@@ -327,5 +327,5 @@ TEST(sym_table, Type_Checking_5)
 	mCc_st_print_table_list(table);
 
 	mCc_st_delete_table(table);
-	mCc_ast_delete_program(program);
+	mCc_parser_delete_result(&parse_result);
 }
