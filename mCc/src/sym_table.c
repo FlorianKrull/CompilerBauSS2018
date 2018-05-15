@@ -450,3 +450,25 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 			break;
 	}
 }
+
+/* ---------------------------------------------------------------- Return checking */
+
+bool mCc_st_check_function_def_return(struct mCc_ast_function_def *function_def){
+	if(function_def->type == MCC_AST_TYPE_VOID){
+		return true;
+	} else if(function_def->compound_stmt->type == MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY){
+                return false;
+        }
+        return mCc_st_check_statement_list_return(function_def->compound_stmt->statement_list);
+
+}
+
+bool mCc_st_check_statement_list_return(struct mCc_ast_statement_list *statement_list){
+        if(statement_list->statement->type == MCC_AST_STATEMENT_TYPE_RETURN){
+                return true;
+        } else if(statement_list->next != NULL) {
+                return mCc_st_check_statement_list_return(statement_list->next);
+        }
+        return false;
+}
+

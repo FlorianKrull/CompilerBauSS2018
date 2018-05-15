@@ -56,40 +56,40 @@ TEST(sym_table, InsertEntry_1)
 	mCc_st_delete_table(table);
 }
 
-TEST(sym_table, Insert_1)
-{
-	const char input[] = "void main(bool id){} float sub(){string s;} float add(int x, float y) {float z; z = x + y; return z;}";
-
-	auto parse_result = mCc_parser_parse_string(input);
-
-	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
-
-	struct mCc_st_table *table = mCc_st_new_table(parse_result);
-
-	// Print
-	mCc_st_print_table_list(table);
-
-	mCc_st_delete_table(table);
-	mCc_parser_delete_result(&parse_result);
-}
+//TEST(sym_table, Insert_1)
+//{
+//	const char input[] = "void main(bool id){} float sub(){string s;} float add(int x, float y) {float z; z = x + y; return z;}";
+//
+//	auto parse_result = mCc_parser_parse_string(input);
+//
+//	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+//
+//	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+//
+//	// Print
+//	mCc_st_print_table_list(table);
+//
+//	mCc_st_delete_table(table);
+//	mCc_parser_delete_result(&parse_result);
+//}
 
 // input is part of the example leap_year.mC
-TEST(sym_table, Insert_2)
-{
-	const char input[] = "bool isLeapYear(int n) {  if ((modulo(n,4) == 0 && modulo(n,100) != 0) || (modulo(n,400) == 0)){ return true;  } return false; } int modulo(int k, int i) { while (k > 0){ k = k - i;  } return k;}";
-
-	auto parse_result = mCc_parser_parse_string(input);
-
-	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
-
-	struct mCc_st_table *table = mCc_st_new_table(parse_result);
-
-	// Print
-	mCc_st_print_table_list(table);
-
-	mCc_st_delete_table(table);
-	mCc_parser_delete_result(&parse_result);
-}
+//TEST(sym_table, Insert_2)
+//{
+//	const char input[] = "bool isLeapYear(int n) {  if ((modulo(n,4) == 0 && modulo(n,100) != 0) || (modulo(n,400) == 0)){ return true;  } return false; } int modulo(int k, int i) { while (k > 0){ k = k - i;  } return k;}";
+//
+//	auto parse_result = mCc_parser_parse_string(input);
+//
+//	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+//
+//	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+//
+//	// Print
+//	mCc_st_print_table_list(table);
+//
+//	mCc_st_delete_table(table);
+//	mCc_parser_delete_result(&parse_result);
+//}
 
 /* ---------------------------------------------------------------- Delete */
 TEST(sym_table, RemoveEntry_1)
@@ -185,70 +185,70 @@ TEST(sym_table, Table_Lookup_1)
 	mCc_parser_delete_result(&parse_result);
 }
 
-TEST(sym_table, Table_Lookup_2)
-{
-	struct mCc_st_table *table = mCc_st_new_empty_table();
-	struct mCc_st_entry *entry1 = mCc_st_new_entry("y", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_VARIABLE);
-	struct mCc_st_entry *entry2 = mCc_st_new_entry("x", MCC_AST_TYPE_INT, MCC_ST_ENTRY_TYPE_VARIABLE);
-	struct mCc_st_entry *entry3 = mCc_st_new_entry("main", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_FUNCTION);
-
-	mCc_st_insert_entry(table, entry1);
-	mCc_st_insert_entry(table, entry2);
-	mCc_st_insert_entry(table, entry3);
-
-	const char input[] = "void f() {z = 1;}";
-	auto parse_result = mCc_parser_parse_string(input);
-
-	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
-
-	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
-				statement_list->statement->assignment;
-
-	// asmt->identifier;
-	auto id = asmt->identifier->id_value;
-	ASSERT_STREQ("z", id);
-	bool result = mCc_st_lookup(id, 1, table);
-
-	ASSERT_EQ(false, result);
-
-	mCc_st_delete_table(table);
-	mCc_parser_delete_result(&parse_result);
-}
+//TEST(sym_table, Table_Lookup_2)
+//{
+//	struct mCc_st_table *table = mCc_st_new_empty_table();
+//	struct mCc_st_entry *entry1 = mCc_st_new_entry("y", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_VARIABLE);
+//	struct mCc_st_entry *entry2 = mCc_st_new_entry("x", MCC_AST_TYPE_INT, MCC_ST_ENTRY_TYPE_VARIABLE);
+//	struct mCc_st_entry *entry3 = mCc_st_new_entry("main", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_FUNCTION);
+//
+//	mCc_st_insert_entry(table, entry1);
+//	mCc_st_insert_entry(table, entry2);
+//	mCc_st_insert_entry(table, entry3);
+//
+//	const char input[] = "void f() {z = 1;}";
+//	auto parse_result = mCc_parser_parse_string(input);
+//
+//	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+//
+//	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
+//				statement_list->statement->assignment;
+//
+//	// asmt->identifier;
+//	auto id = asmt->identifier->id_value;
+//	ASSERT_STREQ("z", id);
+//	bool result = mCc_st_lookup(id, 1, table);
+//
+//	ASSERT_EQ(false, result);
+//
+//	mCc_st_delete_table(table);
+//	mCc_parser_delete_result(&parse_result);
+//}
 
 // Look up in nested table
-TEST(sym_table, Table_Lookup_3)
-{
-	const char input[] = "void add(int x, float y) {x = 1;}";
-	auto parse_result = mCc_parser_parse_string(input);
-
-	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
-
-	struct mCc_st_table *table = mCc_st_new_table(parse_result);
-	int scope = 1;
-
-	// Start looking up
-	//compound_stmt->statement->assignment
-	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->statement_list->statement->assignment;
-	scope++;
-
-	// asmt->identifier;
-	auto asmt_id = asmt->identifier;
-
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, asmt_id->type);
-	ASSERT_STREQ("x", asmt_id->id_value);
-
-	// asmt->normal_asmt->rhs
-	auto asmt_expr = asmt->normal_asmt.rhs;
-	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, asmt_expr->type);
-	auto x_value = asmt_expr->literal->i_value;
-	ASSERT_EQ(1, x_value);
-
-	auto result = mCc_st_lookup(asmt_id->id_value, scope, table);
-	ASSERT_EQ(true, result);
-
-	mCc_st_delete_table(table);
-	mCc_parser_delete_result(&parse_result);
-}
+//TEST(sym_table, Table_Lookup_3)
+//{
+//	const char input[] = "void add(int x, float y) {x = 1;}";
+//	auto parse_result = mCc_parser_parse_string(input);
+//
+//	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+//
+//	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+//	int scope = 1;
+//
+//	// Start looking up
+//	//compound_stmt->statement->assignment
+//	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->statement_list->statement->assignment;
+//	scope++;
+//
+//	// asmt->identifier;
+//	auto asmt_id = asmt->identifier;
+//
+//	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, asmt_id->type);
+//	ASSERT_STREQ("x", asmt_id->id_value);
+//
+//	// asmt->normal_asmt->rhs
+//	auto asmt_expr = asmt->normal_asmt.rhs;
+//	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, asmt_expr->type);
+//	auto x_value = asmt_expr->literal->i_value;
+//	ASSERT_EQ(1, x_value);
+//
+//	auto result = mCc_st_lookup(asmt_id->id_value, scope, table);
+//	ASSERT_EQ(true, result);
+//
+//	mCc_st_delete_table(table);
+//	mCc_parser_delete_result(&parse_result);
+//}
 
 /* ---------------------------------------------------------------- Type checking */
 TEST(sym_table, Type_Checking_1)
@@ -318,7 +318,7 @@ TEST(sym_table, Type_Checking_5)
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	auto program = parse_result.program;
+	//auto program = parse_result.program;
 
 	// Insert function to table
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
@@ -329,3 +329,17 @@ TEST(sym_table, Type_Checking_5)
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
+
+TEST(sym_table, Return_Checking_1)
+{
+        const char input[] = "int test() {}";
+        auto parse_result = mCc_parser_parse_string(input);
+
+        ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+        auto program = parse_result.program;
+
+        ASSERT_EQ(false, mCc_st_check_function_def_return(program->function_def_list->function_def));
+        mCc_parser_delete_result(&parse_result);
+}
+

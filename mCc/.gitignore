@@ -1,3 +1,5 @@
 /builddir/
 /subprojects/*
 !/subprojects/*.wrap
+.idea/
+cmake-build-debug/

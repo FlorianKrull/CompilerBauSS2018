@@ -114,6 +114,12 @@ bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *lit
 enum mCc_ast_literal_type
 	mCc_st_check_type_expression(struct mCc_ast_expression *expr);
 
+/* ---------------------------------------------------------------- Return checking */
+
+bool mCc_st_check_function_def_return(struct mCc_ast_function_def *function_def);
+
+bool mCc_st_check_statement_list_return(struct mCc_ast_statement_list *statement_list);
+
 #ifdef __cplusplus
 }
 #endif
