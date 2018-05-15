@@ -314,7 +314,7 @@ TEST(sym_table, Type_Checking_4)
 
 TEST(sym_table, Type_Checking_5)
 {
-	const char input[] = "void add(int x, float y) {x = 1;}";
+	const char input[] = "int add(int x, float y) {x = 1; return x;}";
 	auto parse_result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
@@ -338,6 +338,23 @@ TEST(sym_table, Type_Checking_5)
 	mCc_st_print_table_list(table);
 
 //	mCc_st_delete_checking(check_manager);
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
+}
+
+TEST(sym_table, Type_Checking_6)
+{
+	const char input[] = "int fac(int n){  int ERROR; ERROR = -1; if(n < 0){ return ERROR; } else { if(n == 0){ return 1; } else { return n * fac(n-1);} }}";
+	auto parse_result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	auto program = parse_result.program;
+
+	// Insert function to table
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+
+	mCc_st_print_table_list(table);
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }

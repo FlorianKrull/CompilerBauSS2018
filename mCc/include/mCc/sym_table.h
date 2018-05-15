@@ -111,7 +111,7 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 
 /* ---------------------------------------------------------------- Type checking */
 
-void mCc_st_type_checking();
+void mCc_st_var_type_checking();
 
 bool mCc_st_type_rules(enum mCc_ast_type type, enum mCc_ast_literal_type lit_type);
 
