@@ -319,8 +319,9 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 		while (current != NULL) {
 			if (strcmp(current->name, var_name) == 0) {
 				check_manager->is_error = false;
-				strcpy(check_manager->msg, "");
-				check_manager->entry = current;	// For checking
+//				strcpy(check_manager->msg, "");
+				check_manager->entry = mCc_st_new_entry(current->name,
+						current->data_type, current->entry_type);	// Retrieve found entry for checking
 			}
 			current = current->next;
 		}

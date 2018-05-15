@@ -176,7 +176,7 @@ TEST(sym_table, Table_Lookup_1)
 	// Look up for variable x
 	auto id = asmt->identifier->id_value;
 	ASSERT_STREQ("x", id);
-	struct mCc_st_checking *check_manager = mCc_st_lookup(id, 1, table);
+	auto check_manager = mCc_st_lookup(id, 1, table);
 	ASSERT_EQ(false, check_manager->is_error);
 
 	mCc_st_delete_checking(check_manager);
@@ -210,7 +210,7 @@ TEST(sym_table, Table_Lookup_2)
 	ASSERT_EQ(true, check_manager->is_error);
 	ASSERT_STREQ("Undeclared variable", check_manager->msg);
 
-	mCc_st_delete_checking(check_manager);
+//	mCc_st_delete_checking(check_manager);
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
@@ -246,7 +246,7 @@ TEST(sym_table, Table_Lookup_3)
 	struct mCc_st_checking *check_manager = mCc_st_lookup(asmt_id->id_value, scope, table);
 	ASSERT_EQ(false, check_manager->is_error);
 
-	mCc_st_delete_checking(check_manager);
+//	mCc_st_delete_checking(check_manager);
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
@@ -329,14 +329,15 @@ TEST(sym_table, Type_Checking_5)
 			statement_list->statement->assignment;
 	auto id = asmt->identifier->id_value;
 	auto expr = asmt->normal_asmt.rhs;
-	struct mCc_st_checking *check_manager = mCc_st_lookup(id, 1, table);
+	auto *check_manager = mCc_st_lookup(id, 2, table);
+
 	bool tc_result = mCc_st_type_rules(check_manager->entry->data_type, mCc_st_return_type_expression(expr));
 	ASSERT_EQ(true, tc_result);
 
 	// Print
 	mCc_st_print_table_list(table);
 
-	mCc_st_delete_checking(check_manager);
+//	mCc_st_delete_checking(check_manager);
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
