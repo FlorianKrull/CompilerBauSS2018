@@ -45,7 +45,7 @@ struct mCc_st_error {
 };
 */
 // Used for Task 1 -> Task 4
-struct mCc_type_checking {
+struct mCc_st_checking {
 	bool is_error;
 	const char *msg;
 	union {
@@ -75,7 +75,7 @@ void mCc_st_delete_entry(struct mCc_st_entry* entry);
 
 void mCc_st_delete_table(struct mCc_st_table* table);
 
-void mCc_st_delete_type_checking(struct mCc_type_checking *tc);
+void mCc_st_delete_checking(struct mCc_st_checking *tc);
 
 /* ---------------------------------------------------------------- Hash function */
 int mCc_st_hash(const char* str);
@@ -105,7 +105,7 @@ void mCc_st_print_table(struct mCc_st_table *table);
 void mCc_st_print_table_list(struct mCc_st_table *tab_tail);
 
 /* ---------------------------------------------------------------- Look up */
-bool mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table);
+struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table);
 
 /* ---------------------------------------------------------------- Type checking */
 

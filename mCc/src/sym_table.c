@@ -293,11 +293,17 @@ void mCc_st_print_table_list(struct mCc_st_table *tab_tail) {
 
 /* ---------------------------------------------------------------- Look up */
 // Check for undeclared variables
-bool mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table)
+struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table)
 {
 	assert(table);
 
-	bool result = false;
+	struct mCc_st_checking *type_checking = malloc(sizeof(*type_checking));
+
+	if (!type_checking) {
+		return NULL;
+	}
+
+	type_checking->is_error = false;
 
 	while (scope > table->scope && table->next != NULL) {	// Iterate to come to table with corresponding scope
 		table = table->next;
@@ -306,22 +312,22 @@ bool mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table)
 		result = mCc_st_lookup(var_name, scope, table->next);
 	}*/
 	if (scope < table->scope && table->prev != NULL) {	// Come back to look up parent table
-		result = mCc_st_lookup(var_name, scope, table->prev);
+		type_checking->is_error = mCc_st_lookup(var_name, scope, table->prev);
 	} else if (scope == table->scope) {					// Start looking up the table, compare variable to name of the current entry
 		struct mCc_st_entry *current = table->head;
 		while (current != NULL) {
 			if (strcmp(current->name, var_name) == 0) {
-				result = true;
+				type_checking->is_error = true;
 			}
 			current = current->next;
 		}
 	}
-	return result;
+	return type_checking;
 }
 
 /* ---------------------------------------------------------------- Type checking */
 
-void mCc_st_delete_type_checking(struct mCc_type_checking *tc)
+void mCc_st_delete_checking(struct mCc_st_checking *tc)
 {
 	assert(tc);
 
