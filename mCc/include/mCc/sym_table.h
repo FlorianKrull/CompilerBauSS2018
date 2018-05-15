@@ -38,6 +38,28 @@ struct mCc_st_table {
 	struct mCc_st_table *prev;
 	struct mCc_st_table *next;
 };
+/*
+struct mCc_st_error {
+	bool is_error;
+	const char *msg;
+};
+*/
+// Used for Task 1 -> Task 4
+struct mCc_type_checking {
+	bool is_error;
+	const char *msg;
+	union {
+		// for Task 4
+		struct {
+			struct mCc_st_entry *entry;
+			enum mCc_ast_type type;
+		} type_checking;
+		// For Task 2 and 3
+		struct {
+			struct mCc_st_entry *entry;
+		} other_checking;
+	};
+};
 
 /* ---------------------------------------------------------------- Initialization */
 
@@ -52,6 +74,8 @@ void mCc_st_update_scope(struct mCc_st_table* table, int scope);
 void mCc_st_delete_entry(struct mCc_st_entry* entry);
 
 void mCc_st_delete_table(struct mCc_st_table* table);
+
+void mCc_st_delete_type_checking(struct mCc_type_checking *tc);
 
 /* ---------------------------------------------------------------- Hash function */
 int mCc_st_hash(const char* str);
@@ -69,8 +93,6 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 
 struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result);
 
-void print(const char *input);
-
 /* ---------------------------------------------------------------- Delete element */
 
 void mCc_st_remove_entry(struct mCc_st_table *table, struct mCc_st_entry *entry);
@@ -83,7 +105,7 @@ void mCc_st_print_table(struct mCc_st_table *table);
 void mCc_st_print_table_list(struct mCc_st_table *tab_tail);
 
 /* ---------------------------------------------------------------- Look up */
-bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table);
+bool mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table);
 
 /* ---------------------------------------------------------------- Type checking */
 

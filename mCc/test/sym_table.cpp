@@ -176,7 +176,10 @@ TEST(sym_table, Table_Lookup_1)
 	// asmt->identifier;
 	auto id = asmt->identifier->id_value;
 	ASSERT_STREQ("x", id);
-	bool result = mCc_st_lookup(id, table);
+
+	mCc_st_print_table_list(table);
+
+	bool result = mCc_st_lookup(id, 1, table);
 
 	ASSERT_EQ(true, result);
 
@@ -205,13 +208,14 @@ TEST(sym_table, Table_Lookup_2)
 	// asmt->identifier;
 	auto id = asmt->identifier->id_value;
 	ASSERT_STREQ("z", id);
-	bool result = mCc_st_lookup(id, table);
+	bool result = mCc_st_lookup(id, 1, table);
 
 	ASSERT_EQ(false, result);
 
 	mCc_st_delete_table(table);
 }
-/*
+
+// Look up in nested table
 TEST(sym_table, Table_Lookup_3)
 {
 	const char input[] = "void add(int x, float y) {x = 1;}";
@@ -220,11 +224,12 @@ TEST(sym_table, Table_Lookup_3)
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+	int scope = 1;
 
 	// Start looking up
 	//compound_stmt->statement->assignment
 	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->statement_list->statement->assignment;
-	ASSERT_EQ(MCC_AST_ASSIGNMENT_TYPE_NORMAL, asmt->type);
+	scope++;
 
 	// asmt->identifier;
 	auto asmt_id = asmt->identifier;
@@ -238,13 +243,13 @@ TEST(sym_table, Table_Lookup_3)
 	auto x_value = asmt_expr->literal->i_value;
 	ASSERT_EQ(1, x_value);
 
-	auto result = mCc_st_lookup(asmt_id->id_value, table);
+	auto result = mCc_st_lookup(asmt_id->id_value, scope, table);
 	ASSERT_EQ(true, result);
 
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
-*/
+
 /* ---------------------------------------------------------------- Type checking */
 TEST(sym_table, Type_Checking_1)
 {

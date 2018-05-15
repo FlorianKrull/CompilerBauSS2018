@@ -62,6 +62,7 @@ struct mCc_st_table *mCc_st_new_empty_table()
 	tab->prev = NULL;
 	tab->next = NULL;
 	tab->size = 0;
+	tab->scope = 1;
 	return tab;
 }
 
@@ -77,9 +78,9 @@ void mCc_st_delete_table(struct mCc_st_table* table)
 	if (NULL != table->head) {
 		mCc_st_delete_entry(table->head);
 	}
-	if (NULL != table->prev) {
+	/*if (NULL != table->prev) {
 		mCc_st_delete_table(table->prev);
-	}
+	}*/
 	if (NULL != table->next) {
 			mCc_st_delete_table(table->next);
 		}
@@ -94,18 +95,19 @@ void mCc_st_insert_entry(struct mCc_st_table *table, struct mCc_st_entry *entry)
 	assert(entry);
 
 	struct mCc_st_entry *last = table->head;
-	if (NULL != last) {
-		// Traverse until the end
-		while (last->next != NULL) {
-			last = last->next;
-		}
-		last->next = entry;
+		if (NULL != last) {
+			// Traverse until the end
+			while (last->next != NULL) {
+				last = last->next;
+			}
+			last->next = entry;
 
-	} else {
-		//point head to new first node
-		table->head = entry;
-	}
+		} else {
+			//point head to new first node
+			table->head = entry;
+		}
 	entry->next = NULL;
+
 	++(table->size);
 }
 
@@ -155,6 +157,7 @@ void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statemen
 	}
 }
 
+// Construct a new child table and link with parent table as doubly linked list
 struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent)
 {
 	assert(parent);
@@ -167,6 +170,7 @@ struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent)
 		scope++;
 		mCc_st_update_scope(child_table, scope);
 		parent->next = child_table;
+		child_table->prev = parent;
 	}
 	return child_table;
 }
@@ -182,7 +186,7 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 			func->type, MCC_ST_ENTRY_TYPE_FUNCTION);
 	mCc_st_insert_entry(table, entry);
 
-	// Insert variable if function has parameters; resulting new entries in child table
+	// Insert variable if function has parameters; resulting new entries in (nested) child table
 	struct mCc_ast_parameter *param = func->parameters;
 	if (NULL != param) {
 		struct mCc_st_table *child_table = mCc_st_new_child_table(table);
@@ -195,7 +199,7 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 		}
 	}
 
-	// Retrieve entries inside compound_stmt
+	// Retrieve entries inside compound_stmt and insert into nested table
 	if (NULL != func->compound_stmt && func->compound_stmt->type == MCC_AST_STATEMENT_TYPE_COMPOUND) {
 		struct mCc_ast_statement_list *stmt_list = func->compound_stmt->statement_list;
 		struct mCc_ast_statement *stmt = stmt_list->statement;
@@ -215,8 +219,6 @@ struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result)
 	if (!table) {
 		return NULL;
 	}
-	int scope = 1;
-	mCc_st_update_scope(table, scope);
 
 	struct mCc_ast_function_def_list *list = result.program->function_def_list;
 	struct mCc_ast_function_def *func = list->function_def;
@@ -291,27 +293,37 @@ void mCc_st_print_table_list(struct mCc_st_table *tab_tail) {
 
 /* ---------------------------------------------------------------- Look up */
 // Check for undeclared variables
-// TODO: Look up in nested table
-bool mCc_st_lookup(const char *var_name, struct mCc_st_table *table)
+bool mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table)
 {
 	assert(table);
 
 	bool result = false;
 
-	struct mCc_st_entry *current = table->head;
+	if (scope > table->scope && table->next != NULL) {
+		result = mCc_st_lookup(var_name, scope, table->next);
+	} else if (scope < table->scope && table->prev != NULL) {
+		result = mCc_st_lookup(var_name, scope, table->prev);
+	} else if (scope == table->scope) {
+		struct mCc_st_entry *current = table->head;
 
-	// Start looking up the table, compare variable to name of the current entry
-	while (current != NULL) {
-		if (strcmp(current->name, var_name) == 0) {
-			result = true;
+		// Start looking up the table, compare variable to name of the current entry
+		while (current != NULL) {
+			if (strcmp(current->name, var_name) == 0) {
+				result = true;
+			}
+			current = current->next;
 		}
-		current = current->next;
 	}
-
 	return result;
 }
 
 /* ---------------------------------------------------------------- Type checking */
+
+void mCc_st_delete_type_checking(struct mCc_type_checking *tc)
+{
+	assert(tc);
+
+}
 
 // Check if literal value and type are compatible, i.e: int x = 1; float y = 3.5;
 bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *literal)
