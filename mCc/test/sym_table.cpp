@@ -66,17 +66,19 @@ TEST(sym_table, Insert_1)
 
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
 
-	// Print
-	mCc_st_print_table_list(table);
+        //ASSERT_EQ(NULL, table->next);
 
-	mCc_st_delete_table(table);
-	mCc_parser_delete_result(&parse_result);
+	// Print
+	mCc_st_print_table(table);
+
+//	mCc_st_delete_table(table);
+	//mCc_parser_delete_result(&parse_result);
 }
 
 // input is part of the example leap_year.mC
 TEST(sym_table, Insert_2)
 {
-	const char input[] = "bool isLeapYear(int n) {  if ((modulo(n,4) == 0 && modulo(n,100) != 0) || (modulo(n,400) == 0)){ return true;  } return false; } int modulo(int k, int i) { while (k > 0){ k = k - i;  } return k;}";
+	const char input[] = "void isLeapYear(int n) {  if ((modulo(n,4) == 0 && modulo(n,100) != 0) || (modulo(n,400) == 0)){ return true;  } return false; } int modulo(int k, int i) { while (k > 0){ k = k - i;  } return k;}";
 
 	auto parse_result = mCc_parser_parse_string(input);
 
@@ -87,8 +89,8 @@ TEST(sym_table, Insert_2)
 	// Print
 	mCc_st_print_table_list(table);
 
-	mCc_st_delete_table(table);
-	mCc_parser_delete_result(&parse_result);
+//	mCc_st_delete_table(table);
+	//mCc_parser_delete_result(&parse_result);
 }
 
 /* ---------------------------------------------------------------- Delete */
