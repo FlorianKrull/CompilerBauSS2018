@@ -157,6 +157,29 @@ void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statemen
 	}
 }
 
+void mCc_st_insert_parameter(struct mCc_st_table *table, const char *func_name, struct mCc_ast_parameter *param)
+{
+	assert(table);
+	assert(param);
+
+	struct mCc_ast_declaration *decl = param->declaration;
+	struct mCc_st_entry *entry;
+	switch(decl->type) {
+	case MCC_AST_DECLARATION_TYPE_NORMAL:
+		entry = mCc_st_new_entry(decl->normal_decl.identifier->id_value,
+				decl->var_type, MCC_ST_ENTRY_TYPE_ARGUMENT);
+		break;
+	case MCC_AST_DECLARATION_TYPE_ARRAY:
+		entry = mCc_st_new_entry(decl->array_decl.identifier->id_value,
+				decl->var_type, MCC_ST_ENTRY_TYPE_ARGUMENT);
+
+		break;
+	}
+	entry->function_name = func_name;
+
+	mCc_st_insert_entry(table, entry);
+}
+
 // Construct a new child table and link with parent table as doubly linked list
 struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent)
 {
@@ -175,7 +198,6 @@ struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent)
 	return child_table;
 }
 
-//TODO: fix bug when iterate to next declaration
 void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_def *func)
 {
 	assert(table);
@@ -190,11 +212,11 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 	struct mCc_ast_parameter *param = func->parameters;
 	if (NULL != param) {
 		struct mCc_st_table *child_table = mCc_st_new_child_table(table);
-		mCc_st_insert_variable(child_table, param->declaration);
+		mCc_st_insert_parameter(child_table, func->identifier->id_value, param);
 
 		struct mCc_ast_parameter *next_param = param->next;
 		while(next_param != NULL) {
-			mCc_st_insert_variable(child_table, next_param->declaration);
+			mCc_st_insert_parameter(child_table, func->identifier->id_value, next_param);
 			next_param = next_param->next;
 		}
 	}
@@ -388,9 +410,12 @@ mCc_st_return_type_expression(struct mCc_ast_expression *expr)
 
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		// -(4 + 6); !(a == 1); -> return type of expression inside
-		//		return mCc_st_return_type_expression(expr->u_rhs);
-		return MCC_AST_LITERAL_TYPE_BOOL;
-		break;
+		switch(expr->unary_op) {
+		case MCC_AST_UNARY_OP_MINUS:
+			return MCC_AST_LITERAL_TYPE_INT;
+		case MCC_AST_UNARY_OP_EXCLAM:
+			return MCC_AST_LITERAL_TYPE_BOOL;
+		}
 
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 		switch(expr->binary_op_type) {
@@ -460,4 +485,45 @@ mCc_st_return_type_expression(struct mCc_ast_expression *expr)
 		default:
 			break;
 	}
+}
+
+struct mCc_st_checking *mCc_st_var_type_checking(struct mCc_st_table *table, int scope, struct mCc_ast_assignment *assignment)
+{
+	assert(table);
+	assert(assignment);
+
+	char *id = assignment->identifier->id_value;
+	struct mCc_ast_expression *expr = assignment->normal_asmt.rhs;
+	struct mCc_st_checking *check_manager = mCc_st_lookup(id, scope, table);
+	check_manager->is_error = !(mCc_st_type_rules(check_manager->entry->data_type, mCc_st_return_type_expression(expr)));
+	if (check_manager->is_error) {
+		check_manager->msg = "Incompatible type of variable ";
+//		check_manager->msg = strcat(check_manager->msg, check_manager->entry->name);
+	}
+	return check_manager;
+}
+
+struct mCc_st_checking *mCc_st_argument_type_checking(struct mCc_st_table *table, int scope, struct mCc_ast_expression *expression)
+{
+	assert(table);
+	assert(expression);
+
+	char *func_id = expression->call_expr.identifier->id_value;
+	struct mCc_st_checking *check_manager = mCc_st_lookup(func_id, scope, table);
+	struct mCc_ast_argument_list *args = expression->call_expr.arguments;
+
+	check_manager->is_error = !(mCc_st_type_rules(check_manager->entry->data_type,
+			mCc_st_return_type_expression(args->expression)));
+	struct mCc_ast_argument_list *next_list = args->next;
+	while (next_list != NULL) {
+		check_manager->is_error = !(mCc_st_type_rules(check_manager->entry->data_type,
+				mCc_st_return_type_expression(next_list->expression)));
+		next_list = next_list->next;
+	}
+	if (check_manager->is_error) {
+		check_manager->msg = "Incompatible type of argument ";
+		//		check_manager->msg = strcat(check_manager->msg, check_manager->entry->name);
+	}
+
+	return check_manager;
 }

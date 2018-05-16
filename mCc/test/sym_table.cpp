@@ -284,14 +284,14 @@ TEST(sym_table, Type_Checking_2)
 */
 TEST(sym_table, Type_Checking_3)
 {
-	const char input[] = "-(4 + 6)";
+	const char input[] = "-4";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
 	auto expr = result.expression;
 
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, mCc_st_return_type_expression(expr));
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, mCc_st_return_type_expression(expr));
 
 	mCc_parser_delete_result(&result);
 
@@ -314,12 +314,11 @@ TEST(sym_table, Type_Checking_4)
 
 TEST(sym_table, Type_Checking_5)
 {
-	const char input[] = "int add(int x, float y) {x = 1; return x;}";
+	const char input[] = "int add(int x, float y) {x = 1.5 + 2; return x;}";
 	auto parse_result = mCc_parser_parse_string(input);
+	int scope = 1;
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
-
-	auto program = parse_result.program;
 
 	// Insert function to table
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
@@ -327,12 +326,9 @@ TEST(sym_table, Type_Checking_5)
 	// Check if "x = 1" is compatible with "int x"
 	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
 			statement_list->statement->assignment;
-	auto id = asmt->identifier->id_value;
-	auto expr = asmt->normal_asmt.rhs;
-	auto *check_manager = mCc_st_lookup(id, 2, table);
-
-	bool tc_result = mCc_st_type_rules(check_manager->entry->data_type, mCc_st_return_type_expression(expr));
-	ASSERT_EQ(true, tc_result);
+	scope++;
+	auto check_manager = mCc_st_var_type_checking(table, scope, asmt);
+	ASSERT_EQ(true, check_manager->is_error);
 
 	// Print
 	mCc_st_print_table_list(table);
@@ -346,15 +342,41 @@ TEST(sym_table, Type_Checking_6)
 {
 	const char input[] = "int fac(int n){  int ERROR; ERROR = -1; if(n < 0){ return ERROR; } else { if(n == 0){ return 1; } else { return n * fac(n-1);} }}";
 	auto parse_result = mCc_parser_parse_string(input);
-
+	int scope = 1;
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
-	auto program = parse_result.program;
+	// Insert function to table
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+	mCc_st_print_table_list(table);
+
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
+				statement_list->next->statement->assignment;
+	scope++;
+	auto check_manager = mCc_st_var_type_checking(table, scope, asmt);
+	ASSERT_EQ(false, check_manager->is_error);
+
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
+}
+/*
+TEST(sym_table, Type_Checking_7)
+{
+	const char input[] = "bool isLeapYear(int n) {  if ((modulo(n,4) == 0 && modulo(n,100) != 0) || (modulo(n,400) == 0)){ return true;  } return false; } int modulo(int k, int i) { while (k > 0){ k = k - i;  } return k;}";
+	auto parse_result = mCc_parser_parse_string(input);
+	int scope = 1;
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
 
 	// Insert function to table
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
 
-	mCc_st_print_table_list(table);
+	// Goto call expression "modulo(n, 4)"
+	auto expr = parse_result.program->function_def_list->function_def->compound_stmt->
+				statement_list->statement->expr;
+	scope++;
+	auto check_manager = mCc_st_argument_type_checking(table, scope, expr);
+	ASSERT_EQ(false, check_manager->is_error);
+
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
+*/
