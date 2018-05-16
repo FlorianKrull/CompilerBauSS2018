@@ -58,7 +58,7 @@ TEST(sym_table, InsertEntry_1)
 
 TEST(sym_table, Insert_1)
 {
-	const char input[] = "void main(bool id){} float sub(){string s;} float add(int x, float y) {float z; z = x + y; return z;}";
+	const char input[] = "void main(bool id){return; } float sub(){string s;} float add(int x, float y) {float z; z = x + y; return z;}";
 
 	auto parse_result = mCc_parser_parse_string(input);
 
@@ -66,13 +66,13 @@ TEST(sym_table, Insert_1)
 
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
 
-        //ASSERT_EQ(NULL, table->next);
+//	ASSERT_EQ(NULL, table->next);
 
 	// Print
-	mCc_st_print_table(table);
+	mCc_st_print_table_list(table);
 
-//	mCc_st_delete_table(table);
-	//mCc_parser_delete_result(&parse_result);
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
 }
 
 // input is part of the example leap_year.mC

@@ -77,7 +77,13 @@ void mCc_st_delete_table(struct mCc_st_table* table)
 	assert(table);
 	if (NULL != table->head) {
 		mCc_st_delete_entry(table->head);
+		struct mCc_st_entry *next_entry = table->head->next;
+		while (NULL != next_entry) {
+			mCc_st_delete_entry(next_entry);
+			next_entry = next_entry->next;
+		}
 	}
+
 	/*if (NULL != table->prev) {
 		mCc_st_delete_table(table->prev);
 	}*/
@@ -155,6 +161,7 @@ void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statemen
 			mCc_st_insert_statement(child_table, next_list->statement);
 			next_list = next_list->next;
 		}
+
 		break;
 	}
 	case MCC_AST_STATEMENT_TYPE_IF:
