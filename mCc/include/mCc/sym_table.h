@@ -15,7 +15,8 @@ extern "C" {
 
 enum mCc_st_entry_type {
 	MCC_ST_ENTRY_TYPE_VARIABLE,
-	MCC_ST_ENTRY_TYPE_FUNCTION
+	MCC_ST_ENTRY_TYPE_FUNCTION,
+	MCC_ST_ENTRY_TYPE_ARGUMENT
 };
 /* The basic element; storing declaration of a variables
  * It's organized as linked list; in which next pointer hold the address of the
@@ -24,7 +25,8 @@ struct mCc_st_entry {
 	enum mCc_ast_type data_type;
 	enum mCc_st_entry_type entry_type;
 	char *name;
-	int array_size; // in case entry is variable and an array, i.e: int[10] x -> array_size = 10
+	int array_size; 		// in case entry is variable and an array, i.e: int[10] x -> array_size = 10
+	char *function_name;	// In case entry is parameter of a function
 	struct mCc_st_entry *next;
 };
 
@@ -47,17 +49,12 @@ struct mCc_st_error {
 // Used for Task 1 -> Task 4
 struct mCc_st_checking {
 	bool is_error;
-	const char *msg;
+	char *msg;		// Error message
+	struct mCc_st_entry *entry;
 	union {
 		// for Task 4
-		struct {
-			struct mCc_st_entry *entry;
-			enum mCc_ast_type type;
-		} type_checking;
-		// For Task 2 and 3
-		struct {
-			struct mCc_st_entry *entry;
-		} other_checking;
+		struct mCc_ast_assignment *assignment;
+		struct mCc_ast_expression *call_expr;
 	};
 };
 
@@ -89,6 +86,11 @@ void mCc_st_insert_variable(struct mCc_st_table *table, struct mCc_ast_declarati
 
 struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent);
 
+void mCc_st_insert_parameter(struct mCc_st_table *table,
+		const char *func_name, struct mCc_ast_parameter *param);
+
+void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statement *stmt);
+
 void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_def *func);
 
 struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result);
@@ -109,10 +111,14 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 
 /* ---------------------------------------------------------------- Type checking */
 
-bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *literal);
+bool mCc_st_type_rules(enum mCc_ast_type type, enum mCc_ast_literal_type lit_type);
 
 enum mCc_ast_literal_type
-	mCc_st_check_type_expression(struct mCc_ast_expression *expr);
+mCc_st_return_type_expression(struct mCc_ast_expression *expr);
+
+struct mCc_st_checking *mCc_st_var_type_checking(struct mCc_st_table *table, int scope, struct mCc_ast_assignment *assignment);
+
+struct mCc_st_checking *mCc_st_argument_type_checking(struct mCc_st_table *table, int scope, struct mCc_ast_expression *expression);
 
 /* ---------------------------------------------------------------- Return checking */
 

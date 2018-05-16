@@ -173,18 +173,18 @@ TEST(sym_table, Table_Lookup_1)
 	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
 			statement_list->statement->assignment;
 
-	// asmt->identifier;
+	// Look up for variable x
 	auto id = asmt->identifier->id_value;
 	ASSERT_STREQ("x", id);
+	auto check_manager = mCc_st_lookup(id, 1, table);
+	ASSERT_EQ(false, check_manager->is_error);
 
-	bool result = mCc_st_lookup(id, 1, table);
-
-	ASSERT_EQ(true, result);
-
+	mCc_st_delete_checking(check_manager);
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
 
+<<<<<<< HEAD
 //TEST(sym_table, Table_Lookup_2)
 //{
 //	struct mCc_st_table *table = mCc_st_new_empty_table();
@@ -249,6 +249,74 @@ TEST(sym_table, Table_Lookup_1)
 //	mCc_st_delete_table(table);
 //	mCc_parser_delete_result(&parse_result);
 //}
+=======
+TEST(sym_table, Table_Lookup_2)
+{
+	struct mCc_st_table *table = mCc_st_new_empty_table();
+	struct mCc_st_entry *entry1 = mCc_st_new_entry("y", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_VARIABLE);
+	struct mCc_st_entry *entry2 = mCc_st_new_entry("x", MCC_AST_TYPE_INT, MCC_ST_ENTRY_TYPE_VARIABLE);
+	struct mCc_st_entry *entry3 = mCc_st_new_entry("main", MCC_AST_TYPE_FLOAT, MCC_ST_ENTRY_TYPE_FUNCTION);
+
+	mCc_st_insert_entry(table, entry1);
+	mCc_st_insert_entry(table, entry2);
+	mCc_st_insert_entry(table, entry3);
+
+	const char input[] = "void f() {z = 1;}";
+	auto parse_result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
+				statement_list->statement->assignment;
+
+	// Look up for variable z
+	auto id = asmt->identifier->id_value;
+	ASSERT_STREQ("z", id);
+	struct mCc_st_checking *check_manager = mCc_st_lookup(id, 1, table);
+	ASSERT_EQ(true, check_manager->is_error);
+	ASSERT_STREQ("Undeclared variable", check_manager->msg);
+
+//	mCc_st_delete_checking(check_manager);
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
+}
+
+// Look up in nested table
+TEST(sym_table, Table_Lookup_3)
+{
+	const char input[] = "void add(int x, float y) {x = 1;}";
+	auto parse_result = mCc_parser_parse_string(input);
+
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+	int scope = 1;
+
+	// Start looking up
+	//compound_stmt->statement->assignment
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->statement_list->statement->assignment;
+	scope++;
+
+	// asmt->identifier;
+	auto asmt_id = asmt->identifier;
+
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_IDENTIFIER, asmt_id->type);
+	ASSERT_STREQ("x", asmt_id->id_value);
+
+	// asmt->normal_asmt->rhs
+	auto asmt_expr = asmt->normal_asmt.rhs;
+	ASSERT_EQ(MCC_AST_EXPRESSION_TYPE_LITERAL, asmt_expr->type);
+	auto x_value = asmt_expr->literal->i_value;
+	ASSERT_EQ(1, x_value);
+
+	struct mCc_st_checking *check_manager = mCc_st_lookup(asmt_id->id_value, scope, table);
+	ASSERT_EQ(false, check_manager->is_error);
+
+//	mCc_st_delete_checking(check_manager);
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
+}
+>>>>>>> 37601b83569e6601ce227fcacf7d54e99d0b393e
 
 /* ---------------------------------------------------------------- Type checking */
 TEST(sym_table, Type_Checking_1)
@@ -260,7 +328,7 @@ TEST(sym_table, Type_Checking_1)
 
 	auto expr = result.program->function_def_list->function_def->compound_stmt->statement_list->statement->assignment->normal_asmt.rhs;
 
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_FLOAT, mCc_st_check_type_expression(expr));
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_FLOAT, mCc_st_return_type_expression(expr));
 
 	mCc_parser_delete_result(&result);
 
@@ -275,7 +343,7 @@ TEST(sym_table, Type_Checking_2)
 
 	auto expr = result.expression;
 
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, mCc_st_check_type_expression(expr));
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, mCc_st_return_type_expression(expr));
 
 	mCc_parser_delete_result(&result);
 
@@ -283,14 +351,14 @@ TEST(sym_table, Type_Checking_2)
 */
 TEST(sym_table, Type_Checking_3)
 {
-	const char input[] = "-(4 + 6)";
+	const char input[] = "-4";
 	auto result = mCc_parser_parse_string(input);
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, result.status);
 
 	auto expr = result.expression;
 
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, mCc_st_check_type_expression(expr));
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_INT, mCc_st_return_type_expression(expr));
 
 	mCc_parser_delete_result(&result);
 
@@ -305,7 +373,7 @@ TEST(sym_table, Type_Checking_4)
 
 	auto expr = result.expression;
 
-	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, mCc_st_check_type_expression(expr));
+	ASSERT_EQ(MCC_AST_LITERAL_TYPE_BOOL, mCc_st_return_type_expression(expr));
 
 	mCc_parser_delete_result(&result);
 
@@ -313,22 +381,73 @@ TEST(sym_table, Type_Checking_4)
 
 TEST(sym_table, Type_Checking_5)
 {
-	const char input[] = "void add(int x, float y) {x = 1;}";
+	const char input[] = "int add(int x, float y) {x = 1.5 + 2; return x;}";
 	auto parse_result = mCc_parser_parse_string(input);
+	int scope = 1;
 
 	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
-
-	//auto program = parse_result.program;
 
 	// Insert function to table
 	struct mCc_st_table *table = mCc_st_new_table(parse_result);
 
+	// Check if "x = 1" is compatible with "int x"
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
+			statement_list->statement->assignment;
+	scope++;
+	auto check_manager = mCc_st_var_type_checking(table, scope, asmt);
+	ASSERT_EQ(true, check_manager->is_error);
+
 	// Print
 	mCc_st_print_table_list(table);
+
+//	mCc_st_delete_checking(check_manager);
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
+}
+
+TEST(sym_table, Type_Checking_6)
+{
+	const char input[] = "int fac(int n){  int ERROR; ERROR = -1; if(n < 0){ return ERROR; } else { if(n == 0){ return 1; } else { return n * fac(n-1);} }}";
+	auto parse_result = mCc_parser_parse_string(input);
+	int scope = 1;
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	// Insert function to table
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+	mCc_st_print_table_list(table);
+
+	auto asmt = parse_result.program->function_def_list->function_def->compound_stmt->
+				statement_list->next->statement->assignment;
+	scope++;
+	auto check_manager = mCc_st_var_type_checking(table, scope, asmt);
+	ASSERT_EQ(false, check_manager->is_error);
 
 	mCc_st_delete_table(table);
 	mCc_parser_delete_result(&parse_result);
 }
+/*
+TEST(sym_table, Type_Checking_7)
+{
+	const char input[] = "bool isLeapYear(int n) {  if ((modulo(n,4) == 0 && modulo(n,100) != 0) || (modulo(n,400) == 0)){ return true;  } return false; } int modulo(int k, int i) { while (k > 0){ k = k - i;  } return k;}";
+	auto parse_result = mCc_parser_parse_string(input);
+	int scope = 1;
+	ASSERT_EQ(MCC_PARSER_STATUS_OK, parse_result.status);
+
+	// Insert function to table
+	struct mCc_st_table *table = mCc_st_new_table(parse_result);
+
+	// Goto call expression "modulo(n, 4)"
+	auto expr = parse_result.program->function_def_list->function_def->compound_stmt->
+				statement_list->statement->expr;
+	scope++;
+	auto check_manager = mCc_st_argument_type_checking(table, scope, expr);
+	ASSERT_EQ(false, check_manager->is_error);
+
+	mCc_st_delete_table(table);
+	mCc_parser_delete_result(&parse_result);
+}
+
+*/
 
 TEST(sym_table, Return_Checking_1)
 {

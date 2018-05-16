@@ -146,6 +146,17 @@ void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statemen
 	case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
 	case MCC_AST_STATEMENT_TYPE_RETURN:
 		break;
+	case MCC_AST_STATEMENT_TYPE_COMPOUND:
+	{
+		struct mCc_st_table *child_table = mCc_st_new_child_table(table);
+		mCc_st_insert_statement(child_table, stmt->statement_list->statement);
+		struct mCc_ast_statement_list *next_list = stmt->statement_list->next;
+		while (next_list != NULL) {
+			mCc_st_insert_statement(child_table, next_list->statement);
+			next_list = next_list->next;
+		}
+		break;
+	}
 	case MCC_AST_STATEMENT_TYPE_IF:
 	case MCC_AST_STATEMENT_TYPE_WHILE:
 		mCc_st_insert_statement(table, stmt->stmt);
@@ -155,6 +166,29 @@ void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statemen
 		mCc_st_insert_statement(table, stmt->if_else_stmt.stmt_2);
 		break;
 	}
+}
+
+void mCc_st_insert_parameter(struct mCc_st_table *table, const char *func_name, struct mCc_ast_parameter *param)
+{
+	assert(table);
+	assert(param);
+
+	struct mCc_ast_declaration *decl = param->declaration;
+	struct mCc_st_entry *entry;
+	switch(decl->type) {
+	case MCC_AST_DECLARATION_TYPE_NORMAL:
+		entry = mCc_st_new_entry(decl->normal_decl.identifier->id_value,
+				decl->var_type, MCC_ST_ENTRY_TYPE_ARGUMENT);
+		break;
+	case MCC_AST_DECLARATION_TYPE_ARRAY:
+		entry = mCc_st_new_entry(decl->array_decl.identifier->id_value,
+				decl->var_type, MCC_ST_ENTRY_TYPE_ARGUMENT);
+
+		break;
+	}
+	entry->function_name = func_name;
+
+	mCc_st_insert_entry(table, entry);
 }
 
 // Construct a new child table and link with parent table as doubly linked list
@@ -175,7 +209,6 @@ struct mCc_st_table *mCc_st_new_child_table(struct mCc_st_table *parent)
 	return child_table;
 }
 
-//TODO: fix bug when iterate to next declaration
 void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_def *func)
 {
 	assert(table);
@@ -190,11 +223,11 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 	struct mCc_ast_parameter *param = func->parameters;
 	if (NULL != param) {
 		struct mCc_st_table *child_table = mCc_st_new_child_table(table);
-		mCc_st_insert_variable(child_table, param->declaration);
+		mCc_st_insert_parameter(child_table, func->identifier->id_value, param);
 
 		struct mCc_ast_parameter *next_param = param->next;
 		while(next_param != NULL) {
-			mCc_st_insert_variable(child_table, next_param->declaration);
+			mCc_st_insert_parameter(child_table, func->identifier->id_value, next_param);
 			next_param = next_param->next;
 		}
 	}
@@ -297,13 +330,14 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 {
 	assert(table);
 
-	struct mCc_st_checking *type_checking = malloc(sizeof(*type_checking));
+	struct mCc_st_checking *check_manager = malloc(sizeof(*check_manager));
 
-	if (!type_checking) {
+	if (!check_manager) {
 		return NULL;
 	}
 
-	type_checking->is_error = false;
+	check_manager->is_error = true;
+	check_manager->msg = "Undeclared variable";
 
 	while (scope > table->scope && table->next != NULL) {	// Iterate to come to table with corresponding scope
 		table = table->next;
@@ -312,17 +346,20 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 		result = mCc_st_lookup(var_name, scope, table->next);
 	}*/
 	if (scope < table->scope && table->prev != NULL) {	// Come back to look up parent table
-		type_checking->is_error = mCc_st_lookup(var_name, scope, table->prev);
+		check_manager = mCc_st_lookup(var_name, scope, table->prev);
 	} else if (scope == table->scope) {					// Start looking up the table, compare variable to name of the current entry
 		struct mCc_st_entry *current = table->head;
 		while (current != NULL) {
 			if (strcmp(current->name, var_name) == 0) {
-				type_checking->is_error = true;
+				check_manager->is_error = false;
+//				strcpy(check_manager->msg, "");
+				check_manager->entry = mCc_st_new_entry(current->name,
+						current->data_type, current->entry_type);	// Retrieve found entry for checking
 			}
 			current = current->next;
 		}
 	}
-	return type_checking;
+	return check_manager;
 }
 
 /* ---------------------------------------------------------------- Type checking */
@@ -330,43 +367,51 @@ struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mC
 void mCc_st_delete_checking(struct mCc_st_checking *tc)
 {
 	assert(tc);
-
+	if (NULL != tc->entry) {
+		mCc_st_delete_entry(tc->entry);
+	}
+	free(tc);
 }
 
 // Check if literal value and type are compatible, i.e: int x = 1; float y = 3.5;
-bool mCc_st_check_type_value(enum mCc_ast_type type, struct mCc_ast_literal *literal)
+bool mCc_st_type_rules(enum mCc_ast_type type, enum mCc_ast_literal_type lit_type)
 {
-	assert(literal);
 	bool result = false;
 
-	enum mCc_ast_literal_type lit_type = literal->type;
 	switch(type) {
 	case MCC_AST_TYPE_INT:	// int x = 1 -> valid
 		if (lit_type == MCC_AST_LITERAL_TYPE_INT) {
 			result = true;
 		}
+		break;
 
 	case MCC_AST_TYPE_FLOAT: // float x = 1.5 or float x = 1
 		if ((lit_type == MCC_AST_LITERAL_TYPE_FLOAT) || (lit_type == MCC_AST_LITERAL_TYPE_INT)) {
 			result = true;
 		}
+		break;
 
 	case MCC_AST_TYPE_STRING: // string x = "abc";
 		if (lit_type != MCC_AST_LITERAL_TYPE_STRING) {
 			result = true;
 		}
+		break;
+
 	case MCC_AST_TYPE_BOOL:
 		if (lit_type != MCC_AST_LITERAL_TYPE_BOOL) {
 			result = true;
 		}
+		break;
+	default:
+		break;
 	}
 	return result;
 }
 
-// Check literal type of expression (int, float, bool) using bottom-up parsing
+// Return literal type of expression (int, float, bool) using expression rules, i.e: int + float = float
 // Not check invalid type, i.e: "a" + "b"
 enum mCc_ast_literal_type
-mCc_st_check_type_expression(struct mCc_ast_expression *expr)
+mCc_st_return_type_expression(struct mCc_ast_expression *expr)
 {
 	assert(expr);
 
@@ -376,24 +421,26 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		// -(4 + 6); !(a == 1); -> return type of expression inside
-		//		return mCc_st_check_type_expression(expr->u_rhs);
-		return MCC_AST_LITERAL_TYPE_BOOL;
-		break;
+		switch(expr->unary_op) {
+		case MCC_AST_UNARY_OP_MINUS:
+			return MCC_AST_LITERAL_TYPE_INT;
+		case MCC_AST_UNARY_OP_EXCLAM:
+			return MCC_AST_LITERAL_TYPE_BOOL;
+		}
 
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 		switch(expr->binary_op_type) {
 		case MCC_AST_BINARY_OP_TYPE_BINARY:
 			// a && b; a || b -> return bool;
 			return MCC_AST_LITERAL_TYPE_BOOL;
-			//			break;
 
 		case MCC_AST_BINARY_OP_TYPE_ADD:
 		{
 			// 6 - 1; 7 + 2.5;
 			enum mCc_ast_literal_type lhs_type =
-					mCc_st_check_type_expression(expr->lhs);
+					mCc_st_return_type_expression(expr->lhs);
 			enum mCc_ast_literal_type rhs_type =
-					mCc_st_check_type_expression(expr->rhs);
+					mCc_st_return_type_expression(expr->rhs);
 
 			if ((lhs_type == MCC_AST_LITERAL_TYPE_INT) && (rhs_type == MCC_AST_LITERAL_TYPE_INT)) {
 				return MCC_AST_LITERAL_TYPE_INT;
@@ -411,9 +458,9 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 		case MCC_AST_BINARY_OP_TYPE_MUL:
 		{
 			enum mCc_ast_literal_type lhs_type =
-					mCc_st_check_type_expression(expr->lhs);
+					mCc_st_return_type_expression(expr->lhs);
 			enum mCc_ast_literal_type rhs_type =
-					mCc_st_check_type_expression(expr->rhs);
+					mCc_st_return_type_expression(expr->rhs);
 
 			switch(expr->mul_op) {
 			case MCC_AST_BINARY_OP_MUL:	// same with ADD operator
@@ -445,18 +492,59 @@ mCc_st_check_type_expression(struct mCc_ast_expression *expr)
 		break;
 
 		case MCC_AST_EXPRESSION_TYPE_PARENTH:
-			return mCc_st_check_type_expression(expr->expression);
+			return mCc_st_return_type_expression(expr->expression);
 		default:
 			break;
 	}
 }
 
+struct mCc_st_checking *mCc_st_var_type_checking(struct mCc_st_table *table, int scope, struct mCc_ast_assignment *assignment)
+{
+	assert(table);
+	assert(assignment);
+
+	char *id = assignment->identifier->id_value;
+	struct mCc_ast_expression *expr = assignment->normal_asmt.rhs;
+	struct mCc_st_checking *check_manager = mCc_st_lookup(id, scope, table);
+	check_manager->is_error = !(mCc_st_type_rules(check_manager->entry->data_type, mCc_st_return_type_expression(expr)));
+	if (check_manager->is_error) {
+		check_manager->msg = "Incompatible type of variable ";
+//		check_manager->msg = strcat(check_manager->msg, check_manager->entry->name);
+	}
+	return check_manager;
+}
+
+struct mCc_st_checking *mCc_st_argument_type_checking(struct mCc_st_table *table, int scope, struct mCc_ast_expression *expression)
+{
+	assert(table);
+	assert(expression);
+
+	char *func_id = expression->call_expr.identifier->id_value;
+	struct mCc_st_checking *check_manager = mCc_st_lookup(func_id, scope, table);
+	struct mCc_ast_argument_list *args = expression->call_expr.arguments;
+
+	check_manager->is_error = !(mCc_st_type_rules(check_manager->entry->data_type,
+			mCc_st_return_type_expression(args->expression)));
+	struct mCc_ast_argument_list *next_list = args->next;
+	while (next_list != NULL) {
+		check_manager->is_error = !(mCc_st_type_rules(check_manager->entry->data_type,
+				mCc_st_return_type_expression(next_list->expression)));
+		next_list = next_list->next;
+	}
+	if (check_manager->is_error) {
+		check_manager->msg = "Incompatible type of argument ";
+		//		check_manager->msg = strcat(check_manager->msg, check_manager->entry->name);
+	}
+
+	return check_manager;
+}
+
 /* ---------------------------------------------------------------- Return checking */
 
 bool mCc_st_check_function_def_return(struct mCc_ast_function_def *function_def){
-	if(function_def->type == MCC_AST_TYPE_VOID){
-		return true;
-	} else if(function_def->compound_stmt->type == MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY){
+        if(function_def->type == MCC_AST_TYPE_VOID){
+                return true;
+        } else if(function_def->compound_stmt->type == MCC_AST_STATEMENT_TYPE_COMPOUND_EMPTY){
                 return false;
         }
         return mCc_st_check_statement_list_return(function_def->compound_stmt->statement_list);
@@ -471,4 +559,3 @@ bool mCc_st_check_statement_list_return(struct mCc_ast_statement_list *statement
         }
         return false;
 }
-
