@@ -93,6 +93,9 @@ void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statemen
 
 void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_def *func);
 
+void mCc_st_insert_builtin_function(struct mCc_st_table *table,
+		const char *func_name, const char *type_name);
+
 struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result);
 
 /* ---------------------------------------------------------------- Delete element */
@@ -108,6 +111,8 @@ void mCc_st_print_table_list(struct mCc_st_table *tab_tail);
 
 /* ---------------------------------------------------------------- Look up */
 struct mCc_st_checking *mCc_st_lookup(const char *var_name, int scope, struct mCc_st_table *table);
+
+
 
 /* ---------------------------------------------------------------- Type checking */
 

@@ -123,9 +123,12 @@ void mCc_st_insert_variable(struct mCc_st_table *table, struct mCc_ast_declarati
 				decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
 		break;
 	case MCC_AST_DECLARATION_TYPE_ARRAY:
+	{
 		entry = mCc_st_new_entry(decl->array_decl.identifier->id_value,
 				decl->var_type, MCC_ST_ENTRY_TYPE_VARIABLE);
+		entry->array_size = decl->array_decl.size->i_value;
 		break;
+	}
 	}
 
 	mCc_st_insert_entry(table, entry);
@@ -181,10 +184,12 @@ void mCc_st_insert_parameter(struct mCc_st_table *table, const char *func_name, 
 				decl->var_type, MCC_ST_ENTRY_TYPE_ARGUMENT);
 		break;
 	case MCC_AST_DECLARATION_TYPE_ARRAY:
+	{
 		entry = mCc_st_new_entry(decl->array_decl.identifier->id_value,
 				decl->var_type, MCC_ST_ENTRY_TYPE_ARGUMENT);
-
+		entry->array_size = decl->array_decl.size->i_value;
 		break;
+	}
 	}
 	entry->function_name = func_name;
 
@@ -240,7 +245,28 @@ void mCc_st_insert_function(struct mCc_st_table *table, struct mCc_ast_function_
 		mCc_st_insert_statement(table, stmt);
 		//		mCc_ast_delete_statement_list(stmt_list);
 	}
+}
 
+// For task 2
+void mCc_st_insert_builtin_function(struct mCc_st_table *table,
+		const char *func_name, const char *type_name)
+{
+	assert(table);
+	enum mCc_ast_type type;
+	if (strcmp(type_name, "void") == 0) {
+		type = MCC_AST_TYPE_VOID;
+	} else if (strcmp(type_name, "int") == 0) {
+		type = MCC_AST_TYPE_INT;
+	} else if (strcmp(type_name, "float") == 0) {
+		type = MCC_AST_TYPE_FLOAT;
+	} else if (strcmp(type_name, "bool") == 0) {
+		type = MCC_AST_TYPE_BOOL;
+	} else {
+		type = MCC_AST_TYPE_FLOAT;
+	}
+	struct mCc_st_entry *entry = mCc_st_new_entry(func_name,
+			type, MCC_ST_ENTRY_TYPE_FUNCTION);
+	mCc_st_insert_entry(table, entry);
 }
 
 // Get the AST tree from parser and construct symbol table
@@ -266,6 +292,15 @@ struct mCc_st_table *mCc_st_new_table(struct mCc_parser_result result)
 		mCc_st_insert_function(table, next_func);
 		next_list = next_list->next;
 	}
+
+	// Insert built-in functions
+	mCc_st_insert_builtin_function(table, "print", "void");
+	mCc_st_insert_builtin_function(table, "print_nl", "void");
+	mCc_st_insert_builtin_function(table, "print_int", "void");
+	mCc_st_insert_builtin_function(table, "print_float", "void");
+	mCc_st_insert_builtin_function(table, "read_int", "int");
+	mCc_st_insert_builtin_function(table, "read_float", "float");
+
 
 	return table;
 }
@@ -514,6 +549,7 @@ struct mCc_st_checking *mCc_st_var_type_checking(struct mCc_st_table *table, int
 	return check_manager;
 }
 
+// TODO: need a way to retrieve parameter inside function
 struct mCc_st_checking *mCc_st_argument_type_checking(struct mCc_st_table *table, int scope, struct mCc_ast_expression *expression)
 {
 	assert(table);
