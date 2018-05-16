@@ -146,6 +146,17 @@ void mCc_st_insert_statement(struct mCc_st_table *table, struct mCc_ast_statemen
 	case MCC_AST_STATEMENT_TYPE_RETURN_EMPTY:
 	case MCC_AST_STATEMENT_TYPE_RETURN:
 		break;
+	case MCC_AST_STATEMENT_TYPE_COMPOUND:
+	{
+		struct mCc_st_table *child_table = mCc_st_new_child_table(table);
+		mCc_st_insert_statement(child_table, stmt->statement_list->statement);
+		struct mCc_ast_statement_list *next_list = stmt->statement_list->next;
+		while (next_list != NULL) {
+			mCc_st_insert_statement(child_table, next_list->statement);
+			next_list = next_list->next;
+		}
+		break;
+	}
 	case MCC_AST_STATEMENT_TYPE_IF:
 	case MCC_AST_STATEMENT_TYPE_WHILE:
 		mCc_st_insert_statement(table, stmt->stmt);
